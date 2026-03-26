@@ -239,7 +239,12 @@ async def api_analysis(req: AnalysisRequest):
     name        = asset.get("name", req.asset_id)
     sym         = asset.get("sym", "")
 
-    prompt = f"""You are a Managing Director and Senior Macro Analyst at Goldman Sachs Global Investment Research, with 20 years covering global markets. You write institutional research notes for hedge funds, sovereign wealth funds, and family offices.
+    prompt = f"""You are a senior quantitative analyst synthesising the analytical frameworks of the world's top hedge funds. Your analysis integrates:
+- BRIDGEWATER: Ray Dalio's all-weather macro framework, debt cycle analysis, risk parity
+- RENAISSANCE TECHNOLOGIES: Statistical momentum, mean-reversion signals, pattern recognition
+- CITADEL: Multi-strategy risk-adjusted positioning, volatility regime classification
+- TWO SIGMA: Factor decomposition (momentum, carry, value, quality), regime detection
+- GOLDMAN SACHS: Top-down macro research, institutional flow analysis
 
 LIVE MARKET DATA — {datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}:
 Asset: {name} ({sym})
@@ -250,16 +255,12 @@ Asset Phase: {asset_phase}
 
 GLOBAL MARKET ENVIRONMENT:
 Phase: {phase_data['phase']} | Regime: {phase_data['regime']} | Risk Appetite: {phase_data['risk']}
-Breadth: {phase_data['bullPct']}% of tracked assets positive today
+Breadth: {phase_data['bullPct']}% of 43 tracked assets positive today
 
-Write a Goldman Sachs-calibre institutional research note. Requirements:
-- Use GS language: "we believe", "in our view", "our base case", "risks are skewed", "conviction is high/medium/low"
-- Reference the live price {price_str} explicitly
-- Be specific about price levels and catalysts
-- Reflect the current {phase_data['regime']} regime
+Apply all five frameworks to generate a comprehensive Wall Street institutional research note.
 
 Respond ONLY with valid JSON, no markdown, no extra text:
-{{"exec":"2-3 sentence executive summary referencing live price {price_str} and phase {asset_phase}. State directional view with GS language.","shortTerm":"3-4 sentences on 1-7 day tactical outlook with specific levels near {price_str}.","longTerm":"3-4 sentences on 1-3 month strategic view covering macro fundamentals and {phase_data['phase']} context.","narrative":"3-4 sentences on dominant macro narrative and how {name} fits within {phase_data['regime']} regime.","drivers":["Catalyst 1 — specific and quantified","Catalyst 2 — with risk/reward context","Macro driver — specific threshold or level","Key risk factor — what invalidates the thesis","Positioning dynamic — institutional behaviour"],"positioning":"2-3 sentences on recommended positioning with conviction level and key risk.","assetPhase":"{asset_phase}","globalPhase":"{phase_data['phase']}","generatedAt":"{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"}}"""
+{{"quant":{{"momentum":"[Long/Short/Neutral] — [momentum signal strength]","meanReversion":"[Overbought/Oversold/Neutral] — [signal]","macroRegime":"[Risk-On/Risk-Off/Neutral] — [context]","volRegime":"[Low/Medium/High/Extreme] Vol — [context]","conviction":"[High/Medium/Low]","score":"[number -10 to +10]"}},"exec":"3 sentence executive summary referencing live price {price_str} and phase {asset_phase}. Blend Bridgewater macro and RenTech quant perspectives with clear directional view.","shortTerm":"3-4 sentences tactical 1-7 day view with specific price levels near {price_str}. Reference momentum signals and volatility regime.","longTerm":"3-4 sentences strategic 1-3 month view applying Bridgewater debt cycle lens and Two Sigma factor exposures.","narrative":"3-4 sentences on macro narrative. Apply Dalio's economic machine framework. Reference {phase_data['phase']} phase and {phase_data['regime']} regime impact on {name}.","drivers":["Bridgewater Macro Factor: [specific macro driver with cycle context]","RenTech Momentum Signal: [quantitative momentum reading]","Citadel Risk Framework: [risk/reward with specific levels]","Two Sigma Factor Model: [dominant factor — momentum/carry/value/quality]","Goldman Flow Analysis: [institutional positioning dynamic]"],"positioning":"3 sentences with Citadel-style conviction level, specific entry zone near {price_str}, risk management, and what invalidates the thesis.","assetPhase":"{asset_phase}","globalPhase":"{phase_data['phase']}","generatedAt":"{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"}}"""
 
     try:
         client  = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
