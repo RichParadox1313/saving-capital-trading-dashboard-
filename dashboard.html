@@ -395,7 +395,7 @@ function card(a){
     '<div class="act"><div><div class="acn">'+a.name+'</div><div class="acs">'+a.sym+'</div></div>'+
     '<div class="acp"><div class="acpn '+cc(p?.change)+'">'+fp(p?.price)+'</div><div class="acpc '+cc(p?.change)+'">'+fc(p?.change)+'</div></div></div>'+
     '<div class="swrap"><canvas data-spark="'+a.id+'"></canvas></div>'+
-    '<div class="acb"><span class="bx '+s.bc+'">'+s.l+'</span><span class="ac5">5d: <span class="'+cc(p?.change5d)+'">'+fc(p?.change5d)+'</span></span></div>'+
+    '<div class="acb"><span class="bx '+s.bc+'">'+s.l+'</span>'+(p?.change5d!=null?'<span class="ac5">7d: <span class="'+cc(p?.change5d)+'">'+fc(p?.change5d)+'</span></span>':'')+'</div>'+
   '</div>';
 }
 
@@ -423,7 +423,7 @@ function detPanel(id,tab){
     '<div class="mrow">'+
       '<div class="mb"><div class="ml">Price</div><div class="mv '+cc(p?.change)+'">'+fp(p?.price)+'</div></div>'+
       '<div class="mb"><div class="ml">24h Change</div><div class="mv '+cc(p?.change)+'">'+fc(p?.change)+'</div></div>'+
-      '<div class="mb"><div class="ml">5-Day</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d)+'</div></div>'+
+      '<div class="mb"><div class="ml">7-Day</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d||null)+'</div></div>'+
       '<div class="mb"><div class="ml">Sentiment</div><div class="mv">'+s.l+'</div></div>'+
       '<div class="mb"><div class="ml">Phase</div><div class="mv">'+ph+'</div></div>'+
       (p?.mcap?'<div class="mb"><div class="ml">Mkt Cap</div><div class="mv">$'+(p.mcap/1e9).toFixed(1)+'B</div></div>':'')+
@@ -503,6 +503,92 @@ async function loadNewsTicker(){
 
 loadNewsTicker();
 setInterval(loadNewsTicker,10*60*1000);
+
+// ── Real-time crypto price polling (every 3s) ─────────────────────────────
+let livePolling = null;
+
+async function pollCryptoLive(){
+  try{
+    const r = await fetch('/api/crypto/live');
+    if(!r.ok) return;
+    const fresh = await r.json();
+    if(!fresh || !Object.keys(fresh).length) return;
+
+    let changed = false;
+    for(const [id, data] of Object.entries(fresh)){
+      if(prices[id]){
+        prices[id].price    = data.price;
+        prices[id].change   = data.change;
+        prices[id].change5d = data.change5d;
+        if(data.mcap) prices[id].mcap = data.mcap;
+        changed = true;
+      }
+    }
+
+    if(changed){
+      // Update only visible cards without full re-render (no flicker)
+      updateVisibleCards();
+      updateStats();
+      // Re-render detail panel if open (price changed)
+      if(selId && prices[selId]){
+        const tab = Object.keys(TABS).find(t=>TABS[t].find(a=>a.id===selId));
+        if(tab && curTab===tab){
+          refreshDetailPanel(selId, tab);
+        }
+      }
+    }
+  }catch(e){}
+}
+
+function updateVisibleCards(){
+  document.querySelectorAll('.acard[data-asset-id]').forEach(card=>{
+    const id = card.getAttribute('data-asset-id');
+    const p  = prices[id];
+    if(!p) return;
+    const priceEl = card.querySelector('.acpn');
+    const chgEl   = card.querySelector('.acpc');
+    const s5El    = card.querySelector('.ac5 span');
+    const bxEl    = card.querySelector('.bx');
+    const s       = sent(p.change);
+    if(priceEl){
+      priceEl.textContent = fp(p.price);
+      priceEl.className   = 'acpn ' + cc(p.change);
+    }
+    if(chgEl){
+      chgEl.textContent = fc(p.change);
+      chgEl.className   = 'acpc ' + cc(p.change);
+    }
+    if(s5El){
+      s5El.textContent  = fc(p.change5d);
+      s5El.className    = cc(p.change5d);
+    }
+    if(bxEl){
+      bxEl.textContent  = s.l;
+      bxEl.className    = 'bx ' + s.bc;
+    }
+  });
+}
+
+function refreshDetailPanel(id, tab){
+  const detPanel = document.querySelector('.detail');
+  if(!detPanel) return;
+  const p = prices[id];
+  if(!p || !p.price) return;
+  const priceEl = detPanel.querySelector('.dprice');
+  const chgEl   = detPanel.querySelector('.dchg');
+  const m24El   = detPanel.querySelector('.mb .mv[data-metric="24h"]');
+  const m5dEl   = detPanel.querySelector('.mb .mv[data-metric="5d"]');
+  const mprEl   = detPanel.querySelector('.mb .mv[data-metric="price"]');
+  if(priceEl){ priceEl.textContent = fp(p.price); priceEl.className = 'dprice ' + cc(p.change); }
+  if(chgEl)  { chgEl.textContent   = fc(p.change)+' 24h · '+fc(p.change5d)+' 5d'; chgEl.className = 'dchg ' + cc(p.change); }
+}
+
+function startLivePolling(){
+  if(livePolling) clearInterval(livePolling);
+  livePolling = setInterval(pollCryptoLive, 3000);
+}
+
+startLivePolling();
 
 loadPrices();
 setInterval(loadPrices,5*60*1000);
