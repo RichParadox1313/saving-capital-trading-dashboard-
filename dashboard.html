@@ -288,7 +288,7 @@ tick();setInterval(tick,30000);
 
 const TABS={
   gold:[],
-  forex:[{id:'EURUSD=X',name:'EUR/USD',sym:'EURUSD',desc:'Euro vs Dollar'},{id:'GBPUSD=X',name:'GBP/USD',sym:'GBPUSD',desc:'Cable'},{id:'USDJPY=X',name:'USD/JPY',sym:'USDJPY',desc:'Dollar vs Yen'},{id:'DX-Y.NYB',name:'DXY Index',sym:'DXY',desc:'Dollar strength'},{id:'AUDUSD=X',name:'AUD/USD',sym:'AUDUSD',desc:'Aussie Dollar'},{id:'USDCAD=X',name:'USD/CAD',sym:'USDCAD',desc:'Loonie'},{id:'USDCHF=X',name:'USD/CHF',sym:'USDCHF',desc:'Swissie'},{id:'NZDUSD=X',name:'NZD/USD',sym:'NZDUSD',desc:'Kiwi Dollar'}],
+  forex:[{id:'EURUSD',name:'EUR/USD',sym:'EURUSD',desc:'Euro vs Dollar'},{id:'GBPUSD',name:'GBP/USD',sym:'GBPUSD',desc:'Cable'},{id:'USDJPY',name:'USD/JPY',sym:'USDJPY',desc:'Dollar vs Yen'},{id:'DX-Y.NYB',name:'DXY Index',sym:'DXY',desc:'Dollar strength'},{id:'AUDUSD',name:'AUD/USD',sym:'AUDUSD',desc:'Aussie Dollar'},{id:'USDCAD',name:'USD/CAD',sym:'USDCAD',desc:'Loonie'},{id:'USDCHF',name:'USD/CHF',sym:'USDCHF',desc:'Swissie'},{id:'NZDUSD',name:'NZD/USD',sym:'NZDUSD',desc:'Kiwi Dollar'}],
   oil:[{id:'GC=F',name:'Gold',sym:'XAUUSD',desc:'Safe haven · Inflation hedge'},{id:'CL=F',name:'WTI Crude',sym:'WTI',desc:'US benchmark crude'},{id:'BZ=F',name:'Brent Crude',sym:'BRENT',desc:'Global benchmark'},{id:'SI=F',name:'Silver',sym:'XAGUSD',desc:'Precious metal'},{id:'HG=F',name:'Copper',sym:'COPPER',desc:'Growth proxy'},{id:'NG=F',name:'Natural Gas',sym:'NATGAS',desc:'Energy commodity'},{id:'PL=F',name:'Platinum',sym:'XPTUSD',desc:'Precious metals'},{id:'PA=F',name:'Palladium',sym:'XPDUSD',desc:'Industrial precious'}],
   crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'matic-network',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR Protocol',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'}]
 };
@@ -297,7 +297,7 @@ let prices={},analyses={},phaseData={},curTab='crypto',selId=null;
 const TODAY=new Date().toISOString().slice(0,10);
 
 function fp(p){if(p==null||p===0)return'—';if(p>10000)return'$'+p.toLocaleString('en',{maximumFractionDigits:0});if(p>100)return'$'+p.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(p>1)return'$'+p.toFixed(4);return'$'+p.toFixed(8)}
-function fc(c){if(c==null)return'···';return(c>=0?'+':'')+c.toFixed(2)+'%'}
+function fc(c){if(c==null||c===undefined)return'···';return(c>=0?'+':'')+c.toFixed(2)+'%'}
 function cc(c){return c==null?'fl':c>0?'up':'dn'}
 function sent(c){
   if(c==null)return{l:'Neutral',bc:'bneut',dc:'ptneut'};
@@ -477,56 +477,6 @@ async function forceRefresh(id,tab){
 
 
 
-// ── Live News Ticker ────────────────────────────────────────────────────────
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?count=8&rss_url=';
-const NEWSFEEDS = [
-  {url: RSS2JSON + encodeURIComponent('https://cointelegraph.com/rss'),                           type:'crypto'},
-  {url: RSS2JSON + encodeURIComponent('https://decrypt.co/feed'),                                  type:'crypto'},
-  {url: RSS2JSON + encodeURIComponent('https://www.theblock.co/rss.xml'),                          type:'crypto'},
-  {url: RSS2JSON + encodeURIComponent('https://oilprice.com/rss/main'),                            type:'commodity'},
-  {url: RSS2JSON + encodeURIComponent('https://www.kitco.com/rss/news.xml'),                       type:'commodity'},
-  {url: RSS2JSON + encodeURIComponent('https://www.forexlive.com/feed/news'),                      type:'forex'},
-  {url: RSS2JSON + encodeURIComponent('https://feeds.reuters.com/reuters/businessNews'),           type:'macro'},
-  {url: RSS2JSON + encodeURIComponent('https://feeds.feedburner.com/zerohedge/feed'),              type:'macro'},
-];
-
-function ntCatCls(t){return t==='crypto'?'nc-crypto':t==='forex'?'nc-forex':t==='commodity'?'nc-commodity':'nc-macro'}
-function ntCatLbl(t){return t==='crypto'?'Crypto':t==='forex'?'Forex':t==='commodity'?'Commodity':'Macro'}
-
-async function loadNewsTicker(){
-  const items = [];
-  const results = await Promise.allSettled(NEWSFEEDS.map(async f => {
-    const r = await fetch(f.url, {signal: AbortSignal.timeout(8000)});
-    const d = await r.json();
-    if(d.items) return d.items.slice(0,5).map(i => ({title: i.title?.trim(), link: i.link||'#', type: f.type}));
-    return [];
-  }));
-  for(const res of results){
-    if(res.status === 'fulfilled' && Array.isArray(res.value)){
-      items.push(...res.value.filter(i => i.title && i.title.length > 10));
-    }
-  }
-  if(items.length < 3) return; // don't render if almost nothing loaded
-  // Shuffle so different categories mix together
-  items.sort(() => Math.random() - 0.5);
-  const doubled = [...items, ...items];
-  const scroll = document.getElementById('nt-scroll');
-  if(!scroll) return;
-  scroll.innerHTML = doubled.map(item =>
-    `<a class="nt-item" href="${item.link}" target="_blank" rel="noopener noreferrer">
-      <span class="nt-cat ${ntCatCls(item.type)}">${ntCatLbl(item.type)}</span>
-      ${item.title.length > 90 ? item.title.slice(0,90)+'…' : item.title}
-    </a>`
-  ).join('');
-  // Speed scales with content amount
-  const spd = Math.max(50, Math.min(140, items.length * 8));
-  scroll.style.animationDuration = spd + 's';
-}
-
-loadNewsTicker();
-setInterval(loadNewsTicker, 10 * 60 * 1000); // refresh every 10 min
-
-renderTab('crypto');
 loadPrices();
 setInterval(loadPrices,5*60*1000);
 </script>
