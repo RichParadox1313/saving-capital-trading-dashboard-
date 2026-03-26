@@ -287,10 +287,9 @@ function tick(){const n=new Date(),u=new Date(n.getTime()+4*3600000);document.ge
 tick();setInterval(tick,30000);
 
 const TABS={
-  gold:[],
-  forex:[{id:'EURUSD',name:'EUR/USD',sym:'EURUSD',desc:'Euro vs Dollar'},{id:'GBPUSD',name:'GBP/USD',sym:'GBPUSD',desc:'Cable'},{id:'USDJPY',name:'USD/JPY',sym:'USDJPY',desc:'Dollar vs Yen'},{id:'DX-Y.NYB',name:'DXY Index',sym:'DXY',desc:'Dollar strength'},{id:'AUDUSD',name:'AUD/USD',sym:'AUDUSD',desc:'Aussie Dollar'},{id:'USDCAD',name:'USD/CAD',sym:'USDCAD',desc:'Loonie'},{id:'USDCHF',name:'USD/CHF',sym:'USDCHF',desc:'Swissie'},{id:'NZDUSD',name:'NZD/USD',sym:'NZDUSD',desc:'Kiwi Dollar'}],
-  oil:[{id:'GC=F',name:'Gold',sym:'XAUUSD',desc:'Safe haven · Inflation hedge'},{id:'CL=F',name:'WTI Crude',sym:'WTI',desc:'US benchmark crude'},{id:'BZ=F',name:'Brent Crude',sym:'BRENT',desc:'Global benchmark'},{id:'SI=F',name:'Silver',sym:'XAGUSD',desc:'Precious metal'},{id:'HG=F',name:'Copper',sym:'COPPER',desc:'Growth proxy'},{id:'NG=F',name:'Natural Gas',sym:'NATGAS',desc:'Energy commodity'},{id:'PL=F',name:'Platinum',sym:'XPTUSD',desc:'Precious metals'},{id:'PA=F',name:'Palladium',sym:'XPDUSD',desc:'Industrial precious'}],
-  crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'matic-network',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR Protocol',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'}]
+  forex:[{id:'EURUSD',name:'EUR/USD',sym:'EURUSD',desc:'Euro vs Dollar'},{id:'GBPUSD',name:'GBP/USD',sym:'GBPUSD',desc:'Cable'},{id:'USDJPY',name:'USD/JPY',sym:'USDJPY',desc:'Dollar vs Yen'},{id:'DXY',name:'DXY Index',sym:'DXY',desc:'Dollar strength'},{id:'AUDUSD',name:'AUD/USD',sym:'AUDUSD',desc:'Aussie Dollar'},{id:'USDCAD',name:'USD/CAD',sym:'USDCAD',desc:'Loonie'},{id:'USDCHF',name:'USD/CHF',sym:'USDCHF',desc:'Swissie'},{id:'NZDUSD',name:'NZD/USD',sym:'NZDUSD',desc:'Kiwi Dollar'}],
+  oil:[{id:'XAUUSD',name:'Gold',sym:'XAUUSD',desc:'Safe haven · Inflation hedge'},{id:'WTI',name:'WTI Crude',sym:'WTI',desc:'US benchmark crude'},{id:'BRENT',name:'Brent Crude',sym:'BRENT',desc:'Global benchmark'},{id:'XAGUSD',name:'Silver',sym:'XAGUSD',desc:'Precious metal'},{id:'COPPER',name:'Copper',sym:'COPPER',desc:'Growth proxy'},{id:'NATGAS',name:'Natural Gas',sym:'NATGAS',desc:'Energy'},{id:'XPTUSD',name:'Platinum',sym:'XPTUSD',desc:'Precious metals'}],
+  crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'matic-network',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'}]
 };
 
 let prices={},analyses={},phaseData={},curTab='crypto',selId=null;
@@ -476,6 +475,34 @@ async function forceRefresh(id,tab){
 
 
 
+
+// ── Live News Ticker ─────────────────────────────────────────────────────────
+function ntCls(t){return t==='crypto'?'nc-crypto':t==='forex'?'nc-forex':t==='commodity'?'nc-commodity':'nc-macro'}
+function ntLbl(t){return t==='crypto'?'Crypto':t==='forex'?'Forex':t==='commodity'?'Commodity':'Macro'}
+
+async function loadNewsTicker(){
+  try{
+    const r=await fetch('/api/news');
+    if(!r.ok){console.warn('News API returned',r.status);return;}
+    const items=await r.json();
+    if(!Array.isArray(items)||items.length<2){console.warn('No news items');return;}
+    const doubled=[...items,...items];
+    const scroll=document.getElementById('nt-scroll');
+    if(!scroll)return;
+    scroll.innerHTML=doubled.map(item=>
+      `<a class="nt-item" href="${item.link}" target="_blank" rel="noopener">
+        <span class="nt-cat ${ntCls(item.type)}">${ntLbl(item.type)}</span>
+        ${(item.title||'').slice(0,90)}${item.title&&item.title.length>90?'…':''}
+      </a>`
+    ).join('');
+    const spd=Math.max(60,Math.min(180,items.length*10));
+    scroll.style.animationDuration=spd+'s';
+    console.log('News loaded:',items.length,'items');
+  }catch(e){console.error('News error:',e)}
+}
+
+loadNewsTicker();
+setInterval(loadNewsTicker,10*60*1000);
 
 loadPrices();
 setInterval(loadPrices,5*60*1000);
