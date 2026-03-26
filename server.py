@@ -402,6 +402,27 @@ async def load_news() -> list:
 
 # ─── API Routes ───────────────────────────────────────────────────────────────
 
+@app.get("/api/crypto/live")
+async def api_crypto_live():
+    """Fast endpoint — only crypto prices. Called every 3s from frontend."""
+    cg = await fetch_coingecko()
+    result = {}
+    for a in CRYPTO_ASSETS:
+        d = cg.get(a["id"], {})
+        if d.get("usd"):
+            result[a["id"]] = {
+                "price":    round(d["usd"], 8),
+                "change":   round(d.get("usd_24h_change", 0) or 0, 3),
+                "change5d": round(d.get("usd_7d_change",  0) or 0, 3),
+                "mcap":     d.get("usd_market_cap"),
+            }
+    # Update the main price cache with fresh crypto data
+    if result and price_cache["data"]:
+        for asset_id, data in result.items():
+            if asset_id in price_cache["data"]:
+                price_cache["data"][asset_id].update(data)
+    return JSONResponse(result)
+
 @app.get("/api/prices")
 async def api_prices():
     now = time.time()
