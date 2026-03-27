@@ -577,15 +577,28 @@ Global: {ph['phase']} | {ph['regime']} | {ph['risk']} risk | {ph['bullPct']}% po
 
 Return ONLY valid JSON no markdown:
 {{"quant":{{"momentum":"[Long/Short/Neutral] — signal","meanReversion":"[Overbought/Oversold/Neutral] — signal","macroRegime":"[Risk-On/Risk-Off/Neutral] — context","volRegime":"[Low/Medium/High/Extreme] Vol","conviction":"[High/Medium/Low]","score":"[-10 to +10]"}},"exec":"3 sentences referencing {ps}, phase {aph}, clear directional view.","shortTerm":"3-4 sentences with specific levels near {ps}.","longTerm":"3-4 sentences macro structural view.","narrative":"3-4 sentences on {ph['phase']} phase and {ph['regime']} regime impact.","drivers":["Macro Factor: driver","Momentum: signal","Risk: levels","Factor Model: exposure","Flow: positioning"],"positioning":"3 sentences with conviction, entry zone near {ps}, what invalidates thesis.","assetPhase":"{aph}","globalPhase":"{ph['phase']}","generatedAt":"{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"}}"""
-    try:
-        client  = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        msg     = client.messages.create(model="claude-sonnet-4-20250514", max_tokens=1600,
-                                          messages=[{"role":"user","content":prompt}])
-        parsed  = json.loads(msg.content[0].text.strip().replace("```json","").replace("```","").strip())
-        analysis_cache[cache_key] = {"data":parsed,"ts":time.time()}
-        return JSONResponse(parsed)
-    except Exception as e:
-        raise HTTPException(500, f"Analysis error: {e}")
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    last_error = None
+    for attempt in range(4):
+        try:
+            if attempt > 0:
+                wait = [0, 10, 20, 40][attempt]
+                print(f"  Anthropic retry {attempt}/3 after {wait}s...")
+                await asyncio.sleep(wait)
+            msg    = client.messages.create(model="claude-sonnet-4-20250514", max_tokens=1600,
+                                             messages=[{"role":"user","content":prompt}])
+            parsed = json.loads(msg.content[0].text.strip().replace("```json","").replace("```","").strip())
+            analysis_cache[cache_key] = {"data":parsed,"ts":time.time()}
+            return JSONResponse(parsed)
+        except anthropic.APIStatusError as e:
+            last_error = e
+            if e.status_code == 529:
+                print(f"  Anthropic overloaded (529) — attempt {attempt+1}/4")
+                continue
+            raise HTTPException(500, f"Analysis error: {e}")
+        except Exception as e:
+            raise HTTPException(500, f"Analysis error: {e}")
+    raise HTTPException(503, f"Anthropic API overloaded — please try again in a moment")
 
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
