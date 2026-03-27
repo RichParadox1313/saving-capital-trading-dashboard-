@@ -1053,6 +1053,16 @@ async def delete_trade(trade_id: str):
     save_journal(trades)
     return JSONResponse({"ok": True})
 
+@app.get("/img/{filename}")
+async def serve_img(filename: str):
+    import re
+    if not re.match(r'^[\w\-]+\.(jpg|png|webp)$', filename):
+        raise HTTPException(404, "Not found")
+    p = Path(__file__).parent / filename
+    if not p.exists():
+        raise HTTPException(404, "Image not found")
+    return FileResponse(p, headers={"Cache-Control": "public, max-age=86400"})
+
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     return FileResponse(DASHBOARD_PATH)
