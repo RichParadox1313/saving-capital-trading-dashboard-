@@ -92,6 +92,11 @@ CRYPTO_ASSETS = [
     {"id":"render-token",       "name":"Render",        "sym":"RENDER", "tab":"crypto"},
     {"id":"injective-protocol", "name":"Injective",     "sym":"INJ",    "tab":"crypto"},
     {"id":"monero",             "name":"Monero",        "sym":"XMR",    "tab":"crypto"},
+    {"id":"sui",                 "name":"Sui",           "sym":"SUI",    "tab":"crypto"},
+    {"id":"pepe",                "name":"Pepe",          "sym":"PEPE",   "tab":"crypto"},
+    {"id":"fetch-ai",            "name":"Fetch.ai",      "sym":"FET",    "tab":"crypto"},
+    {"id":"sei-network",         "name":"Sei",           "sym":"SEI",    "tab":"crypto"},
+    {"id":"bittensor",           "name":"Bittensor",     "sym":"TAO",    "tab":"crypto"},
 ]
 
 # Yahoo Finance symbols for forex + commodities
@@ -150,6 +155,49 @@ YAHOO_ASSETS = [
     {"yahoo":"USDINR=X",  "id":"USDINR",  "name":"USD/INR",      "sym":"USDINR",  "tab":"forex", "desc":"Dollar vs Indian Rupee"},
     {"yahoo":"USDAED=X",  "id":"USDAED",  "name":"USD/AED",      "sym":"USDAED",  "tab":"forex", "desc":"Dollar vs UAE Dirham"},
     {"yahoo":"USDSAR=X",  "id":"USDSAR",  "name":"USD/SAR",      "sym":"USDSAR",  "tab":"forex", "desc":"Dollar vs Saudi Riyal"},
+    # ── Major Indexes ──────────────────────────────────────────────────────────
+    {"yahoo":"^GSPC",     "id":"SPX",     "name":"S&P 500",      "sym":"SPX",     "tab":"stocks", "desc":"US Large Cap Index"},
+    {"yahoo":"^DJI",      "id":"DJI",     "name":"Dow Jones",    "sym":"DJI",     "tab":"stocks", "desc":"US Blue Chip Index"},
+    {"yahoo":"^IXIC",     "id":"NASDAQ",  "name":"NASDAQ",       "sym":"NASDAQ",  "tab":"stocks", "desc":"US Tech Index"},
+    {"yahoo":"^RUT",      "id":"RUT",     "name":"Russell 2000", "sym":"RUT",     "tab":"stocks", "desc":"US Small Cap Index"},
+    {"yahoo":"^VIX",      "id":"VIX",     "name":"VIX",          "sym":"VIX",     "tab":"stocks", "desc":"Volatility Index"},
+    {"yahoo":"^FTSE",     "id":"FTSE",    "name":"FTSE 100",     "sym":"FTSE",    "tab":"stocks", "desc":"UK Index"},
+    {"yahoo":"^GDAXI",    "id":"DAX",     "name":"DAX",          "sym":"DAX",     "tab":"stocks", "desc":"German Index"},
+    {"yahoo":"^FCHI",     "id":"CAC",     "name":"CAC 40",       "sym":"CAC",     "tab":"stocks", "desc":"French Index"},
+    {"yahoo":"^N225",     "id":"NIKKEI",  "name":"Nikkei 225",   "sym":"NIKKEI",  "tab":"stocks", "desc":"Japan Index"},
+    {"yahoo":"^HSI",      "id":"HSI",     "name":"Hang Seng",    "sym":"HSI",     "tab":"stocks", "desc":"Hong Kong Index"},
+    {"yahoo":"000001.SS", "id":"SSE",     "name":"Shanghai",     "sym":"SSE",     "tab":"stocks", "desc":"China Index"},
+    # ── Top 30 Stocks by Market Cap ────────────────────────────────────────────
+    {"yahoo":"AAPL",      "id":"AAPL",    "name":"Apple",        "sym":"AAPL",    "tab":"stocks", "desc":"Consumer Tech"},
+    {"yahoo":"NVDA",      "id":"NVDA",    "name":"NVIDIA",       "sym":"NVDA",    "tab":"stocks", "desc":"AI & Semiconductors"},
+    {"yahoo":"MSFT",      "id":"MSFT",    "name":"Microsoft",    "sym":"MSFT",    "tab":"stocks", "desc":"Cloud & Software"},
+    {"yahoo":"GOOGL",     "id":"GOOGL",   "name":"Alphabet",     "sym":"GOOGL",   "tab":"stocks", "desc":"Search & AI"},
+    {"yahoo":"AMZN",      "id":"AMZN",    "name":"Amazon",       "sym":"AMZN",    "tab":"stocks", "desc":"E-Commerce & Cloud"},
+    {"yahoo":"META",      "id":"META",    "name":"Meta",         "sym":"META",    "tab":"stocks", "desc":"Social Media & AI"},
+    {"yahoo":"TSLA",      "id":"TSLA",    "name":"Tesla",        "sym":"TSLA",    "tab":"stocks", "desc":"EV & Energy"},
+    {"yahoo":"BRK-B",     "id":"BRK",     "name":"Berkshire",    "sym":"BRK",     "tab":"stocks", "desc":"Conglomerate"},
+    {"yahoo":"TSM",       "id":"TSM",     "name":"TSMC",         "sym":"TSM",     "tab":"stocks", "desc":"Semiconductors"},
+    {"yahoo":"LLY",       "id":"LLY",     "name":"Eli Lilly",    "sym":"LLY",     "tab":"stocks", "desc":"Pharmaceuticals"},
+    {"yahoo":"JPM",       "id":"JPM",     "name":"JPMorgan",     "sym":"JPM",     "tab":"stocks", "desc":"Banking"},
+    {"yahoo":"V",         "id":"V",       "name":"Visa",         "sym":"V",       "tab":"stocks", "desc":"Payments"},
+    {"yahoo":"XOM",       "id":"XOM",     "name":"ExxonMobil",   "sym":"XOM",     "tab":"stocks", "desc":"Oil & Gas"},
+    {"yahoo":"UNH",       "id":"UNH",     "name":"UnitedHealth", "sym":"UNH",     "tab":"stocks", "desc":"Healthcare"},
+    {"yahoo":"MA",        "id":"MA",      "name":"Mastercard",   "sym":"MA",      "tab":"stocks", "desc":"Payments"},
+    {"yahoo":"JNJ",       "id":"JNJ",     "name":"Johnson & J",  "sym":"JNJ",     "tab":"stocks", "desc":"Healthcare"},
+    {"yahoo":"AVGO",      "id":"AVGO",    "name":"Broadcom",     "sym":"AVGO",    "tab":"stocks", "desc":"Semiconductors"},
+    {"yahoo":"WMT",       "id":"WMT",     "name":"Walmart",      "sym":"WMT",     "tab":"stocks", "desc":"Retail"},
+    {"yahoo":"PG",        "id":"PG",      "name":"Procter & G",  "sym":"PG",      "tab":"stocks", "desc":"Consumer Goods"},
+    {"yahoo":"HD",        "id":"HD",      "name":"Home Depot",   "sym":"HD",      "tab":"stocks", "desc":"Home Improvement"},
+    {"yahoo":"ORCL",      "id":"ORCL",    "name":"Oracle",       "sym":"ORCL",    "tab":"stocks", "desc":"Enterprise Software"},
+    {"yahoo":"COST",      "id":"COST",    "name":"Costco",       "sym":"COST",    "tab":"stocks", "desc":"Wholesale Retail"},
+    {"yahoo":"NFLX",      "id":"NFLX",    "name":"Netflix",      "sym":"NFLX",    "tab":"stocks", "desc":"Streaming"},
+    {"yahoo":"AMD",       "id":"AMD",     "name":"AMD",          "sym":"AMD",     "tab":"stocks", "desc":"Semiconductors"},
+    {"yahoo":"ADBE",      "id":"ADBE",    "name":"Adobe",        "sym":"ADBE",    "tab":"stocks", "desc":"Creative Software"},
+    {"yahoo":"CRM",       "id":"CRM",     "name":"Salesforce",   "sym":"CRM",     "tab":"stocks", "desc":"CRM Software"},
+    {"yahoo":"BAC",       "id":"BAC",     "name":"Bank of Am",   "sym":"BAC",     "tab":"stocks", "desc":"Banking"},
+    {"yahoo":"PEP",       "id":"PEP",     "name":"PepsiCo",      "sym":"PEP",     "tab":"stocks", "desc":"Beverages"},
+    {"yahoo":"KO",        "id":"KO",      "name":"Coca-Cola",    "sym":"KO",      "tab":"stocks", "desc":"Beverages"},
+    {"yahoo":"BABA",      "id":"BABA",    "name":"Alibaba",      "sym":"BABA",    "tab":"stocks", "desc":"China E-Commerce"},
 ]
 
 # ─── CoinGecko ────────────────────────────────────────────────────────────────
@@ -569,7 +617,7 @@ async def api_forex_live():
     if not result:
         # Absolute fallback — return whatever is cached
         for k,v in price_cache["data"].items():
-            if v.get("tab") in ("forex","oil") and v.get("price"):
+            if v.get("tab") in ("forex","oil","stocks") and v.get("price"):
                 result[k] = {"price":v["price"],"change":v.get("change",0),"change5d":v.get("change5d",0)}
     return JSONResponse(result)
 
