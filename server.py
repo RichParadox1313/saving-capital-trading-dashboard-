@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 import aiohttp, anthropic
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -779,6 +779,279 @@ Return ONLY valid JSON no markdown:
         except Exception as e:
             raise HTTPException(500, f"Analysis error: {e}")
     raise HTTPException(503, f"Anthropic API overloaded — please try again in a moment")
+
+
+
+# ─── MetaAPI MT5 Connection ───────────────────────────────────────────────────
+# MetaAPI cloud service connects to MT5 remotely — no local install needed
+# Clients: get your MetaAPI token at metaapi.cloud (free tier available)
+
+META_API_TOKEN = os.environ.get("META_API_TOKEN", "")  # Your MetaAPI token from metaapi.cloud
+
+class MT5ConnectRequest(BaseModel):
+    accountId:  str         # MetaAPI account ID (after provisioning)
+    login:      str         # MT5 account number
+    password:   str         # MT5 password
+    server:     str         # MT5 broker server e.g. "ICMarkets-Live"
+    broker:     str = ""    # Broker name (display only)
+    name:       str = ""    # Client display name
+
+@app.post("/api/mt5/connect")
+async def mt5_connect(req: MT5ConnectRequest, request: Request):
+    """Provision a MetaAPI MT5 account and sync trades."""
+    if not META_API_TOKEN:
+        raise HTTPException(500, "META_API_TOKEN not configured in Railway")
+
+    headers = {
+        "auth-token":   META_API_TOKEN,
+        "Content-Type": "application/json",
+    }
+
+    # Step 1: Create MetaAPI account
+    payload = {
+        "login":          req.login,
+        "password":       req.password,
+        "name":           req.name or f"SC-{req.login}",
+        "server":         req.server,
+        "platform":       "mt5",
+        "magic":          0,
+        "application":    "MetaApi",
+        "type":           "cloud",
+    }
+
+    try:
+        async with aiohttp.ClientSession() as s:
+            # Create account
+            async with s.post(
+                "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
+                json=payload,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as r:
+                if r.status not in (200, 201):
+                    err = await r.text()
+                    raise HTTPException(400, f"MetaAPI error: {err}")
+                data = await r.json()
+                account_id = data.get("id")
+
+            if not account_id:
+                raise HTTPException(500, "No account ID returned from MetaAPI")
+
+            # Step 2: Wait for connection (poll up to 30s)
+            for _ in range(6):
+                await asyncio.sleep(5)
+                async with s.get(
+                    f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status == 200:
+                        info = await r.json()
+                        state = info.get("state","")
+                        if state in ("DEPLOYED", "CONNECTED"):
+                            break
+
+            # Step 3: Pull trade history
+            async with s.get(
+                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{{}}/{{}}"
+                .format(
+                    int((datetime.utcnow() - timedelta(days=30)).timestamp() * 1000),
+                    int(datetime.utcnow().timestamp() * 1000),
+                ),
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                deals = await r.json() if r.status == 200 else []
+
+            # Step 4: Convert and store trades
+            trades = load_journal()
+            existing_ids = {t.get("id") for t in trades}
+            new_trades = []
+
+            for deal in (deals if isinstance(deals, list) else []):
+                deal_id = f"mt5_{deal.get('id',deal.get('ticket',''))}"
+                if deal_id in existing_ids:
+                    continue
+                dtype = deal.get("type","")
+                if dtype not in ("DEAL_TYPE_BUY","DEAL_TYPE_SELL"):
+                    continue
+                direction = "LONG" if dtype == "DEAL_TYPE_BUY" else "SHORT"
+                entry_type = deal.get("entryType","")
+                if entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY"):
+                    direction = "SHORT" if dtype == "DEAL_TYPE_BUY" else "LONG"
+                pnl = round((deal.get("profit",0) or 0) + (deal.get("swap",0) or 0) + (deal.get("commission",0) or 0), 2)
+                t_str = deal.get("time","")
+                date_str = t_str[:10] if t_str else datetime.utcnow().strftime("%Y-%m-%d")
+                trade = {
+                    "id":        deal_id,
+                    "date":      date_str,
+                    "asset":     deal.get("symbol",""),
+                    "direction": direction,
+                    "entry":     deal.get("price"),
+                    "exit":      None,
+                    "size":      deal.get("volume"),
+                    "pnl":       pnl,
+                    "status":    "OPEN" if entry_type == "DEAL_ENTRY_IN" else "CLOSED",
+                    "strategy":  "MT5 Auto",
+                    "notes":     f"{req.broker} | Account: {req.login} | {deal.get('comment','')}".strip(" |"),
+                    "createdAt": datetime.utcnow().isoformat(),
+                }
+                new_trades.append(trade)
+
+            # Also pull open positions
+            async with s.get(
+                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                positions = await r.json() if r.status == 200 else []
+
+            for pos in (positions if isinstance(positions, list) else []):
+                pos_id = f"pos_{pos.get('id',pos.get('ticket',''))}"
+                ptype = pos.get("type","")
+                direction = "LONG" if ptype == "POSITION_TYPE_BUY" else "SHORT"
+                pnl = round((pos.get("profit",0) or 0) + (pos.get("swap",0) or 0), 2)
+                t_str = pos.get("time","")
+                date_str = t_str[:10] if t_str else datetime.utcnow().strftime("%Y-%m-%d")
+                trade = {
+                    "id":        pos_id,
+                    "date":      date_str,
+                    "asset":     pos.get("symbol",""),
+                    "direction": direction,
+                    "entry":     pos.get("openPrice"),
+                    "exit":      pos.get("currentPrice"),
+                    "size":      pos.get("volume"),
+                    "pnl":       pnl,
+                    "status":    "OPEN",
+                    "strategy":  "MT5 Live",
+                    "notes":     f"{req.broker} | Account: {req.login}",
+                    "createdAt": datetime.utcnow().isoformat(),
+                }
+                # Update existing open position or add new
+                existing = next((i for i,t in enumerate(trades) if t.get("id")==pos_id), None)
+                if existing is not None:
+                    trades[existing] = trade
+                else:
+                    new_trades.append(trade)
+
+            all_trades = new_trades + trades
+            save_journal(all_trades)
+
+            return JSONResponse({
+                "ok":        True,
+                "accountId": account_id,
+                "synced":    len(new_trades),
+                "message":   f"Connected! Synced {len(new_trades)} trades from {req.broker or req.server}",
+            })
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Connection error: {e}")
+
+@app.get("/api/mt5/sync/{account_id}")
+async def mt5_sync(account_id: str):
+    """Re-sync trades for an already connected MetaAPI account."""
+    if not META_API_TOKEN:
+        raise HTTPException(500, "META_API_TOKEN not configured")
+    headers = {"auth-token": META_API_TOKEN, "Content-Type": "application/json"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
+                headers=headers, timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                positions = await r.json() if r.status == 200 else []
+        trades = load_journal()
+        for pos in (positions if isinstance(positions, list) else []):
+            pos_id = f"pos_{pos.get('id',pos.get('ticket',''))}"
+            pnl = round((pos.get("profit",0) or 0) + (pos.get("swap",0) or 0), 2)
+            for t in trades:
+                if t.get("id") == pos_id:
+                    t["exit"] = pos.get("currentPrice")
+                    t["pnl"]  = pnl
+        save_journal(trades)
+        return JSONResponse({"ok": True, "positions": len(positions)})
+    except Exception as e:
+        raise HTTPException(500, f"Sync error: {e}")
+
+
+# ─── Trading Journal ──────────────────────────────────────────────────────────
+import json as _json
+from pathlib import Path as _Path
+
+JOURNAL_FILE = _Path(__file__).parent / "journal.json"
+
+JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
+
+def check_journal_key(request: Request) -> bool:
+    """Validate X-Journal-Key header from MT5 EA or return True if no key set."""
+    if not JOURNAL_KEY:
+        return True  # no key configured — open access
+    return request.headers.get("X-Journal-Key","") == JOURNAL_KEY
+
+def load_journal() -> list:
+    try:
+        if JOURNAL_FILE.exists():
+            return _json.loads(JOURNAL_FILE.read_text())
+    except Exception as e:
+        print(f"Journal load error: {e}")
+    return []
+
+def save_journal(trades: list):
+    try:
+        JOURNAL_FILE.write_text(_json.dumps(trades, indent=2))
+    except Exception as e:
+        print(f"Journal save error: {e}")
+
+class TradeEntry(BaseModel):
+    id: str
+    date: str
+    asset: str
+    direction: str   # LONG / SHORT
+    entry: float
+    exit: float | None = None
+    size: float
+    pnl: float | None = None
+    status: str      # OPEN / CLOSED
+    strategy: str = ""
+    notes: str = ""
+    createdAt: str
+
+@app.get("/api/journal")
+async def get_journal():
+    return JSONResponse(load_journal())
+
+@app.post("/api/journal")
+async def add_trade(trade: TradeEntry, request: Request):
+    if not check_journal_key(request):
+        raise HTTPException(401, "Invalid journal API key")
+    trades = load_journal()
+    # Update existing trade if same ID (e.g. position update from MT5)
+    existing = next((i for i,t in enumerate(trades) if t.get("id")==trade.id), None)
+    if existing is not None:
+        trades[existing] = trade.dict()
+    else:
+        trades.insert(0, trade.dict())
+    save_journal(trades)
+    return JSONResponse({"ok": True})
+
+@app.put("/api/journal/{trade_id}")
+async def update_trade(trade_id: str, trade: TradeEntry):
+    trades = load_journal()
+    for i, t in enumerate(trades):
+        if t["id"] == trade_id:
+            trades[i] = trade.dict()
+            save_journal(trades)
+            return JSONResponse({"ok": True})
+    raise HTTPException(404, "Trade not found")
+
+@app.delete("/api/journal/{trade_id}")
+async def delete_trade(trade_id: str):
+    trades = load_journal()
+    trades = [t for t in trades if t["id"] != trade_id]
+    save_journal(trades)
+    return JSONResponse({"ok": True})
 
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
