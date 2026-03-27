@@ -184,6 +184,71 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .nc-macro{background:rgba(167,243,208,0.06);color:var(--t3);border:1px solid var(--br)}
 .nt-dot{padding:0 12px;flex-shrink:0}
 .nt-loading{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;padding:0 16px;font-style:italic}
+
+/* ── Trading Journal ─────────────────────────────────────────────────────── */
+.jnl{display:flex;flex-direction:column;gap:16px}
+.jnl-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.jnl-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--t1)}
+.jnl-actions{display:flex;gap:8px;flex-wrap:wrap}
+.jbtn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;border:none}
+.jbtn-primary{background:var(--g);color:#030704;font-weight:500}
+.jbtn-primary:hover{background:#16a34a}
+.jbtn-outline{background:transparent;border:1px solid var(--br2);color:var(--t3)}
+.jbtn-outline:hover{border-color:var(--g);color:var(--g)}
+.jbtn-danger{background:transparent;border:1px solid rgba(239,68,68,0.3);color:#f87171;font-size:9px;padding:5px 10px}
+.jbtn-danger:hover{background:var(--rdim)}
+
+/* Stats row */
+.jstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--br);border:1px solid var(--br);border-radius:8px;overflow:hidden}
+.jstat{background:var(--s1);padding:14px 16px}
+.jstat-n{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1px;line-height:1}
+.jstat-l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-top:4px;font-family:'DM Mono',monospace}
+
+/* Table */
+.jtable-wrap{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden}
+.jtable{width:100%;border-collapse:collapse}
+.jtable th{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;padding:10px 14px;text-align:left;border-bottom:1px solid var(--br);background:var(--s2);white-space:nowrap}
+.jtable td{padding:12px 14px;border-bottom:1px solid rgba(34,197,94,0.06);font-size:12px;vertical-align:middle}
+.jtable tr:last-child td{border-bottom:none}
+.jtable tr:hover td{background:rgba(34,197,94,0.03)}
+.jdir-long{color:var(--g);font-family:'DM Mono',monospace;font-size:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:4px}
+.jdir-short{color:#f87171;font-family:'DM Mono',monospace;font-size:10px;background:var(--rdim);border:1px solid rgba(239,68,68,0.2);padding:2px 8px;border-radius:4px}
+.jstatus-open{color:var(--gold);font-size:9px;font-family:'DM Mono',monospace}
+.jstatus-closed{color:var(--t4);font-size:9px;font-family:'DM Mono',monospace}
+.jpnl-pos{color:var(--g);font-family:'DM Mono',monospace;font-weight:500}
+.jpnl-neg{color:var(--r);font-family:'DM Mono',monospace;font-weight:500}
+.jmono{font-family:'DM Mono',monospace;font-size:12px}
+.jnotes{color:var(--t4);font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jempty{text-align:center;padding:48px 20px;color:var(--t4);font-size:13px}
+.jempty span{display:block;font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--br3);margin-bottom:8px}
+
+/* Modal */
+.jmodal-bg{display:none;position:fixed;inset:0;background:rgba(3,6,3,0.92);z-index:300;backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:16px}
+.jmodal-bg.open{display:flex}
+.jmodal{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.jmodal-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;margin-bottom:20px;color:var(--t1)}
+.jform-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.jform-full{grid-column:1/-1}
+.jlabel{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:5px;display:block}
+.jinput{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:9px 12px;outline:none;transition:border-color .2s}
+.jinput:focus{border-color:var(--g)}
+.jselect{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:9px 12px;outline:none;cursor:pointer}
+.jmodal-btns{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+
+
+/* MT5 Connect */
+.mt5-connect{background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:20px 24px;margin-bottom:16px}
+.mt5-connect-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--t1);margin-bottom:4px}
+.mt5-connect-sub{font-size:11px;color:var(--t4);margin-bottom:16px;line-height:1.6;font-weight:300}
+.mt5-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt5-status{font-size:11px;font-family:'DM Mono',monospace;padding:8px 12px;border-radius:6px;margin-top:10px;display:none}
+.mt5-status.ok{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2);display:block}
+.mt5-status.err{background:var(--rdim);color:#f87171;border:1px solid rgba(239,68,68,0.2);display:block}
+.mt5-status.loading{background:var(--gdim);color:var(--t3);border:1px solid var(--br);display:block}
+.mt5-connected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;margin-bottom:14px}
+.mt5-conn-dot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);flex-shrink:0}
+.mt5-conn-info{font-size:11px;color:var(--t2);font-family:'DM Mono',monospace}
+
 footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:11px;color:var(--t4);max-width:800px;margin:0 auto;line-height:1.8;font-weight:300}
 
 @media(max-width:768px){
@@ -253,6 +318,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="tab" onclick="swTab('oil',this)">Gold & Commodities</button>
     <button class="tab" onclick="swTab('indexes',this)">Global Indexes</button>
     <button class="tab" onclick="swTab('stocks',this)">Top 30 Stocks</button>
+    <button class="tab" onclick="swTab('journal',this)">📓 Trading Journal</button>
   </div>
   <div id="s-gold" class="sec"></div>
   <div id="s-crypto" class="sec on"></div>
@@ -260,8 +326,68 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   <div id="s-oil" class="sec"></div>
   <div id="s-indexes" class="sec"></div>
   <div id="s-stocks" class="sec"></div>
+  <div id="s-journal" class="sec"></div>
 </div>
 
+
+<!-- Trading Journal Modal -->
+<div class="jmodal-bg" id="jmodal-bg">
+  <div class="jmodal">
+    <div class="jmodal-title" id="jmodal-title">New Trade</div>
+    <div class="jform-grid">
+      <div>
+        <label class="jlabel">Asset</label>
+        <input class="jinput" id="j-asset" placeholder="BTC, EURUSD, AAPL..." />
+      </div>
+      <div>
+        <label class="jlabel">Date</label>
+        <input class="jinput" type="date" id="j-date" />
+      </div>
+      <div>
+        <label class="jlabel">Direction</label>
+        <select class="jselect" id="j-direction">
+          <option value="LONG">LONG</option>
+          <option value="SHORT">SHORT</option>
+        </select>
+      </div>
+      <div>
+        <label class="jlabel">Status</label>
+        <select class="jselect" id="j-status">
+          <option value="OPEN">OPEN</option>
+          <option value="CLOSED">CLOSED</option>
+        </select>
+      </div>
+      <div>
+        <label class="jlabel">Entry Price</label>
+        <input class="jinput" type="number" step="any" id="j-entry" placeholder="0.00" />
+      </div>
+      <div>
+        <label class="jlabel">Exit Price (optional)</label>
+        <input class="jinput" type="number" step="any" id="j-exit" placeholder="0.00" />
+      </div>
+      <div>
+        <label class="jlabel">Position Size ($)</label>
+        <input class="jinput" type="number" step="any" id="j-size" placeholder="1000" />
+      </div>
+      <div>
+        <label class="jlabel">P&L ($)</label>
+        <input class="jinput" type="number" step="any" id="j-pnl" placeholder="Auto-calculated" />
+      </div>
+      <div class="jform-full">
+        <label class="jlabel">Strategy / Setup</label>
+        <input class="jinput" id="j-strategy" placeholder="e.g. Breakout, Mean Reversion, Trend Follow..." />
+      </div>
+      <div class="jform-full">
+        <label class="jlabel">Notes</label>
+        <textarea class="jinput" id="j-notes" rows="3" placeholder="Trade rationale, market conditions, lessons learned..."></textarea>
+      </div>
+    </div>
+    <div class="jmodal-btns">
+      <button class="jbtn jbtn-outline" onclick="closeJModal()">Cancel</button>
+      <button class="jbtn jbtn-primary" onclick="saveJTrade()">Save Trade</button>
+    </div>
+  </div>
+</div>
 <footer>All analysis is AI-generated for educational and informational purposes only. Saving Capital does not provide financial advice. Past performance is not indicative of future results. Always conduct independent research before making trading decisions.</footer>
 </div>
 
@@ -764,6 +890,253 @@ async function pollForexCommodities(){
     }
   }catch(e){ console.warn('forex poll:',e); }
 }
+
+
+// ── MT5 Account Connection ─────────────────────────────────────────────────
+async function connectMT5(){
+  const login    = document.getElementById('mt5-login')?.value?.trim();
+  const password = document.getElementById('mt5-password')?.value?.trim();
+  const server   = document.getElementById('mt5-server')?.value?.trim();
+  const broker   = document.getElementById('mt5-broker')?.value?.trim();
+  const status   = document.getElementById('mt5-status');
+
+  if(!login||!password||!server){
+    if(status){status.textContent='Please fill in account number, password and server.';status.className='mt5-status err';}
+    return;
+  }
+
+  if(status){status.textContent='Connecting to MT5 via MetaAPI... this may take up to 30 seconds...';status.className='mt5-status loading';}
+  const btn = document.querySelector('#mt5-connect-box .jbtn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Connecting...';}
+
+  try{
+    const r = await fetch('/api/mt5/connect',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({accountId:'',login,password,server,broker,name:'SC-'+login})
+    });
+    const data = await r.json();
+    if(r.ok && data.ok){
+      // Save connection info (no password stored)
+      localStorage.setItem('sc_mt5', JSON.stringify({login,server,broker,accountId:data.accountId}));
+      if(status){status.textContent='✓ '+data.message;status.className='mt5-status ok';}
+      setTimeout(()=>{ loadJournal(); },1500);
+    } else {
+      const msg = data.detail||data.message||'Connection failed';
+      if(status){status.textContent='✗ '+msg;status.className='mt5-status err';}
+      if(btn){btn.disabled=false;btn.textContent='🔗 Connect Account';}
+    }
+  }catch(e){
+    if(status){status.textContent='✗ Could not reach dashboard server. Check your connection.';status.className='mt5-status err';}
+    if(btn){btn.disabled=false;btn.textContent='🔗 Connect Account';}
+  }
+}
+
+async function syncMT5(){
+  const info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
+  if(!info?.accountId) return;
+  try{
+    const r = await fetch('/api/mt5/sync/'+info.accountId);
+    if(r.ok){ await loadJournal(); }
+  }catch(e){}
+}
+
+function disconnectMT5(){
+  if(!confirm('Disconnect MT5 account? Your existing trades will remain in the journal.')) return;
+  localStorage.removeItem('sc_mt5');
+  renderJournal();
+}
+
+// ── Trading Journal ────────────────────────────────────────────────────────
+let jTrades = [];
+let jEditId = null;
+
+async function loadJournal(){
+  try{
+    const r = await fetch('/api/journal');
+    if(r.ok){ jTrades = await r.json(); }
+  }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
+  renderJournal();
+}
+
+function renderJournal(){
+  const con = document.getElementById('s-journal');
+  if(!con) return;
+
+  // Stats
+  const closed = jTrades.filter(t=>t.status==='CLOSED');
+  const wins   = closed.filter(t=>(t.pnl||0)>0);
+  const totalPnl = closed.reduce((s,t)=>s+(t.pnl||0),0);
+  const winRate  = closed.length ? Math.round((wins.length/closed.length)*100) : 0;
+  const avgWin   = wins.length ? wins.reduce((s,t)=>s+(t.pnl||0),0)/wins.length : 0;
+  const losses   = closed.filter(t=>(t.pnl||0)<0);
+  const avgLoss  = losses.length ? Math.abs(losses.reduce((s,t)=>s+(t.pnl||0),0)/losses.length) : 0;
+  const rr       = avgLoss>0 ? (avgWin/avgLoss).toFixed(2) : '—';
+
+  const pnlCls = totalPnl>=0?'up':'dn';
+
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
+  const mt5Block = mt5Info ? `
+    <div class="mt5-connected">
+      <div class="mt5-conn-dot"></div>
+      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync now</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
+    </div>` : `
+    <div class="mt5-connect" id="mt5-connect-box">
+      <div class="mt5-connect-title">Connect MT5 Account</div>
+      <div class="mt5-connect-sub">Enter your MetaTrader 5 credentials to automatically sync your trades to the journal. Your credentials are sent securely and never stored.</div>
+      <div class="mt5-form">
+        <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number" /></div>
+        <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password" /></div>
+        <div><label class="jlabel">Broker Server</label><input class="jinput" id="mt5-server" placeholder="e.g. ICMarkets-Live" /></div>
+        <div><label class="jlabel">Broker Name</label><input class="jinput" id="mt5-broker" placeholder="e.g. IC Markets" /></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
+        <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
+      </div>
+      <div class="mt5-status" id="mt5-status"></div>
+    </div>`;
+
+  con.innerHTML = `
+  <div class="jnl">
+    ${mt5Block}
+    <div class="jnl-header">
+      <div class="jnl-title">Trading Journal</div>
+      <div class="jnl-actions">
+        <button class="jbtn jbtn-primary" onclick="openJModal()">+ Manual Trade</button>
+      </div>
+    </div>
+    <div class="jstats">
+      <div class="jstat"><div class="jstat-n">${jTrades.length}</div><div class="jstat-l">Total Trades</div></div>
+      <div class="jstat"><div class="jstat-n ${pnlCls}">${totalPnl>=0?'+':''}$${Math.abs(totalPnl).toFixed(0)}</div><div class="jstat-l">Total P&amp;L</div></div>
+      <div class="jstat"><div class="jstat-n ${winRate>=50?'up':'dn'}">${winRate}%</div><div class="jstat-l">Win Rate</div></div>
+      <div class="jstat"><div class="jstat-n">${rr}</div><div class="jstat-l">Avg R:R</div></div>
+      <div class="jstat"><div class="jstat-n up">$${avgWin.toFixed(0)}</div><div class="jstat-l">Avg Win</div></div>
+      <div class="jstat"><div class="jstat-n dn">$${avgLoss.toFixed(0)}</div><div class="jstat-l">Avg Loss</div></div>
+    </div>
+    <div class="jtable-wrap">
+      ${jTrades.length===0 ? `
+        <div class="jempty"><span>NO TRADES YET</span>Click "New Trade" to log your first trade</div>
+      ` : `
+      <table class="jtable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Asset</th><th>Direction</th>
+            <th>Entry</th><th>Exit</th><th>Size</th>
+            <th>P&amp;L</th><th>Status</th><th>Strategy</th>
+            <th>Notes</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${jTrades.map(t=>`
+            <tr>
+              <td class="jmono">${t.date||'—'}</td>
+              <td><strong>${t.asset||'—'}</strong></td>
+              <td><span class="${t.direction==='LONG'?'jdir-long':'jdir-short'}">${t.direction||'—'}</span></td>
+              <td class="jmono">${t.entry?'$'+parseFloat(t.entry).toLocaleString():'—'}</td>
+              <td class="jmono">${t.exit?'$'+parseFloat(t.exit).toLocaleString():'—'}</td>
+              <td class="jmono">${t.size?'$'+parseFloat(t.size).toLocaleString():'—'}</td>
+              <td class="${t.pnl===null||t.pnl===undefined?'':t.pnl>=0?'jpnl-pos':'jpnl-neg'}">${t.pnl!==null&&t.pnl!==undefined?(t.pnl>=0?'+':'')+' $'+Math.abs(t.pnl).toFixed(2):'—'}</td>
+              <td><span class="${t.status==='OPEN'?'jstatus-open':'jstatus-closed'}">${t.status||'—'}</span></td>
+              <td style="font-size:11px;color:var(--t3)">${t.strategy||'—'}</td>
+              <td class="jnotes" title="${t.notes||''}">${t.notes||'—'}</td>
+              <td style="white-space:nowrap;display:flex;gap:5px">
+                <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
+                <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      `}
+    </div>
+  </div>`;
+}
+
+function openJModal(editId=null){
+  jEditId = editId;
+  const t = editId ? jTrades.find(x=>x.id===editId) : null;
+  document.getElementById('jmodal-title').textContent = editId ? 'Edit Trade' : 'New Trade';
+  document.getElementById('j-asset').value     = t?.asset||'';
+  document.getElementById('j-date').value      = t?.date||new Date().toISOString().slice(0,10);
+  document.getElementById('j-direction').value = t?.direction||'LONG';
+  document.getElementById('j-status').value    = t?.status||'OPEN';
+  document.getElementById('j-entry').value     = t?.entry||'';
+  document.getElementById('j-exit').value      = t?.exit||'';
+  document.getElementById('j-size').value      = t?.size||'';
+  document.getElementById('j-pnl').value       = t?.pnl!==null&&t?.pnl!==undefined?t.pnl:'';
+  document.getElementById('j-strategy').value  = t?.strategy||'';
+  document.getElementById('j-notes').value     = t?.notes||'';
+  // Auto-calc PnL when exit changes
+  document.getElementById('j-exit').oninput = calcPnl;
+  document.getElementById('j-entry').oninput = calcPnl;
+  document.getElementById('j-size').oninput = calcPnl;
+  document.getElementById('j-direction').onchange = calcPnl;
+  document.getElementById('jmodal-bg').classList.add('open');
+}
+
+function calcPnl(){
+  const entry = parseFloat(document.getElementById('j-entry').value)||0;
+  const exit  = parseFloat(document.getElementById('j-exit').value)||0;
+  const size  = parseFloat(document.getElementById('j-size').value)||0;
+  const dir   = document.getElementById('j-direction').value;
+  if(entry&&exit&&size){
+    const pct = dir==='LONG' ? (exit-entry)/entry : (entry-exit)/entry;
+    document.getElementById('j-pnl').value = (pct*size).toFixed(2);
+  }
+}
+
+function closeJModal(){
+  document.getElementById('jmodal-bg').classList.remove('open');
+  jEditId=null;
+}
+
+async function saveJTrade(){
+  const trade = {
+    id:        jEditId || Date.now().toString(36)+Math.random().toString(36).slice(2),
+    date:      document.getElementById('j-date').value,
+    asset:     document.getElementById('j-asset').value.toUpperCase().trim(),
+    direction: document.getElementById('j-direction').value,
+    status:    document.getElementById('j-status').value,
+    entry:     parseFloat(document.getElementById('j-entry').value)||null,
+    exit:      parseFloat(document.getElementById('j-exit').value)||null,
+    size:      parseFloat(document.getElementById('j-size').value)||null,
+    pnl:       parseFloat(document.getElementById('j-pnl').value)||null,
+    strategy:  document.getElementById('j-strategy').value.trim(),
+    notes:     document.getElementById('j-notes').value.trim(),
+    createdAt: new Date().toISOString(),
+  };
+  if(!trade.asset){ alert('Please enter an asset'); return; }
+  try{
+    if(jEditId){
+      await fetch('/api/journal/'+jEditId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
+      jTrades = jTrades.map(t=>t.id===jEditId?trade:t);
+    } else {
+      await fetch('/api/journal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
+      jTrades.unshift(trade);
+    }
+  }catch(e){
+    // fallback to localStorage
+    if(jEditId) jTrades = jTrades.map(t=>t.id===jEditId?trade:t);
+    else jTrades.unshift(trade);
+    localStorage.setItem('sc_journal', JSON.stringify(jTrades));
+  }
+  closeJModal();
+  renderJournal();
+}
+
+async function deleteJTrade(id){
+  if(!confirm('Delete this trade?')) return;
+  try{ await fetch('/api/journal/'+id,{method:'DELETE'}); }catch(e){}
+  jTrades = jTrades.filter(t=>t.id!==id);
+  localStorage.setItem('sc_journal', JSON.stringify(jTrades));
+  renderJournal();
+}
+
+function editJTrade(id){ openJModal(id); }
+
+// Load journal on init
+loadJournal();
 
 loadPrices().then(()=>initLivePrices());
 setInterval(()=>{ loadPrices(); },5*60*1000);
