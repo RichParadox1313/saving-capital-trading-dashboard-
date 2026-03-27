@@ -43,17 +43,18 @@ h1 i{color:var(--g);font-style:normal;display:block}
 @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
 /* PHASE BAR */
-.pbar{background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;animation:fu .6s .24s ease both;margin-bottom:24px}
-.pi{display:flex;flex-direction:column;gap:3px}
-.pl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace}
-.pv{font-size:13px;font-weight:500}
+.pbar{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:22px 26px;display:grid;grid-template-columns:repeat(3,1fr) 2fr;animation:fu .6s .24s ease both;margin-bottom:20px;overflow:hidden;gap:0}
+.pi{display:flex;flex-direction:column;gap:6px;padding:0 24px 0 0;border-right:1px solid var(--br);margin-right:24px}
+.pl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;opacity:.65}
+.pv{font-size:1.9rem;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;line-height:1;margin-top:4px}
 .bull{color:var(--g)}.bear{color:var(--r)}.neut{color:var(--gold)}
-.pdiv{width:1px;height:30px;background:var(--br);flex-shrink:0}
-.pnote{font-size:12px;color:var(--t3);flex:1;min-width:160px;line-height:1.5;font-weight:300}
-.pdate{font-family:'DM Mono',monospace;font-size:10px;color:var(--t4);margin-left:auto;white-space:nowrap}
+.pdiv{display:none}
+.pnote{display:flex;flex-direction:column;justify-content:center;gap:5px;padding-left:4px}
+.pnote-main{font-size:12px;color:var(--t2);line-height:1.6;font-weight:300}
+.pdate{font-family:'DM Mono',monospace;font-size:9px;color:var(--t4)}
 
 /* STATS */
-.sstrip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:6px;overflow:hidden;animation:fu .6s .32s ease both;margin-bottom:32px}
+.sstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:6px;overflow:hidden;animation:fu .6s .32s ease both;margin-bottom:32px}
 .sbox{background:var(--s1);padding:14px 12px;text-align:center}
 .sn{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;color:var(--g);letter-spacing:1px;line-height:1}
 .sl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-top:4px;font-family:'DM Mono',monospace}
@@ -189,7 +190,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   nav{padding:0 16px}.nmid{display:none}
   .hero{padding:76px 16px 0}
   h1{font-size:clamp(3.2rem,16vw,5rem)}
-  .pbar{gap:10px;padding:12px 16px}.pdiv{display:none}
+  .pbar{grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px}.pi{border-right:none;border-bottom:1px solid var(--br);padding-bottom:10px}.pnote{padding-left:0;grid-column:1/-1}
   .sstrip{grid-template-columns:repeat(3,1fr)}
   .main{padding:40px 16px 60px}
   .agrid{grid-template-columns:1fr 1fr;gap:8px}
@@ -228,36 +229,37 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   <h1>Market<i>Intelligence</i></h1>
   <p class="hsub">Wall Street-calibre quantitative analysis across Gold, Crypto, Forex and Commodities. Multi-factor institutional models running 24/7 on live prices — powered by the same frameworks used by the world's top hedge funds and quant trading desks.</p>
   <div class="pbar" id="pbar">
-    <div class="pi"><div class="pl">Global Phase</div><div class="pv" id="gphase">Detecting...</div></div>
-    <div class="pdiv"></div>
+    <div class="pi"><div class="pl">Market Phase</div><div class="pv" id="gphase">Loading</div></div>
     <div class="pi"><div class="pl">Regime</div><div class="pv" id="gregime">—</div></div>
-    <div class="pdiv"></div>
     <div class="pi"><div class="pl">Risk Appetite</div><div class="pv" id="grisk">—</div></div>
-    <div class="pdiv"></div>
-    <div class="pnote" id="pnote">Loading market conditions...</div>
-    <div class="pdate" id="pdate">—</div>
+    <div class="pnote">
+      <div class="pnote-main" id="pnote">Detecting market conditions...</div>
+      <div class="pdate" id="pdate">—</div>
+    </div>
   </div>
   <div class="sstrip">
-    <div class="sbox"><div class="sn">85+</div><div class="sl">Tracked</div></div>
+    <div class="sbox"><div class="sn">120+</div><div class="sl">Tracked</div></div>
     <div class="sbox"><div class="sn" id="sbull">—</div><div class="sl">Bullish</div></div>
     <div class="sbox"><div class="sn" id="sbear">—</div><div class="sl">Bearish</div></div>
     <div class="sbox"><div class="sn" id="sneut">—</div><div class="sl">Neutral</div></div>
-    <div class="sbox"><div class="sn">Daily</div><div class="sl">Refresh</div></div>
     <div class="sbox"><div class="sn">WS</div><div class="sl">Quant Grade</div></div>
   </div>
-  <div class="shint"><div class="sarr"></div>Explore Assets</div>
 </section>
 
 <div class="main z">
   <div class="tabs">
-    <button class="tab on" onclick="swTab('crypto',this)">Crypto Top 25</button>
+    <button class="tab on" onclick="swTab('crypto',this)">Crypto Top 30</button>
     <button class="tab" onclick="swTab('forex',this)">Forex</button>
     <button class="tab" onclick="swTab('oil',this)">Gold & Commodities</button>
+    <button class="tab" onclick="swTab('indexes',this)">Global Indexes</button>
+    <button class="tab" onclick="swTab('stocks',this)">Top 30 Stocks</button>
   </div>
   <div id="s-gold" class="sec"></div>
   <div id="s-crypto" class="sec on"></div>
   <div id="s-forex" class="sec"></div>
   <div id="s-oil" class="sec"></div>
+  <div id="s-indexes" class="sec"></div>
+  <div id="s-stocks" class="sec"></div>
 </div>
 
 <footer>All analysis is AI-generated for educational and informational purposes only. Saving Capital does not provide financial advice. Past performance is not indicative of future results. Always conduct independent research before making trading decisions.</footer>
@@ -307,6 +309,51 @@ function tick(){
 tick();setInterval(tick,1000);
 
 const TABS={
+  indexes:[
+    {id:'SPX',   name:'S&P 500',    sym:'SPX',    desc:'US Large Cap'},
+    {id:'DJI',   name:'Dow Jones',  sym:'DJI',    desc:'US Blue Chip'},
+    {id:'NASDAQ',name:'NASDAQ',     sym:'NASDAQ', desc:'US Tech Index'},
+    {id:'RUT',   name:'Russell 2000',sym:'RUT',   desc:'US Small Cap'},
+    {id:'VIX',   name:'VIX',        sym:'VIX',    desc:'Fear Index'},
+    {id:'FTSE',  name:'FTSE 100',   sym:'FTSE',   desc:'UK Index'},
+    {id:'DAX',   name:'DAX',        sym:'DAX',    desc:'German Index'},
+    {id:'CAC',   name:'CAC 40',     sym:'CAC',    desc:'French Index'},
+    {id:'NIKKEI',name:'Nikkei 225', sym:'NIKKEI', desc:'Japan Index'},
+    {id:'HSI',   name:'Hang Seng',  sym:'HSI',    desc:'Hong Kong'},
+    {id:'SSE',   name:'Shanghai',   sym:'SSE',    desc:'China Index'},
+  ],
+  stocks:[
+    {id:'AAPL',name:'Apple',       sym:'AAPL', desc:'Consumer Tech'},
+    {id:'NVDA',name:'NVIDIA',      sym:'NVDA', desc:'AI & Chips'},
+    {id:'MSFT',name:'Microsoft',   sym:'MSFT', desc:'Cloud & Software'},
+    {id:'GOOGL',name:'Alphabet',   sym:'GOOGL',desc:'Search & AI'},
+    {id:'AMZN',name:'Amazon',      sym:'AMZN', desc:'E-Commerce & Cloud'},
+    {id:'META',name:'Meta',        sym:'META', desc:'Social Media & AI'},
+    {id:'TSLA',name:'Tesla',       sym:'TSLA', desc:'EV & Energy'},
+    {id:'BRK', name:'Berkshire',   sym:'BRK',  desc:'Conglomerate'},
+    {id:'TSM', name:'TSMC',        sym:'TSM',  desc:'Semiconductors'},
+    {id:'LLY', name:'Eli Lilly',   sym:'LLY',  desc:'Pharma'},
+    {id:'JPM', name:'JPMorgan',    sym:'JPM',  desc:'Banking'},
+    {id:'V',   name:'Visa',        sym:'V',    desc:'Payments'},
+    {id:'XOM', name:'ExxonMobil',  sym:'XOM',  desc:'Oil & Gas'},
+    {id:'UNH', name:'UnitedHealth',sym:'UNH',  desc:'Healthcare'},
+    {id:'MA',  name:'Mastercard',  sym:'MA',   desc:'Payments'},
+    {id:'JNJ', name:'J&J',         sym:'JNJ',  desc:'Healthcare'},
+    {id:'AVGO',name:'Broadcom',    sym:'AVGO', desc:'Semiconductors'},
+    {id:'WMT', name:'Walmart',     sym:'WMT',  desc:'Retail'},
+    {id:'PG',  name:'P&G',         sym:'PG',   desc:'Consumer Goods'},
+    {id:'HD',  name:'Home Depot',  sym:'HD',   desc:'Home Improvement'},
+    {id:'ORCL',name:'Oracle',      sym:'ORCL', desc:'Enterprise Software'},
+    {id:'COST',name:'Costco',      sym:'COST', desc:'Wholesale Retail'},
+    {id:'NFLX',name:'Netflix',     sym:'NFLX', desc:'Streaming'},
+    {id:'AMD', name:'AMD',         sym:'AMD',  desc:'Semiconductors'},
+    {id:'ADBE',name:'Adobe',       sym:'ADBE', desc:'Creative Software'},
+    {id:'CRM', name:'Salesforce',  sym:'CRM',  desc:'CRM Software'},
+    {id:'BAC', name:'Bank of Am',  sym:'BAC',  desc:'Banking'},
+    {id:'PEP', name:'PepsiCo',     sym:'PEP',  desc:'Beverages'},
+    {id:'KO',  name:'Coca-Cola',   sym:'KO',   desc:'Beverages'},
+    {id:'BABA',name:'Alibaba',     sym:'BABA', desc:'China E-Commerce'},
+  ],
   forex:[
     // Majors
     {id:'DXY',    name:'DXY Index', sym:'DXY',    desc:'US Dollar Index'},
@@ -356,7 +403,12 @@ const TABS={
     {id:'USDSAR', name:'USD/SAR',   sym:'USDSAR', desc:'Dollar vs Saudi Riyal'},
   ],
   oil:[{id:'XAUUSD',name:'Gold',sym:'XAUUSD',desc:'Safe haven · Inflation hedge'},{id:'WTI',name:'WTI Crude',sym:'WTI',desc:'US benchmark crude'},{id:'BRENT',name:'Brent Crude',sym:'BRENT',desc:'Global benchmark'},{id:'XAGUSD',name:'Silver',sym:'XAGUSD',desc:'Precious metal'},{id:'COPPER',name:'Copper',sym:'COPPER',desc:'Growth proxy'},{id:'NATGAS',name:'Natural Gas',sym:'NATGAS',desc:'Energy'},{id:'XPTUSD',name:'Platinum',sym:'XPTUSD',desc:'Precious metals'}],
-  crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'polygon-ecosystem-token',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'}]
+  crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'polygon-ecosystem-token',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'},
+    {id:'sui',name:'Sui',sym:'SUI'},
+    {id:'pepe',name:'Pepe',sym:'PEPE'},
+    {id:'fetch-ai',name:'Fetch.ai',sym:'FET'},
+    {id:'sei-network',name:'Sei',sym:'SEI'},
+    {id:'bittensor',name:'Bittensor',sym:'TAO'}]
 };
 
 let prices={},analyses={},phaseData={},curTab='crypto',selId=null;
