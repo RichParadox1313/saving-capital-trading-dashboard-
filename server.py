@@ -404,23 +404,64 @@ async def load_news() -> list:
 
 @app.get("/api/crypto/live")
 async def api_crypto_live():
-    """Fast endpoint — only crypto prices. Called every 3s from frontend."""
-    cg = await fetch_coingecko()
+    """Fast endpoint for real-time crypto. Uses /coins/markets for reliable 7d data."""
+    ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
+    headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
     result = {}
-    for a in CRYPTO_ASSETS:
-        d = cg.get(a["id"], {})
-        if d.get("usd"):
-            result[a["id"]] = {
-                "price":    round(d["usd"], 8),
-                "change":   round(d.get("usd_24h_change", 0) or 0, 3),
-                "change5d": round(d.get("usd_7d_change",  0) or 0, 3),
-                "mcap":     d.get("usd_market_cap"),
-            }
-    # Update the main price cache with fresh crypto data
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://api.coingecko.com/api/v3/coins/markets",
+                params={
+                    "vs_currency":                "usd",
+                    "ids":                        ids,
+                    "order":                      "market_cap_desc",
+                    "per_page":                   "250",
+                    "page":                       "1",
+                    "sparkline":                  "false",
+                    "price_change_percentage":    "24h,7d",
+                },
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                if r.status == 200:
+                    data = await r.json()
+                    for coin in data:
+                        cid = coin.get("id")
+                        price = coin.get("current_price")
+                        if not cid or not price:
+                            continue
+                        chg24  = coin.get("price_change_percentage_24h") or 0
+                        chg7d  = coin.get("price_change_percentage_7d_in_currency") or                                  coin.get("price_change_percentage_7d") or 0
+                        result[cid] = {
+                            "price":    round(float(price), 8),
+                            "change":   round(float(chg24), 3),
+                            "change5d": round(float(chg7d), 3),
+                            "mcap":     coin.get("market_cap"),
+                        }
+                else:
+                    print(f"  /coins/markets HTTP {r.status}")
+    except Exception as e:
+        print(f"  /coins/markets error: {e}")
+        # Fallback to simple/price
+        cg = await fetch_coingecko()
+        for a in CRYPTO_ASSETS:
+            d = cg.get(a["id"], {})
+            if d.get("usd"):
+                result[a["id"]] = {
+                    "price":    round(d["usd"], 8),
+                    "change":   round(d.get("usd_24h_change", 0) or 0, 3),
+                    "change5d": round(d.get("usd_7d_change",  0) or 0, 3),
+                    "mcap":     d.get("usd_market_cap"),
+                }
+
+    # Sync into main cache
     if result and price_cache["data"]:
-        for asset_id, data in result.items():
-            if asset_id in price_cache["data"]:
-                price_cache["data"][asset_id].update(data)
+        for cid, data in result.items():
+            if cid in price_cache["data"]:
+                price_cache["data"][cid].update(data)
+
+    print(f"  /crypto/live: {len(result)} assets returned")
     return JSONResponse(result)
 
 @app.get("/api/prices")
