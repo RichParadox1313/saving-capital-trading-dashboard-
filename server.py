@@ -338,58 +338,130 @@ async def load_all_prices() -> dict:
     return result
 
 
-# ─── Twelve Data Real-Time ────────────────────────────────────────────────────
 
-TWELVE_ID_MAP = {
-    "EURUSD":"EURUSD","GBPUSD":"GBPUSD","USDJPY":"USDJPY","AUDUSD":"AUDUSD",
-    "USDCAD":"USDCAD","USDCHF":"USDCHF","NZDUSD":"NZDUSD","EURGBP":"EURGBP",
-    "EURJPY":"EURJPY","EURAUD":"EURAUD","EURCAD":"EURCAD","EURCHF":"EURCHF",
-    "EURNZD":"EURNZD","GBPJPY":"GBPJPY","GBPAUD":"GBPAUD","GBPCAD":"GBPCAD",
-    "GBPCHF":"GBPCHF","GBPNZD":"GBPNZD","AUDJPY":"AUDJPY","CADJPY":"CADJPY",
-    "CHFJPY":"CHFJPY","NZDJPY":"NZDJPY","AUDCAD":"AUDCAD","AUDCHF":"AUDCHF",
-    "AUDNZD":"AUDNZD","NZDCAD":"NZDCAD","NZDCHF":"NZDCHF","CADCHF":"CADCHF",
-    "USDTRY":"USDTRY","USDZAR":"USDZAR","USDMXN":"USDMXN","USDSEK":"USDSEK",
-    "USDNOK":"USDNOK","USDDKK":"USDDKK","USDSGD":"USDSGD","USDHKD":"USDHKD",
-    "USDINR":"USDINR","USDAED":"USDAED","USDSAR":"USDSAR",
-    "XAU/USD":"XAUUSD","XAG/USD":"XAGUSD","WTI/USD":"WTI",
-    "BRENT/USD":"BRENT","XCU/USD":"COPPER","NATGAS/USD":"NATGAS","XPT/USD":"XPTUSD",
+# ─── Real-Time Forex (open.er-api.com — free, no key) ────────────────────────
+
+FOREX_PAIRS = {
+    # id -> (base, quote, multiplier)
+    "EURUSD": ("EUR","USD",1), "GBPUSD": ("GBP","USD",1),
+    "USDJPY": ("USD","JPY",1), "AUDUSD": ("AUD","USD",1),
+    "USDCAD": ("USD","CAD",1), "USDCHF": ("USD","CHF",1),
+    "NZDUSD": ("NZD","USD",1), "EURGBP": ("EUR","GBP",1),
+    "EURJPY": ("EUR","JPY",1), "EURAUD": ("EUR","AUD",1),
+    "EURCAD": ("EUR","CAD",1), "EURCHF": ("EUR","CHF",1),
+    "EURNZD": ("EUR","NZD",1), "GBPJPY": ("GBP","JPY",1),
+    "GBPAUD": ("GBP","AUD",1), "GBPCAD": ("GBP","CAD",1),
+    "GBPCHF": ("GBP","CHF",1), "GBPNZD": ("GBP","NZD",1),
+    "AUDJPY": ("AUD","JPY",1), "CADJPY": ("CAD","JPY",1),
+    "CHFJPY": ("CHF","JPY",1), "NZDJPY": ("NZD","JPY",1),
+    "AUDCAD": ("AUD","CAD",1), "AUDCHF": ("AUD","CHF",1),
+    "AUDNZD": ("AUD","NZD",1), "NZDCAD": ("NZD","CAD",1),
+    "NZDCHF": ("NZD","CHF",1), "CADCHF": ("CAD","CHF",1),
+    "USDTRY": ("USD","TRY",1), "USDZAR": ("USD","ZAR",1),
+    "USDMXN": ("USD","MXN",1), "USDSEK": ("USD","SEK",1),
+    "USDNOK": ("USD","NOK",1), "USDDKK": ("USD","DKK",1),
+    "USDSGD": ("USD","SGD",1), "USDHKD": ("USD","HKD",1),
+    "USDINR": ("USD","INR",1), "USDAED": ("USD","AED",1),
+    "USDSAR": ("USD","SAR",1),
 }
 
-async def fetch_twelve_live() -> dict:
-    key = os.environ.get("TWELVE_DATA_KEY","")
-    if not key:
-        return {}
-    symbols = ",".join(TWELVE_ID_MAP.keys())
+_forex_rates_cache = {"data": {}, "ts": 0.0}
+
+async def fetch_forex_rates() -> dict:
+    """Fetch all forex rates from open.er-api.com — free, no key, updates every minute."""
+    now = time.time()
+    if now - _forex_rates_cache["ts"] < 60 and _forex_rates_cache["data"]:
+        return _forex_rates_cache["data"]
+    bases = set(b for b,q,m in FOREX_PAIRS.values())
+    all_rates = {}
+    try:
+        async with aiohttp.ClientSession() as s:
+            for base in bases:
+                async with s.get(
+                    f"https://open.er-api.com/v6/latest/{base}",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        if d.get("result") == "success":
+                            for quote, rate in d.get("rates", {}).items():
+                                all_rates[f"{base}{quote}"] = rate
+                await asyncio.sleep(0.2)
+        _forex_rates_cache.update({"data": all_rates, "ts": time.time()})
+        print(f"  Forex rates: {len(all_rates)} pairs loaded")
+    except Exception as e:
+        print(f"  Forex rates error: {e}")
+    return all_rates
+
+async def get_forex_live() -> dict:
+    """Return real-time forex prices for all pairs."""
+    rates = await fetch_forex_rates()
     result = {}
+    for asset_id, (base, quote, _) in FOREX_PAIRS.items():
+        key = f"{base}{quote}"
+        rate = rates.get(key)
+        if not rate:
+            continue
+        cached = price_cache["data"].get(asset_id, {})
+        old    = cached.get("price")
+        chg    = ((rate - old) / old * 100) if old and old > 0 else cached.get("change", 0)
+        result[asset_id] = {
+            "price":  round(rate, 6),
+            "change": round(chg, 4),
+        }
+        if asset_id in price_cache["data"]:
+            price_cache["data"][asset_id]["price"]  = round(rate, 6)
+            price_cache["data"][asset_id]["change"] = round(chg, 4)
+    return result
+
+# ─── Real-Time Commodities (Yahoo Finance v7/spark) ───────────────────────────
+
+COMMODITY_YAHOO = {
+    "XAUUSD": "GC=F", "XAGUSD": "SI=F", "WTI": "CL=F",
+    "BRENT": "BZ=F",  "COPPER": "HG=F", "NATGAS": "NG=F", "XPTUSD": "PL=F",
+    "DXY": "DX-Y.NYB",
+}
+
+async def fetch_commodity_live() -> dict:
+    """Fetch commodity spot prices using Yahoo Finance spark endpoint."""
+    symbols = ",".join(COMMODITY_YAHOO.values())
+    result  = {}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+        "Accept": "application/json",
+        "Referer": "https://finance.yahoo.com",
+    }
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(
-                "https://api.twelvedata.com/price",
-                params={"symbol": symbols, "apikey": key},
+                "https://query1.finance.yahoo.com/v7/finance/spark",
+                params={"symbols": symbols, "range": "1d", "interval": "5m"},
+                headers=headers,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 if r.status != 200:
+                    print(f"  Yahoo spark HTTP {r.status}")
                     return {}
-                data = await r.json()
-        for sym, asset_id in TWELVE_ID_MAP.items():
-            raw = data.get(sym)
-            price = None
-            if isinstance(raw, dict):
-                price = float(raw.get("price") or 0)
-            elif isinstance(raw, str):
-                try: price = float(raw)
-                except: pass
-            if price and price > 0:
-                cached = price_cache["data"].get(asset_id, {})
-                prev   = cached.get("price") or price
-                chg    = ((price - prev) / prev * 100) if prev and prev != price else cached.get("change", 0)
-                result[asset_id] = {"price": round(price,6), "change": round(chg,3)}
-                if asset_id in price_cache["data"]:
-                    price_cache["data"][asset_id]["price"]  = round(price,6)
-                    price_cache["data"][asset_id]["change"] = round(chg,3)
-        print(f"  Twelve Data live: {len(result)} symbols")
+                data = await r.json(content_type=None)
+
+        spark = data.get("spark", {}).get("result") or []
+        for item in spark:
+            sym    = item.get("symbol","")
+            asset_id = next((k for k,v in COMMODITY_YAHOO.items() if v==sym), None)
+            if not asset_id: continue
+            closes = item.get("response",[{}])[0].get("indicators",{}).get("quote",[{}])[0].get("close",[])
+            closes = [c for c in closes if c]
+            if len(closes) < 2: continue
+            price = closes[-1]
+            open_ = closes[0]
+            chg   = ((price - open_) / open_ * 100) if open_ else 0
+            result[asset_id] = {"price": round(price,4), "change": round(chg,3)}
+            if asset_id in price_cache["data"]:
+                price_cache["data"][asset_id]["price"]  = round(price,4)
+                price_cache["data"][asset_id]["change"] = round(chg,3)
+        print(f"  Commodities: {len(result)}/{len(COMMODITY_YAHOO)} loaded")
     except Exception as e:
-        print(f"  Twelve Data error: {e}")
+        print(f"  Commodity live error: {e}")
     return result
 
 # ─── Phase Detection ──────────────────────────────────────────────────────────
@@ -490,19 +562,18 @@ async def load_news() -> list:
 
 @app.get("/api/forex/live")
 async def api_forex_live():
-    key = os.environ.get("TWELVE_DATA_KEY","")
-    if key:
-        data = await fetch_twelve_live()
-        if data:
-            return JSONResponse(data)
-    # Fallback: return cached data
-    result = {}
-    for k,v in price_cache["data"].items():
-        if v.get("tab") in ("forex","oil") and v.get("price"):
-            result[k] = {"price":v["price"],"change":v.get("change",0),"change5d":v.get("change5d",0)}
+    """Real-time forex + commodity prices — no API key required."""
+    forex = await get_forex_live()
+    comms = await fetch_commodity_live()
+    result = {**forex, **comms}
+    if not result:
+        # Absolute fallback — return whatever is cached
+        for k,v in price_cache["data"].items():
+            if v.get("tab") in ("forex","oil") and v.get("price"):
+                result[k] = {"price":v["price"],"change":v.get("change",0),"change5d":v.get("change5d",0)}
     return JSONResponse(result)
 
-@app.get("/api/crypto/live")
+@app.get("/api/crypto/live")@app.get("/api/crypto/live")
 async def api_crypto_live():
     """Fast endpoint for real-time crypto. Uses /coins/markets for reliable 7d data."""
     ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
