@@ -96,6 +96,7 @@ CRYPTO_ASSETS = [
 
 # Yahoo Finance symbols for forex + commodities
 YAHOO_ASSETS = [
+    # ── Commodities ───────────────────────────────────────────────────────────
     {"yahoo":"GC=F",      "id":"XAUUSD",  "name":"Gold",         "sym":"XAUUSD",  "tab":"oil",   "desc":"Safe haven · Inflation hedge"},
     {"yahoo":"SI=F",      "id":"XAGUSD",  "name":"Silver",       "sym":"XAGUSD",  "tab":"oil",   "desc":"Precious · Industrial"},
     {"yahoo":"CL=F",      "id":"WTI",     "name":"WTI Crude",    "sym":"WTI",     "tab":"oil",   "desc":"US benchmark crude"},
@@ -103,14 +104,53 @@ YAHOO_ASSETS = [
     {"yahoo":"HG=F",      "id":"COPPER",  "name":"Copper",       "sym":"COPPER",  "tab":"oil",   "desc":"Global growth proxy"},
     {"yahoo":"NG=F",      "id":"NATGAS",  "name":"Natural Gas",  "sym":"NATGAS",  "tab":"oil",   "desc":"Energy commodity"},
     {"yahoo":"PL=F",      "id":"XPTUSD",  "name":"Platinum",     "sym":"XPTUSD",  "tab":"oil",   "desc":"Precious metals"},
+    # ── Majors ────────────────────────────────────────────────────────────────
+    {"yahoo":"DX-Y.NYB",  "id":"DXY",     "name":"DXY Index",    "sym":"DXY",     "tab":"forex", "desc":"US Dollar Index"},
     {"yahoo":"EURUSD=X",  "id":"EURUSD",  "name":"EUR/USD",      "sym":"EURUSD",  "tab":"forex", "desc":"Euro vs Dollar"},
     {"yahoo":"GBPUSD=X",  "id":"GBPUSD",  "name":"GBP/USD",      "sym":"GBPUSD",  "tab":"forex", "desc":"Cable"},
     {"yahoo":"USDJPY=X",  "id":"USDJPY",  "name":"USD/JPY",      "sym":"USDJPY",  "tab":"forex", "desc":"Dollar vs Yen"},
-    {"yahoo":"DX-Y.NYB",  "id":"DXY",     "name":"DXY Index",    "sym":"DXY",     "tab":"forex", "desc":"Dollar strength"},
     {"yahoo":"AUDUSD=X",  "id":"AUDUSD",  "name":"AUD/USD",      "sym":"AUDUSD",  "tab":"forex", "desc":"Aussie Dollar"},
     {"yahoo":"USDCAD=X",  "id":"USDCAD",  "name":"USD/CAD",      "sym":"USDCAD",  "tab":"forex", "desc":"Loonie"},
     {"yahoo":"USDCHF=X",  "id":"USDCHF",  "name":"USD/CHF",      "sym":"USDCHF",  "tab":"forex", "desc":"Swissie"},
     {"yahoo":"NZDUSD=X",  "id":"NZDUSD",  "name":"NZD/USD",      "sym":"NZDUSD",  "tab":"forex", "desc":"Kiwi Dollar"},
+    # ── Minors (EUR crosses) ──────────────────────────────────────────────────
+    {"yahoo":"EURGBP=X",  "id":"EURGBP",  "name":"EUR/GBP",      "sym":"EURGBP",  "tab":"forex", "desc":"Euro vs Pound"},
+    {"yahoo":"EURJPY=X",  "id":"EURJPY",  "name":"EUR/JPY",      "sym":"EURJPY",  "tab":"forex", "desc":"Euro vs Yen"},
+    {"yahoo":"EURAUD=X",  "id":"EURAUD",  "name":"EUR/AUD",      "sym":"EURAUD",  "tab":"forex", "desc":"Euro vs Aussie"},
+    {"yahoo":"EURCAD=X",  "id":"EURCAD",  "name":"EUR/CAD",      "sym":"EURCAD",  "tab":"forex", "desc":"Euro vs Loonie"},
+    {"yahoo":"EURCHF=X",  "id":"EURCHF",  "name":"EUR/CHF",      "sym":"EURCHF",  "tab":"forex", "desc":"Euro vs Swissie"},
+    {"yahoo":"EURNZD=X",  "id":"EURNZD",  "name":"EUR/NZD",      "sym":"EURNZD",  "tab":"forex", "desc":"Euro vs Kiwi"},
+    # ── Minors (GBP crosses) ──────────────────────────────────────────────────
+    {"yahoo":"GBPJPY=X",  "id":"GBPJPY",  "name":"GBP/JPY",      "sym":"GBPJPY",  "tab":"forex", "desc":"Pound vs Yen"},
+    {"yahoo":"GBPAUD=X",  "id":"GBPAUD",  "name":"GBP/AUD",      "sym":"GBPAUD",  "tab":"forex", "desc":"Pound vs Aussie"},
+    {"yahoo":"GBPCAD=X",  "id":"GBPCAD",  "name":"GBP/CAD",      "sym":"GBPCAD",  "tab":"forex", "desc":"Pound vs Loonie"},
+    {"yahoo":"GBPCHF=X",  "id":"GBPCHF",  "name":"GBP/CHF",      "sym":"GBPCHF",  "tab":"forex", "desc":"Pound vs Swissie"},
+    {"yahoo":"GBPNZD=X",  "id":"GBPNZD",  "name":"GBP/NZD",      "sym":"GBPNZD",  "tab":"forex", "desc":"Pound vs Kiwi"},
+    # ── Minors (JPY crosses) ──────────────────────────────────────────────────
+    {"yahoo":"AUDJPY=X",  "id":"AUDJPY",  "name":"AUD/JPY",      "sym":"AUDJPY",  "tab":"forex", "desc":"Aussie vs Yen"},
+    {"yahoo":"CADJPY=X",  "id":"CADJPY",  "name":"CAD/JPY",      "sym":"CADJPY",  "tab":"forex", "desc":"Loonie vs Yen"},
+    {"yahoo":"CHFJPY=X",  "id":"CHFJPY",  "name":"CHF/JPY",      "sym":"CHFJPY",  "tab":"forex", "desc":"Swissie vs Yen"},
+    {"yahoo":"NZDJPY=X",  "id":"NZDJPY",  "name":"NZD/JPY",      "sym":"NZDJPY",  "tab":"forex", "desc":"Kiwi vs Yen"},
+    # ── Minors (AUD/NZD/CAD crosses) ─────────────────────────────────────────
+    {"yahoo":"AUDCAD=X",  "id":"AUDCAD",  "name":"AUD/CAD",      "sym":"AUDCAD",  "tab":"forex", "desc":"Aussie vs Loonie"},
+    {"yahoo":"AUDCHF=X",  "id":"AUDCHF",  "name":"AUD/CHF",      "sym":"AUDCHF",  "tab":"forex", "desc":"Aussie vs Swissie"},
+    {"yahoo":"AUDNZD=X",  "id":"AUDNZD",  "name":"AUD/NZD",      "sym":"AUDNZD",  "tab":"forex", "desc":"Aussie vs Kiwi"},
+    {"yahoo":"NZDCAD=X",  "id":"NZDCAD",  "name":"NZD/CAD",      "sym":"NZDCAD",  "tab":"forex", "desc":"Kiwi vs Loonie"},
+    {"yahoo":"NZDCHF=X",  "id":"NZDCHF",  "name":"NZD/CHF",      "sym":"NZDCHF",  "tab":"forex", "desc":"Kiwi vs Swissie"},
+    {"yahoo":"CADCHF=X",  "id":"CADCHF",  "name":"CAD/CHF",      "sym":"CADCHF",  "tab":"forex", "desc":"Loonie vs Swissie"},
+    # ── Exotics ───────────────────────────────────────────────────────────────
+    {"yahoo":"USDTRY=X",  "id":"USDTRY",  "name":"USD/TRY",      "sym":"USDTRY",  "tab":"forex", "desc":"Dollar vs Turkish Lira"},
+    {"yahoo":"USDZAR=X",  "id":"USDZAR",  "name":"USD/ZAR",      "sym":"USDZAR",  "tab":"forex", "desc":"Dollar vs Rand"},
+    {"yahoo":"USDMXN=X",  "id":"USDMXN",  "name":"USD/MXN",      "sym":"USDMXN",  "tab":"forex", "desc":"Dollar vs Peso"},
+    {"yahoo":"USDSEK=X",  "id":"USDSEK",  "name":"USD/SEK",      "sym":"USDSEK",  "tab":"forex", "desc":"Dollar vs Swedish Krona"},
+    {"yahoo":"USDNOK=X",  "id":"USDNOK",  "name":"USD/NOK",      "sym":"USDNOK",  "tab":"forex", "desc":"Dollar vs Norwegian Krone"},
+    {"yahoo":"USDDKK=X",  "id":"USDDKK",  "name":"USD/DKK",      "sym":"USDDKK",  "tab":"forex", "desc":"Dollar vs Danish Krone"},
+    {"yahoo":"USDSGD=X",  "id":"USDSGD",  "name":"USD/SGD",      "sym":"USDSGD",  "tab":"forex", "desc":"Dollar vs Singapore Dollar"},
+    {"yahoo":"USDHKD=X",  "id":"USDHKD",  "name":"USD/HKD",      "sym":"USDHKD",  "tab":"forex", "desc":"Dollar vs HK Dollar"},
+    {"yahoo":"USDCNH=X",  "id":"USDCNH",  "name":"USD/CNH",      "sym":"USDCNH",  "tab":"forex", "desc":"Dollar vs Offshore Yuan"},
+    {"yahoo":"USDINR=X",  "id":"USDINR",  "name":"USD/INR",      "sym":"USDINR",  "tab":"forex", "desc":"Dollar vs Indian Rupee"},
+    {"yahoo":"USDAED=X",  "id":"USDAED",  "name":"USD/AED",      "sym":"USDAED",  "tab":"forex", "desc":"Dollar vs UAE Dirham"},
+    {"yahoo":"USDSAR=X",  "id":"USDSAR",  "name":"USD/SAR",      "sym":"USDSAR",  "tab":"forex", "desc":"Dollar vs Saudi Riyal"},
 ]
 
 # ─── CoinGecko ────────────────────────────────────────────────────────────────
