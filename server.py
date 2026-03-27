@@ -573,7 +573,7 @@ async def api_forex_live():
                 result[k] = {"price":v["price"],"change":v.get("change",0),"change5d":v.get("change5d",0)}
     return JSONResponse(result)
 
-@app.get("/api/crypto/live")@app.get("/api/crypto/live")
+@app.get("/api/crypto/live")
 async def api_crypto_live():
     """Fast endpoint for real-time crypto. Uses /coins/markets for reliable 7d data."""
     ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
