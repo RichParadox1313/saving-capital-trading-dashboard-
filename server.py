@@ -155,62 +155,53 @@ YAHOO_ASSETS = [
 # ─── CoinGecko ────────────────────────────────────────────────────────────────
 
 async def fetch_coingecko() -> dict:
+    """Use /coins/markets — always returns 7d change reliably."""
     ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
     for attempt in range(3):
         try:
-            await asyncio.sleep(attempt * 2)  # backoff: 0s, 2s, 4s
+            await asyncio.sleep(attempt * 3)
             async with aiohttp.ClientSession() as s:
                 async with s.get(
-                    "https://api.coingecko.com/api/v3/simple/price",
-                    params={"ids": ids, "vs_currencies": "usd",
-                            "include_24hr_change": "true",
-                            "include_7d_change": "true",
-                            "include_market_cap": "true"},
+                    "https://api.coingecko.com/api/v3/coins/markets",
+                    params={
+                        "vs_currency": "usd",
+                        "ids": ids,
+                        "order": "market_cap_desc",
+                        "per_page": "250",
+                        "page": "1",
+                        "sparkline": "false",
+                        "price_change_percentage": "24h,7d",
+                    },
                     headers=headers,
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as r:
                     if r.status == 200:
                         data = await r.json()
-                        print(f"  CoinGecko OK: {len(data)} assets (attempt {attempt+1})")
-                        return data
+                        # Convert to dict keyed by id
+                        result = {}
+                        for coin in data:
+                            cid = coin.get("id")
+                            if not cid: continue
+                            result[cid] = {
+                                "usd":            coin.get("current_price"),
+                                "usd_24h_change": coin.get("price_change_percentage_24h") or 0,
+                                "usd_7d_change":  coin.get("price_change_percentage_7d_in_currency") or
+                                                  coin.get("price_change_percentage_7d") or 0,
+                                "usd_market_cap": coin.get("market_cap"),
+                            }
+                        print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
+                        return result
                     elif r.status == 429:
-                        print(f"  CoinGecko rate limited (attempt {attempt+1}), waiting...")
-                        await asyncio.sleep(10)
+                        print(f"  CoinGecko rate limited, waiting 15s...")
+                        await asyncio.sleep(15)
                     else:
                         print(f"  CoinGecko HTTP {r.status} (attempt {attempt+1})")
         except Exception as e:
-            print(f"  CoinGecko error attempt {attempt+1}: {e}")
+            print(f"  CoinGecko attempt {attempt+1}: {e}")
 
-    # Final fallback — try alternate CoinGecko endpoint
-    try:
-        async with aiohttp.ClientSession() as s:
-            # Fetch in smaller batches if full list fails
-            result = {}
-            batch_size = 10
-            for i in range(0, len(CRYPTO_ASSETS), batch_size):
-                batch = CRYPTO_ASSETS[i:i+batch_size]
-                batch_ids = ",".join(a["id"] for a in batch)
-                async with s.get(
-                    "https://api.coingecko.com/api/v3/simple/price",
-                    params={"ids": batch_ids, "vs_currencies": "usd",
-                            "include_24hr_change": "true",
-                            "include_7d_change": "true",
-                            "include_market_cap": "true"},
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        result.update(data)
-                await asyncio.sleep(1)
-            if result:
-                print(f"  CoinGecko batch fallback: {len(result)} assets")
-                return result
-    except Exception as e:
-        print(f"  CoinGecko batch fallback error: {e}")
-
+    print("  CoinGecko all attempts failed")
     return {}
 
 async def fetch_cg_sparkline(coin_id: str, session: aiohttp.ClientSession) -> list:
