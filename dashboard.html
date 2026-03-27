@@ -296,7 +296,7 @@ let prices={},analyses={},phaseData={},curTab='crypto',selId=null;
 const TODAY=new Date().toISOString().slice(0,10);
 
 function fp(p){if(p==null||p===0)return'—';if(p>10000)return'$'+p.toLocaleString('en',{maximumFractionDigits:0});if(p>100)return'$'+p.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(p>1)return'$'+p.toFixed(4);return'$'+p.toFixed(8)}
-function fc(c){if(c==null||c===undefined)return'···';return(c>=0?'+':'')+c.toFixed(2)+'%'}
+function fc(c){if(c===null||c===undefined||typeof c!=='number'||isNaN(c))return'···';return(c>=0?'+':'')+c.toFixed(2)+'%'}
 function cc(c){return c==null?'fl':c>0?'up':'dn'}
 function sent(c){
   if(c==null)return{l:'Neutral',bc:'bneut',dc:'ptneut'};
@@ -391,7 +391,7 @@ function renderTab(t){
 function card(a){
   const p=prices[a.id];const s=sent(p?.change);
   const tab=Object.keys(TABS).find(t=>TABS[t].find(x=>x.id===a.id));
-  return'<div class="acard'+(selId===a.id?' sel':'')+'" onclick="pick(\''+a.id+'\',\''+tab+'\')">'+
+  return'<div class="acard'+(selId===a.id?' sel':'')+'" data-asset-id="'+a.id+'" onclick="pick(\''+a.id+'\',\''+tab+'\')">'+
     '<div class="act"><div><div class="acn">'+a.name+'</div><div class="acs">'+a.sym+'</div></div>'+
     '<div class="acp"><div class="acpn '+cc(p?.change)+'">'+fp(p?.price)+'</div><div class="acpc '+cc(p?.change)+'">'+fc(p?.change)+'</div></div></div>'+
     '<div class="swrap"><canvas data-spark="'+a.id+'"></canvas></div>'+
@@ -423,7 +423,7 @@ function detPanel(id,tab){
     '<div class="mrow">'+
       '<div class="mb"><div class="ml">Price</div><div class="mv '+cc(p?.change)+'">'+fp(p?.price)+'</div></div>'+
       '<div class="mb"><div class="ml">24h Change</div><div class="mv '+cc(p?.change)+'">'+fc(p?.change)+'</div></div>'+
-      '<div class="mb"><div class="ml">7-Day</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d||null)+'</div></div>'+
+      '<div class="mb"><div class="ml">7-Day</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d)+'</div></div>'+
       '<div class="mb"><div class="ml">Sentiment</div><div class="mv">'+s.l+'</div></div>'+
       '<div class="mb"><div class="ml">Phase</div><div class="mv">'+ph+'</div></div>'+
       (p?.mcap?'<div class="mb"><div class="ml">Mkt Cap</div><div class="mv">$'+(p.mcap/1e9).toFixed(1)+'B</div></div>':'')+
@@ -516,28 +516,25 @@ async function pollCryptoLive(){
 
     let changed = false;
     for(const [id, data] of Object.entries(fresh)){
-      if(prices[id]){
+      if(!prices[id]) prices[id] = {};
+      if(typeof data.price === 'number' && data.price > 0){
         prices[id].price    = data.price;
-        prices[id].change   = data.change;
-        prices[id].change5d = data.change5d;
+        prices[id].change   = typeof data.change   === 'number' ? data.change   : prices[id].change;
+        prices[id].change5d = typeof data.change5d === 'number' ? data.change5d : prices[id].change5d;
         if(data.mcap) prices[id].mcap = data.mcap;
         changed = true;
       }
     }
 
     if(changed){
-      // Update only visible cards without full re-render (no flicker)
       updateVisibleCards();
       updateStats();
-      // Re-render detail panel if open (price changed)
       if(selId && prices[selId]){
         const tab = Object.keys(TABS).find(t=>TABS[t].find(a=>a.id===selId));
-        if(tab && curTab===tab){
-          refreshDetailPanel(selId, tab);
-        }
+        if(tab && curTab===tab) refreshDetailPanel(selId, tab);
       }
     }
-  }catch(e){}
+  }catch(e){ console.warn('pollCryptoLive error:',e); }
 }
 
 function updateVisibleCards(){
@@ -559,8 +556,18 @@ function updateVisibleCards(){
       chgEl.className   = 'acpc ' + cc(p.change);
     }
     if(s5El){
-      s5El.textContent  = fc(p.change5d);
-      s5El.className    = cc(p.change5d);
+      const v5 = typeof p.change5d === 'number' ? p.change5d : null;
+      s5El.textContent = fc(v5);
+      s5El.className   = cc(v5);
+    } else if(typeof p.change5d === 'number'){
+      // Create the 7d element if it doesn't exist
+      const acb = card.querySelector('.acb');
+      if(acb && !acb.querySelector('.ac5')){
+        const span = document.createElement('span');
+        span.className = 'ac5';
+        span.innerHTML = '7d: <span class="'+cc(p.change5d)+'">'+fc(p.change5d)+'</span>';
+        acb.appendChild(span);
+      }
     }
     if(bxEl){
       bxEl.textContent  = s.l;
