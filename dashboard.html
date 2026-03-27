@@ -283,8 +283,28 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   }requestAnimationFrame(loop)})();
 })();
 
-function tick(){const n=new Date(),u=new Date(n.getTime()+4*3600000);document.getElementById('clk').textContent=String(u.getHours()).padStart(2,'0')+':'+String(u.getMinutes()).padStart(2,'0')+' UAE'}
-tick();setInterval(tick,30000);
+function tick(){
+  try{
+    const uae=new Intl.DateTimeFormat('en-GB',{
+      timeZone:'Asia/Dubai',
+      hour:'2-digit',
+      minute:'2-digit',
+      second:'2-digit',
+      hour12:false
+    }).format(new Date());
+    document.getElementById('clk').textContent=uae+' UAE';
+  }catch(e){
+    // Hard fallback — UAE is UTC+4
+    const n=new Date();
+    const utc=n.getTime()+n.getTimezoneOffset()*60000;
+    const uae=new Date(utc+4*3600000);
+    document.getElementById('clk').textContent=
+      String(uae.getHours()).padStart(2,'0')+':'+
+      String(uae.getMinutes()).padStart(2,'0')+':'+
+      String(uae.getSeconds()).padStart(2,'0')+' UAE';
+  }
+}
+tick();setInterval(tick,1000);
 
 const TABS={
   forex:[
@@ -442,7 +462,7 @@ function card(a){
     '<div class="act"><div><div class="acn">'+a.name+'</div><div class="acs">'+a.sym+'</div></div>'+
     '<div class="acp"><div class="acpn '+cc(p?.change)+'">'+fp(p?.price)+'</div><div class="acpc '+cc(p?.change)+'">'+fc(p?.change)+'</div></div></div>'+
     '<div class="swrap"><canvas data-spark="'+a.id+'"></canvas></div>'+
-    '<div class="acb"><span class="bx '+s.bc+'">'+s.l+'</span>'+(p?.change5d!=null?'<span class="ac5">7d: <span class="'+cc(p?.change5d)+'">'+fc(p?.change5d)+'</span></span>':'')+'</div>'+
+    '<div class="acb"><span class="bx '+s.bc+'">'+s.l+'</span>'+(typeof p?.change5d==='number'?'<span class="ac5">7d: <span class="'+cc(p.change5d)+'">'+fc(p.change5d)+'</span></span>':'')+'</div>'+
   '</div>';
 }
 
@@ -551,101 +571,133 @@ async function loadNewsTicker(){
 loadNewsTicker();
 setInterval(loadNewsTicker,10*60*1000);
 
-// ── Real-time crypto price polling (every 3s) ─────────────────────────────
-let livePolling = null;
+// ── Real-time WebSocket prices (Binance) ──────────────────────────────────
 
-async function pollCryptoLive(){
+const BINANCE_MAP = {
+  'bitcoin':'btcusdt','ethereum':'ethusdt','ripple':'xrpusdt',
+  'solana':'solusdt','binancecoin':'bnbusdt','dogecoin':'dogeusdt',
+  'cardano':'adausdt','avalanche-2':'avaxusdt','chainlink':'linkusdt',
+  'polkadot':'dotusdt','the-open-network':'tonusdt','shiba-inu':'shibusdt',
+  'litecoin':'ltcusdt','tron':'trxusdt','polygon-ecosystem-token':'polusdt',
+  'uniswap':'uniusdt','stellar':'xlmusdt','near':'nearusdt',
+  'arbitrum':'arbusdt','aptos':'aptusdt','internet-computer':'icpusdt',
+  'filecoin':'filusdt','render-token':'renderusdt',
+  'injective-protocol':'injusdt','monero':'xmrusdt'
+};
+
+const openPrices = {};
+let ws = null;
+let wsTimer = null;
+
+async function fetchBinance24h(){
   try{
-    const r = await fetch('/api/crypto/live');
+    const syms = Object.values(BINANCE_MAP).map(s=>'"'+s.toUpperCase()+'"').join(',');
+    const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=['+syms+']');
     if(!r.ok) return;
-    const fresh = await r.json();
-    if(!fresh || !Object.keys(fresh).length) return;
-
-    let changed = false;
-    for(const [id, data] of Object.entries(fresh)){
-      if(!prices[id]) prices[id] = {};
-      if(typeof data.price === 'number' && data.price > 0){
-        prices[id].price    = data.price;
-        prices[id].change   = typeof data.change   === 'number' ? data.change   : prices[id].change;
-        prices[id].change5d = typeof data.change5d === 'number' ? data.change5d : prices[id].change5d;
-        if(data.mcap) prices[id].mcap = data.mcap;
-        changed = true;
-      }
+    const data = await r.json();
+    for(const d of data){
+      const sym  = d.symbol.toLowerCase();
+      const cgId = Object.keys(BINANCE_MAP).find(k=>BINANCE_MAP[k]===sym);
+      if(!cgId) continue;
+      openPrices[cgId]  = parseFloat(d.openPrice);
+      if(!prices[cgId]) prices[cgId]={};
+      prices[cgId].price  = parseFloat(d.lastPrice);
+      prices[cgId].change = parseFloat(d.priceChangePercent);
     }
+    console.log('Binance 24h loaded for',Object.keys(openPrices).length,'assets');
+    updateVisibleCards();
+    updateStats();
+  }catch(e){ console.warn('Binance 24h:',e); }
+}
 
-    if(changed){
-      updateVisibleCards();
-      updateStats();
-      if(selId && prices[selId]){
-        const tab = Object.keys(TABS).find(t=>TABS[t].find(a=>a.id===selId));
-        if(tab && curTab===tab) refreshDetailPanel(selId, tab);
+function connectBinanceWS(){
+  if(ws){try{ws.close()}catch(e){}}
+  const streams = Object.values(BINANCE_MAP).map(s=>s+'@miniTicker').join('/');
+  ws = new WebSocket('wss://stream.binance.com:9443/stream?streams='+streams);
+
+  ws.onopen = ()=>{
+    console.log('Binance WebSocket LIVE');
+    if(wsTimer){clearTimeout(wsTimer);wsTimer=null;}
+  };
+
+  ws.onmessage = (evt)=>{
+    try{
+      const tick = JSON.parse(evt.data).data;
+      if(!tick||!tick.s) return;
+      const sym  = tick.s.toLowerCase();
+      const cgId = Object.keys(BINANCE_MAP).find(k=>BINANCE_MAP[k]===sym);
+      if(!cgId) return;
+      const price = parseFloat(tick.c);
+      const open  = openPrices[cgId]||parseFloat(tick.o)||price;
+      const chg24 = open>0?((price-open)/open*100):0;
+      if(!prices[cgId]) prices[cgId]={};
+      const prev = prices[cgId].price;
+      prices[cgId].price  = price;
+      prices[cgId].change = parseFloat(chg24.toFixed(3));
+      // Flash effect
+      if(prev&&prev!==price){
+        const card=document.querySelector('[data-asset-id="'+cgId+'"]');
+        if(card){
+          card.style.background=price>prev?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.1)';
+          setTimeout(()=>{card.style.background='';},400);
+        }
       }
-    }
-  }catch(e){ console.warn('pollCryptoLive error:',e); }
+      updateCard(cgId);
+      if(selId===cgId){
+        const tab=Object.keys(TABS).find(t=>TABS[t].find(a=>a.id===cgId));
+        if(tab&&curTab===tab) refreshDetailPanel(cgId,tab);
+      }
+    }catch(e){}
+  };
+
+  ws.onclose = ()=>{
+    console.log('Binance WS closed — reconnecting in 3s');
+    wsTimer=setTimeout(connectBinanceWS,3000);
+  };
+  ws.onerror = ()=>{};
+}
+
+function updateCard(id){
+  const card=document.querySelector('[data-asset-id="'+id+'"]');
+  if(!card) return;
+  const p=prices[id];
+  if(!p||!p.price) return;
+  const s=sent(p.change);
+  const pEl=card.querySelector('.acpn');
+  const cEl=card.querySelector('.acpc');
+  const bEl=card.querySelector('.bx');
+  const sEl=card.querySelector('.ac5 span');
+  if(pEl){pEl.textContent=fp(p.price);pEl.className='acpn '+cc(p.change);}
+  if(cEl){cEl.textContent=fc(p.change);cEl.className='acpc '+cc(p.change);}
+  if(bEl){bEl.textContent=s.l;bEl.className='bx '+s.bc;}
+  if(sEl&&typeof p.change5d==='number'){sEl.textContent=fc(p.change5d);sEl.className=cc(p.change5d);}
 }
 
 function updateVisibleCards(){
-  document.querySelectorAll('.acard[data-asset-id]').forEach(card=>{
-    const id = card.getAttribute('data-asset-id');
-    const p  = prices[id];
-    if(!p) return;
-    const priceEl = card.querySelector('.acpn');
-    const chgEl   = card.querySelector('.acpc');
-    const s5El    = card.querySelector('.ac5 span');
-    const bxEl    = card.querySelector('.bx');
-    const s       = sent(p.change);
-    if(priceEl){
-      priceEl.textContent = fp(p.price);
-      priceEl.className   = 'acpn ' + cc(p.change);
-    }
-    if(chgEl){
-      chgEl.textContent = fc(p.change);
-      chgEl.className   = 'acpc ' + cc(p.change);
-    }
-    if(s5El){
-      const v5 = typeof p.change5d === 'number' ? p.change5d : null;
-      s5El.textContent = fc(v5);
-      s5El.className   = cc(v5);
-    } else if(typeof p.change5d === 'number'){
-      // Create the 7d element if it doesn't exist
-      const acb = card.querySelector('.acb');
-      if(acb && !acb.querySelector('.ac5')){
-        const span = document.createElement('span');
-        span.className = 'ac5';
-        span.innerHTML = '7d: <span class="'+cc(p.change5d)+'">'+fc(p.change5d)+'</span>';
-        acb.appendChild(span);
-      }
-    }
-    if(bxEl){
-      bxEl.textContent  = s.l;
-      bxEl.className    = 'bx ' + s.bc;
-    }
-  });
+  Object.keys(prices).forEach(id=>updateCard(id));
 }
 
-function refreshDetailPanel(id, tab){
-  const detPanel = document.querySelector('.detail');
-  if(!detPanel) return;
-  const p = prices[id];
-  if(!p || !p.price) return;
-  const priceEl = detPanel.querySelector('.dprice');
-  const chgEl   = detPanel.querySelector('.dchg');
-  const m24El   = detPanel.querySelector('.mb .mv[data-metric="24h"]');
-  const m5dEl   = detPanel.querySelector('.mb .mv[data-metric="5d"]');
-  const mprEl   = detPanel.querySelector('.mb .mv[data-metric="price"]');
-  if(priceEl){ priceEl.textContent = fp(p.price); priceEl.className = 'dprice ' + cc(p.change); }
-  if(chgEl)  { chgEl.textContent   = fc(p.change)+' 24h · '+fc(p.change5d)+' 5d'; chgEl.className = 'dchg ' + cc(p.change); }
+async function initLivePrices(){
+  await fetchBinance24h();
+  connectBinanceWS();
+  setInterval(pollForexCommodities,30000);
 }
 
-function startLivePolling(){
-  if(livePolling) clearInterval(livePolling);
-  livePolling = setInterval(pollCryptoLive, 3000);
+async function pollForexCommodities(){
+  try{
+    const r=await fetch('/api/prices');
+    if(!r.ok) return;
+    const fresh=await r.json();
+    for(const [id,data] of Object.entries(fresh)){
+      if(BINANCE_MAP[id]) continue;
+      if(data.price){prices[id]={...(prices[id]||{}),...data};updateCard(id);}
+    }
+    updateStats();
+  }catch(e){}
 }
 
-startLivePolling();
-
-loadPrices();
-setInterval(loadPrices,5*60*1000);
+loadPrices().then(()=>initLivePrices());
+setInterval(()=>{ loadPrices(); },5*60*1000);
 </script>
 </body>
 </html>
