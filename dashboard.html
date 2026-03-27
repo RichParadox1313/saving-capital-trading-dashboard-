@@ -238,7 +238,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <div class="pdate" id="pdate">—</div>
   </div>
   <div class="sstrip">
-    <div class="sbox"><div class="sn">43</div><div class="sl">Tracked</div></div>
+    <div class="sbox"><div class="sn">85+</div><div class="sl">Tracked</div></div>
     <div class="sbox"><div class="sn" id="sbull">—</div><div class="sl">Bullish</div></div>
     <div class="sbox"><div class="sn" id="sbear">—</div><div class="sl">Bearish</div></div>
     <div class="sbox"><div class="sn" id="sneut">—</div><div class="sl">Neutral</div></div>
@@ -287,7 +287,55 @@ function tick(){const n=new Date(),u=new Date(n.getTime()+4*3600000);document.ge
 tick();setInterval(tick,30000);
 
 const TABS={
-  forex:[{id:'EURUSD',name:'EUR/USD',sym:'EURUSD',desc:'Euro vs Dollar'},{id:'GBPUSD',name:'GBP/USD',sym:'GBPUSD',desc:'Cable'},{id:'USDJPY',name:'USD/JPY',sym:'USDJPY',desc:'Dollar vs Yen'},{id:'DXY',name:'DXY Index',sym:'DXY',desc:'Dollar strength'},{id:'AUDUSD',name:'AUD/USD',sym:'AUDUSD',desc:'Aussie Dollar'},{id:'USDCAD',name:'USD/CAD',sym:'USDCAD',desc:'Loonie'},{id:'USDCHF',name:'USD/CHF',sym:'USDCHF',desc:'Swissie'},{id:'NZDUSD',name:'NZD/USD',sym:'NZDUSD',desc:'Kiwi Dollar'}],
+  forex:[
+    // Majors
+    {id:'DXY',    name:'DXY Index', sym:'DXY',    desc:'US Dollar Index'},
+    {id:'EURUSD', name:'EUR/USD',   sym:'EURUSD', desc:'Euro vs Dollar'},
+    {id:'GBPUSD', name:'GBP/USD',   sym:'GBPUSD', desc:'Cable'},
+    {id:'USDJPY', name:'USD/JPY',   sym:'USDJPY', desc:'Dollar vs Yen'},
+    {id:'AUDUSD', name:'AUD/USD',   sym:'AUDUSD', desc:'Aussie Dollar'},
+    {id:'USDCAD', name:'USD/CAD',   sym:'USDCAD', desc:'Loonie'},
+    {id:'USDCHF', name:'USD/CHF',   sym:'USDCHF', desc:'Swissie'},
+    {id:'NZDUSD', name:'NZD/USD',   sym:'NZDUSD', desc:'Kiwi Dollar'},
+    // EUR Crosses
+    {id:'EURGBP', name:'EUR/GBP',   sym:'EURGBP', desc:'Euro vs Pound'},
+    {id:'EURJPY', name:'EUR/JPY',   sym:'EURJPY', desc:'Euro vs Yen'},
+    {id:'EURAUD', name:'EUR/AUD',   sym:'EURAUD', desc:'Euro vs Aussie'},
+    {id:'EURCAD', name:'EUR/CAD',   sym:'EURCAD', desc:'Euro vs Loonie'},
+    {id:'EURCHF', name:'EUR/CHF',   sym:'EURCHF', desc:'Euro vs Swissie'},
+    {id:'EURNZD', name:'EUR/NZD',   sym:'EURNZD', desc:'Euro vs Kiwi'},
+    // GBP Crosses
+    {id:'GBPJPY', name:'GBP/JPY',   sym:'GBPJPY', desc:'Pound vs Yen'},
+    {id:'GBPAUD', name:'GBP/AUD',   sym:'GBPAUD', desc:'Pound vs Aussie'},
+    {id:'GBPCAD', name:'GBP/CAD',   sym:'GBPCAD', desc:'Pound vs Loonie'},
+    {id:'GBPCHF', name:'GBP/CHF',   sym:'GBPCHF', desc:'Pound vs Swissie'},
+    {id:'GBPNZD', name:'GBP/NZD',   sym:'GBPNZD', desc:'Pound vs Kiwi'},
+    // JPY Crosses
+    {id:'AUDJPY', name:'AUD/JPY',   sym:'AUDJPY', desc:'Aussie vs Yen'},
+    {id:'CADJPY', name:'CAD/JPY',   sym:'CADJPY', desc:'Loonie vs Yen'},
+    {id:'CHFJPY', name:'CHF/JPY',   sym:'CHFJPY', desc:'Swissie vs Yen'},
+    {id:'NZDJPY', name:'NZD/JPY',   sym:'NZDJPY', desc:'Kiwi vs Yen'},
+    // Other Crosses
+    {id:'AUDCAD', name:'AUD/CAD',   sym:'AUDCAD', desc:'Aussie vs Loonie'},
+    {id:'AUDCHF', name:'AUD/CHF',   sym:'AUDCHF', desc:'Aussie vs Swissie'},
+    {id:'AUDNZD', name:'AUD/NZD',   sym:'AUDNZD', desc:'Aussie vs Kiwi'},
+    {id:'NZDCAD', name:'NZD/CAD',   sym:'NZDCAD', desc:'Kiwi vs Loonie'},
+    {id:'NZDCHF', name:'NZD/CHF',   sym:'NZDCHF', desc:'Kiwi vs Swissie'},
+    {id:'CADCHF', name:'CAD/CHF',   sym:'CADCHF', desc:'Loonie vs Swissie'},
+    // Exotics
+    {id:'USDTRY', name:'USD/TRY',   sym:'USDTRY', desc:'Dollar vs Turkish Lira'},
+    {id:'USDZAR', name:'USD/ZAR',   sym:'USDZAR', desc:'Dollar vs Rand'},
+    {id:'USDMXN', name:'USD/MXN',   sym:'USDMXN', desc:'Dollar vs Peso'},
+    {id:'USDSEK', name:'USD/SEK',   sym:'USDSEK', desc:'Dollar vs Swedish Krona'},
+    {id:'USDNOK', name:'USD/NOK',   sym:'USDNOK', desc:'Dollar vs Norwegian Krone'},
+    {id:'USDDKK', name:'USD/DKK',   sym:'USDDKK', desc:'Dollar vs Danish Krone'},
+    {id:'USDSGD', name:'USD/SGD',   sym:'USDSGD', desc:'Dollar vs Singapore Dollar'},
+    {id:'USDHKD', name:'USD/HKD',   sym:'USDHKD', desc:'Dollar vs HK Dollar'},
+    {id:'USDCNH', name:'USD/CNH',   sym:'USDCNH', desc:'Dollar vs Offshore Yuan'},
+    {id:'USDINR', name:'USD/INR',   sym:'USDINR', desc:'Dollar vs Indian Rupee'},
+    {id:'USDAED', name:'USD/AED',   sym:'USDAED', desc:'Dollar vs UAE Dirham'},
+    {id:'USDSAR', name:'USD/SAR',   sym:'USDSAR', desc:'Dollar vs Saudi Riyal'},
+  ],
   oil:[{id:'XAUUSD',name:'Gold',sym:'XAUUSD',desc:'Safe haven · Inflation hedge'},{id:'WTI',name:'WTI Crude',sym:'WTI',desc:'US benchmark crude'},{id:'BRENT',name:'Brent Crude',sym:'BRENT',desc:'Global benchmark'},{id:'XAGUSD',name:'Silver',sym:'XAGUSD',desc:'Precious metal'},{id:'COPPER',name:'Copper',sym:'COPPER',desc:'Growth proxy'},{id:'NATGAS',name:'Natural Gas',sym:'NATGAS',desc:'Energy'},{id:'XPTUSD',name:'Platinum',sym:'XPTUSD',desc:'Precious metals'}],
   crypto:[{id:'bitcoin',name:'Bitcoin',sym:'BTC'},{id:'ethereum',name:'Ethereum',sym:'ETH'},{id:'ripple',name:'XRP',sym:'XRP'},{id:'solana',name:'Solana',sym:'SOL'},{id:'binancecoin',name:'BNB',sym:'BNB'},{id:'dogecoin',name:'Dogecoin',sym:'DOGE'},{id:'cardano',name:'Cardano',sym:'ADA'},{id:'avalanche-2',name:'Avalanche',sym:'AVAX'},{id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},{id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},{id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},{id:'polygon-ecosystem-token',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},{id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR',sym:'NEAR'},{id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},{id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},{id:'render-token',name:'Render',sym:'RENDER'},{id:'injective-protocol',name:'Injective',sym:'INJ'},{id:'monero',name:'Monero',sym:'XMR'}]
 };
