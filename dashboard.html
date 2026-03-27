@@ -680,20 +680,37 @@ function updateVisibleCards(){
 async function initLivePrices(){
   await fetchBinance24h();
   connectBinanceWS();
-  setInterval(pollForexCommodities,30000);
+  setInterval(pollForexCommodities,5000);
 }
 
 async function pollForexCommodities(){
   try{
-    const r=await fetch('/api/prices');
-    if(!r.ok) return;
-    const fresh=await r.json();
-    for(const [id,data] of Object.entries(fresh)){
-      if(BINANCE_MAP[id]) continue;
-      if(data.price){prices[id]={...(prices[id]||{}),...data};updateCard(id);}
+    // Try the fast Twelve Data endpoint first
+    const r=await fetch('/api/forex/live');
+    if(r.ok){
+      const fresh=await r.json();
+      let changed=false;
+      for(const [id,data] of Object.entries(fresh)){
+        if(!data.price) continue;
+        if(!prices[id]) prices[id]={};
+        const prev=prices[id].price;
+        prices[id].price=data.price;
+        prices[id].change=data.change;
+        if(data.change5d!==undefined) prices[id].change5d=data.change5d;
+        // Flash on change
+        if(prev&&prev!==data.price){
+          const card=document.querySelector('[data-asset-id="'+id+'"]');
+          if(card){
+            card.style.background=data.price>prev?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)';
+            setTimeout(()=>{card.style.background='';},400);
+          }
+        }
+        updateCard(id);
+        changed=true;
+      }
+      if(changed) updateStats();
     }
-    updateStats();
-  }catch(e){}
+  }catch(e){ console.warn('forex poll:',e); }
 }
 
 loadPrices().then(()=>initLivePrices());
