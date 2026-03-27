@@ -81,7 +81,7 @@ CRYPTO_ASSETS = [
     {"id":"shiba-inu",          "name":"Shiba Inu",     "sym":"SHIB",   "tab":"crypto"},
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
-    {"id":"matic-network",      "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
+    {"id":"polygon-ecosystem-token",      "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
