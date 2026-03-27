@@ -680,7 +680,7 @@ function updateVisibleCards(){
 async function initLivePrices(){
   await fetchBinance24h();
   connectBinanceWS();
-  setInterval(pollForexCommodities,5000);
+  setInterval(pollForexCommodities,8000);
 }
 
 async function pollForexCommodities(){
