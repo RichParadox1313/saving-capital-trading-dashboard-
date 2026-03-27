@@ -337,6 +337,61 @@ async def load_all_prices() -> dict:
     print(f"  === Total: {total}/43 assets loaded ===\n")
     return result
 
+
+# ─── Twelve Data Real-Time ────────────────────────────────────────────────────
+
+TWELVE_ID_MAP = {
+    "EURUSD":"EURUSD","GBPUSD":"GBPUSD","USDJPY":"USDJPY","AUDUSD":"AUDUSD",
+    "USDCAD":"USDCAD","USDCHF":"USDCHF","NZDUSD":"NZDUSD","EURGBP":"EURGBP",
+    "EURJPY":"EURJPY","EURAUD":"EURAUD","EURCAD":"EURCAD","EURCHF":"EURCHF",
+    "EURNZD":"EURNZD","GBPJPY":"GBPJPY","GBPAUD":"GBPAUD","GBPCAD":"GBPCAD",
+    "GBPCHF":"GBPCHF","GBPNZD":"GBPNZD","AUDJPY":"AUDJPY","CADJPY":"CADJPY",
+    "CHFJPY":"CHFJPY","NZDJPY":"NZDJPY","AUDCAD":"AUDCAD","AUDCHF":"AUDCHF",
+    "AUDNZD":"AUDNZD","NZDCAD":"NZDCAD","NZDCHF":"NZDCHF","CADCHF":"CADCHF",
+    "USDTRY":"USDTRY","USDZAR":"USDZAR","USDMXN":"USDMXN","USDSEK":"USDSEK",
+    "USDNOK":"USDNOK","USDDKK":"USDDKK","USDSGD":"USDSGD","USDHKD":"USDHKD",
+    "USDINR":"USDINR","USDAED":"USDAED","USDSAR":"USDSAR",
+    "XAU/USD":"XAUUSD","XAG/USD":"XAGUSD","WTI/USD":"WTI",
+    "BRENT/USD":"BRENT","XCU/USD":"COPPER","NATGAS/USD":"NATGAS","XPT/USD":"XPTUSD",
+}
+
+async def fetch_twelve_live() -> dict:
+    key = os.environ.get("TWELVE_DATA_KEY","")
+    if not key:
+        return {}
+    symbols = ",".join(TWELVE_ID_MAP.keys())
+    result = {}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://api.twelvedata.com/price",
+                params={"symbol": symbols, "apikey": key},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                if r.status != 200:
+                    return {}
+                data = await r.json()
+        for sym, asset_id in TWELVE_ID_MAP.items():
+            raw = data.get(sym)
+            price = None
+            if isinstance(raw, dict):
+                price = float(raw.get("price") or 0)
+            elif isinstance(raw, str):
+                try: price = float(raw)
+                except: pass
+            if price and price > 0:
+                cached = price_cache["data"].get(asset_id, {})
+                prev   = cached.get("price") or price
+                chg    = ((price - prev) / prev * 100) if prev and prev != price else cached.get("change", 0)
+                result[asset_id] = {"price": round(price,6), "change": round(chg,3)}
+                if asset_id in price_cache["data"]:
+                    price_cache["data"][asset_id]["price"]  = round(price,6)
+                    price_cache["data"][asset_id]["change"] = round(chg,3)
+        print(f"  Twelve Data live: {len(result)} symbols")
+    except Exception as e:
+        print(f"  Twelve Data error: {e}")
+    return result
+
 # ─── Phase Detection ──────────────────────────────────────────────────────────
 
 def detect_phase(prices: dict) -> dict:
@@ -431,6 +486,21 @@ async def load_news() -> list:
     return items
 
 # ─── API Routes ───────────────────────────────────────────────────────────────
+
+
+@app.get("/api/forex/live")
+async def api_forex_live():
+    key = os.environ.get("TWELVE_DATA_KEY","")
+    if key:
+        data = await fetch_twelve_live()
+        if data:
+            return JSONResponse(data)
+    # Fallback: return cached data
+    result = {}
+    for k,v in price_cache["data"].items():
+        if v.get("tab") in ("forex","oil") and v.get("price"):
+            result[k] = {"price":v["price"],"change":v.get("change",0),"change5d":v.get("change5d",0)}
+    return JSONResponse(result)
 
 @app.get("/api/crypto/live")
 async def api_crypto_live():
