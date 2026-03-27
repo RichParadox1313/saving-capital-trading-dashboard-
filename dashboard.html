@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Saving Capital — Market Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -25,6 +26,10 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overf
 nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(3,7,4,0.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--br)}
 .nlogo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:3px;color:var(--g);line-height:1}
 .nlogo b{color:var(--t1);font-weight:400}
+.nav-pages{display:flex;gap:2px;background:var(--s1);border:1px solid var(--br);border-radius:8px;padding:3px}
+.npbtn{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border:none;border-radius:5px;background:transparent;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;white-space:nowrap}
+.npbtn:hover{color:var(--t2)}
+.npbtn.active{background:var(--g);color:#030704;font-weight:500}
 .nmid{display:flex;gap:6px}
 .nchip{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border:1px solid var(--br);border-radius:20px;color:var(--t3);font-family:'DM Mono',monospace}
 .nr{display:flex;align-items:center;gap:14px}
@@ -32,6 +37,222 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--g)}50%{opacity:.4;box-shadow:none}}
 .clk{font-size:10px;font-family:'DM Mono',monospace;color:var(--t4)}
+
+
+/* ── Home Page ─────────────────────────────────────────────────────────────── */
+.page{display:block}
+.home-wrap{max-width:1100px;margin:0 auto;padding:90px 24px 60px;min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:40px}
+.home-hero{display:flex;flex-direction:column;gap:0}
+.home-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(4.5rem,13vw,10rem);letter-spacing:4px;line-height:.88;margin-bottom:20px;animation:fu .6s .08s ease both}
+.home-h1 i{color:var(--g);font-style:normal;display:block}
+.home-sub{font-size:16px;color:var(--t3);max-width:600px;line-height:1.8;margin-bottom:32px;font-weight:300;animation:fu .6s .16s ease both}
+.home-btns{display:flex;gap:14px;flex-wrap:wrap;animation:fu .6s .24s ease both}
+.hbtn{display:flex;align-items:center;gap:14px;padding:16px 24px;border-radius:12px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;transition:all .2s;min-width:260px}
+.hbtn-primary{background:var(--g);color:#030704}
+.hbtn-primary:hover{background:#16a34a;transform:translateY(-2px)}
+.hbtn-secondary{background:var(--s1);border:1px solid var(--br2);color:var(--t1)}
+.hbtn-secondary:hover{border-color:var(--g);transform:translateY(-2px)}
+.hbtn-icon{font-size:1.6rem;flex-shrink:0}
+.hbtn-title{font-size:14px;font-weight:600;letter-spacing:.3px}
+.hbtn-sub{font-size:11px;opacity:.65;margin-top:2px;font-weight:300}
+.home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:10px;overflow:hidden;animation:fu .6s .32s ease both}
+.hstat{background:var(--s1);padding:18px 20px;text-align:center}
+.hstat-n{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--g);letter-spacing:2px}
+.hstat-l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-top:4px;font-family:'DM Mono',monospace}
+.home-features{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;animation:fu .6s .4s ease both}
+.hfeat{background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:20px}
+.hfeat-icon{font-size:1.4rem;margin-bottom:10px}
+.hfeat-title{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--t1)}
+.hfeat-desc{font-size:11px;color:var(--t4);line-height:1.7;font-weight:300}
+@media(max-width:768px){
+  .home-btns{flex-direction:column}.hbtn{min-width:0}
+  .home-stats{grid-template-columns:repeat(2,1fr)}
+  .home-features{grid-template-columns:1fr 1fr}
+  .nav-pages .npbtn{font-size:8px;padding:4px 8px}
+}
+@media(max-width:480px){
+  .home-features{grid-template-columns:1fr}
+  .nav-pages{display:none}
+}
+
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   SAVING CAPITAL — HOME PAGE v3 — NEXT LEVEL
+   ═══════════════════════════════════════════════════════════ */
+
+/* BG canvas */
+#sc-webgl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.sc-grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  background-size:200px}
+
+/* HEADER */
+.sc-header{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 40px;
+  background:rgba(3,7,4,0.6);backdrop-filter:blur(32px) saturate(180%);
+  border-bottom:1px solid rgba(34,197,94,0.06)}
+.sc-header-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.sc-header-wordmark{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:3px;color:rgba(240,253,244,0.9)}
+.sc-header-wordmark strong{color:var(--g);font-weight:400}
+.sc-header-nav{display:flex;gap:1px;background:rgba(7,13,7,0.7);border:1px solid rgba(34,197,94,0.08);border-radius:10px;padding:4px}
+.sc-hn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 18px;border:none;border-radius:6px;background:transparent;color:rgba(167,243,208,0.38);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
+.sc-hn:hover{color:var(--t2)}
+.sc-hn-active{background:rgba(34,197,94,0.12)!important;color:var(--g)!important;border:1px solid rgba(34,197,94,0.2)!important}
+.sc-header-right{display:flex;align-items:center;gap:18px}
+.sc-header-live{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace}
+.sc-pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 0 0 rgba(34,197,94,0.4);animation:pulse-ring 2s infinite}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.sc-header-time{font-size:10px;font-family:'DM Mono',monospace;color:rgba(167,243,240,0.2)}
+.sc-header-cta{font-size:11px;letter-spacing:.5px;font-weight:600;padding:8px 22px;background:var(--g);color:#030704;border:none;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.sc-header-cta:hover{background:#16a34a;box-shadow:0 0 32px rgba(34,197,94,0.4);transform:translateY(-1px)}
+
+/* MAIN HERO */
+.sc-main-hero{
+  position:relative;z-index:2;
+  min-height:100svh;
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;
+  padding:62px 56px 0 56px;
+  max-width:1380px;margin:0 auto;
+  gap:20px;
+}
+
+/* TEXT */
+.sc-hero-text{display:flex;flex-direction:column;gap:0;padding-top:20px}
+
+.sc-overline{display:flex;align-items:center;gap:12px;margin-bottom:24px;
+  font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(34,197,94,0.6);font-family:'DM Mono',monospace;
+  animation:sc-up .7s .1s ease both}
+.sc-overline-bar{display:inline-block;width:24px;height:1px;background:var(--g);opacity:.5}
+
+/* HEADLINE */
+.sc-hero-h1{display:flex;flex-direction:column;line-height:.92;margin-bottom:28px;font-family:'Syne',sans-serif}
+.sc-word{display:block}
+.sc-word-1{font-size:clamp(2.5rem,5.5vw,5rem);font-weight:400;color:rgba(240,253,244,0.35);letter-spacing:-1px;animation:sc-up .8s .15s ease both}
+.sc-word-2{font-size:clamp(4.5rem,10vw,9.5rem);font-weight:800;letter-spacing:-3px;line-height:.85;
+  background:linear-gradient(160deg,#f0fdf4 0%,#86efac 35%,#22c55e 60%,#86efac 80%,#f0fdf4 100%);
+  background-size:400% 400%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:sc-up .9s .25s ease both, hero-grad 8s ease infinite;
+  filter:drop-shadow(0 0 80px rgba(34,197,94,0.2))}
+@keyframes hero-grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.sc-word-2 em{font-style:italic;font-weight:800}
+.sc-word-3{font-size:clamp(2rem,4.5vw,4.2rem);font-weight:700;color:rgba(240,253,244,0.18);letter-spacing:-1px;animation:sc-up .8s .35s ease both}
+
+@keyframes sc-up{from{opacity:0;transform:translateY(40px) skewX(-2deg)}to{opacity:1;transform:translateY(0) skewX(0)}}
+
+.sc-hero-p{font-size:15px;color:rgba(167,243,208,0.5);max-width:480px;line-height:1.9;margin-bottom:36px;font-weight:300;animation:sc-up .7s .45s ease both}
+
+/* BUTTONS */
+.sc-hero-buttons{display:flex;align-items:center;gap:14px;margin-bottom:44px;animation:sc-up .7s .55s ease both;flex-wrap:wrap}
+
+.sc-btn-launch{position:relative;border:none;padding:0;border-radius:14px;cursor:pointer;overflow:hidden;
+  box-shadow:0 8px 32px rgba(34,197,94,0.25),0 0 0 1px rgba(34,197,94,0.3);
+  transition:box-shadow .3s,transform .2s;background:transparent}
+.sc-btn-launch:hover{box-shadow:0 16px 64px rgba(34,197,94,0.45),0 0 0 1px rgba(34,197,94,0.5);transform:translateY(-2px)}
+.sc-btn-launch:active{transform:translateY(0)}
+.sc-btn-launch-glow{position:absolute;inset:0;background:linear-gradient(135deg,#16a34a 0%,#22c55e 40%,#4ade80 70%,#22c55e 100%);background-size:300% 300%;animation:hero-grad 4s ease infinite}
+.sc-btn-launch-text{position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:14px 30px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#030704;letter-spacing:.3px}
+
+.sc-btn-outline{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(34,197,94,0.18);color:rgba(167,243,208,0.6);padding:13px 26px;border-radius:14px;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;transition:all .25s;letter-spacing:.2px}
+.sc-btn-outline:hover{border-color:rgba(34,197,94,0.45);color:var(--g);background:rgba(34,197,94,0.05);transform:translateY(-1px)}
+
+/* METRICS */
+.sc-hero-metrics{display:flex;align-items:center;gap:0;margin-bottom:32px;animation:sc-up .7s .65s ease both}
+.sc-metric{display:flex;flex-direction:column;gap:4px;padding:0 28px 0 0}
+.sc-metric-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--g);letter-spacing:-1px;line-height:1}
+.sc-metric-num span{font-size:1.1rem;opacity:.55;font-weight:600}
+.sc-metric-lt{font-size:1.1rem;opacity:.55}
+.sc-metric-s{font-size:1.1rem;opacity:.55;font-weight:600}
+.sc-metric-lbl{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(167,243,208,0.3);font-family:'DM Mono',monospace}
+.sc-metric-line{width:1px;height:36px;background:rgba(34,197,94,0.1);margin:0 28px 0 0;flex-shrink:0}
+
+/* TRUST */
+.sc-trust{animation:sc-up .7s .75s ease both}
+.sc-trust-lbl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,243,208,0.2);font-family:'DM Mono',monospace;margin-bottom:8px}
+.sc-trust-names{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sc-trust-names span{font-size:11px;color:rgba(167,243,208,0.3);font-family:'DM Mono',monospace;letter-spacing:.5px}
+.sc-trust-dot{color:rgba(34,197,94,0.3)!important;font-size:14px!important}
+
+/* ORB SIDE */
+.sc-hero-orb-wrap{display:flex;align-items:center;justify-content:center;position:relative;animation:sc-up .9s .2s ease both}
+.sc-orb-container{position:relative;width:500px;height:500px;display:flex;align-items:center;justify-content:center}
+#sc-orb{position:relative;z-index:2;border-radius:50%;display:block}
+
+/* Rings */
+.sc-ring{position:absolute;border-radius:50%;border:1px solid rgba(34,197,94,0.07);animation:ring-rot linear infinite}
+.sc-ring-1{inset:-40px;animation-duration:18s}
+.sc-ring-2{inset:-80px;border-color:rgba(34,197,94,0.04);animation-duration:32s;animation-direction:reverse}
+.sc-ring-3{inset:-130px;border-color:rgba(34,197,94,0.025);animation-duration:50s;animation-timing-function:linear}
+@keyframes ring-rot{to{transform:rotate(360deg)}}
+
+/* Dashes on rings */
+.sc-ring-1::before,.sc-ring-2::before,.sc-ring-3::before{
+  content:'';position:absolute;top:50%;left:-3px;width:6px;height:6px;
+  border-radius:50%;background:var(--g);transform:translateY(-50%);
+  box-shadow:0 0 10px var(--g),0 0 20px rgba(34,197,94,0.5)}
+.sc-ring-2::before{background:rgba(134,239,172,0.6);box-shadow:0 0 8px rgba(134,239,172,0.4)}
+.sc-ring-3::before{background:rgba(34,197,94,0.4);box-shadow:0 0 6px rgba(34,197,94,0.3)}
+
+/* FLOATING PILLS */
+.sc-pill{position:absolute;display:flex;align-items:center;gap:10px;
+  background:rgba(7,13,7,0.75);backdrop-filter:blur(20px);
+  border:1px solid rgba(34,197,94,0.12);border-radius:100px;
+  padding:10px 16px 10px 12px;z-index:5;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(34,197,94,0.08)}
+.sc-pill:hover{border-color:rgba(34,197,94,0.28);box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 1px rgba(34,197,94,0.15)}
+.sc-pill-dot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);flex-shrink:0;animation:pulse-ring 2.5s infinite}
+.sc-pill-dot-gold{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,0.6)}
+.sc-pill-dot-blue{background:#60a5fa;box-shadow:0 0 8px rgba(96,165,250,0.6)}
+.sc-pill-dot-purple{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,0.6)}
+.sc-pill-label{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace;line-height:1}
+.sc-pill-value{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--t1);line-height:1}
+.sc-pill-chg{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;white-space:nowrap}
+
+/* Pill positions + floats */
+.sc-pill-1{top:6%;left:-10%;animation:p-float1 5s ease-in-out infinite}
+.sc-pill-2{top:8%;right:-8%;animation:p-float2 6s 1s ease-in-out infinite}
+.sc-pill-3{bottom:18%;left:-14%;animation:p-float3 5.5s .5s ease-in-out infinite}
+.sc-pill-4{bottom:10%;right:-10%;animation:p-float4 7s 2s ease-in-out infinite}
+@keyframes p-float1{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}
+@keyframes p-float2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-10px) rotate(-1deg)}}
+@keyframes p-float3{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes p-float4{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-9px) rotate(.5deg)}}
+
+/* FEATURE STRIP */
+.sc-strip{
+  position:relative;z-index:2;
+  display:flex;align-items:stretch;flex-wrap:wrap;
+  background:rgba(4,9,4,0.88);backdrop-filter:blur(32px);
+  border-top:1px solid rgba(34,197,94,0.06);
+  padding:26px 56px;gap:0;
+}
+.sc-strip-item{display:flex;align-items:center;gap:14px;flex:1;min-width:220px;padding:6px 0}
+.sc-strip-icon{width:38px;height:38px;border-radius:10px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-strip-title{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:3px;font-family:'Syne',sans-serif;letter-spacing:.2px}
+.sc-strip-desc{font-size:10px;color:rgba(167,243,208,0.3);line-height:1.5;font-family:'DM Mono',monospace}
+.sc-strip-div{width:1px;background:rgba(34,197,94,0.06);margin:0 28px;flex-shrink:0}
+
+/* Responsive */
+@media(max-width:1000px){
+  .sc-main-hero{grid-template-columns:1fr;padding:80px 28px 20px;gap:0}
+  .sc-hero-orb-wrap{display:none}
+  .sc-word-2{font-size:clamp(3.5rem,14vw,7rem)}
+  .sc-strip{padding:20px 28px;gap:16px}
+  .sc-strip-div{display:none}
+}
+@media(max-width:600px){
+  .sc-header{padding:0 16px}
+  .sc-header-nav .sc-hn{font-size:8px;padding:5px 10px}
+  .sc-header-time,.sc-header-live{display:none}
+  .sc-hero-metrics{flex-wrap:wrap;gap:16px}
+  .sc-metric-line{display:none}
+  .sc-metric{padding:0 16px 0 0}
+  .sc-hero-buttons{flex-direction:column;align-items:flex-start}
+}
 
 /* HERO */
 .hero{padding:88px 24px 0;min-height:100svh;display:flex;flex-direction:column;justify-content:center;max-width:1280px;margin:0 auto;gap:0}
@@ -274,7 +495,12 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 <div class="z">
 
 <nav>
-  <div class="nlogo">SAVING <b>CAPITAL</b></div>
+  <div class="nlogo" onclick="goPage('home')" style="cursor:pointer">SAVING <b>CAPITAL</b></div>
+  <div class="nav-pages">
+    <button class="npbtn active" id="np-home" onclick="goPage('home')">Home</button>
+    <button class="npbtn" id="np-markets" onclick="goPage('markets')">Market Intelligence</button>
+    <button class="npbtn" id="np-journal-page" onclick="goPage('journal-page')">Trading Journal</button>
+  </div>
   <div class="nr"><div class="live"><div class="ldot"></div>Live</div><div class="clk" id="clk">—</div></div>
 </nav>
 
@@ -289,6 +515,194 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   </div>
   <div class="nt-dot"><div class="ldot"></div></div>
 </div>
+<!-- HOME PAGE -->
+<div id="page-home" class="page">
+<canvas id="sc-webgl"></canvas>
+<div class="sc-grain"></div>
+
+<!-- NAV -->
+<header class="sc-header">
+  <div class="sc-header-logo" onclick="goPage('home')" style="cursor:pointer">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><polygon points="11,1 21,6 21,16 11,21 1,16 1,6" stroke="#22c55e" stroke-width="1.5" fill="none"/><polygon points="11,5 17,8.5 17,15.5 11,19 5,15.5 5,8.5" fill="rgba(34,197,94,0.15)" stroke="#22c55e" stroke-width="0.5"/></svg>
+    <span class="sc-header-wordmark">SAVING<strong>CAPITAL</strong></span>
+  </div>
+  <nav class="sc-header-nav">
+    <button class="sc-hn sc-hn-active" id="np-home" onclick="goPage('home')">Home</button>
+    <button class="sc-hn" id="np-markets" onclick="goPage('markets')">Intelligence</button>
+    <button class="sc-hn" id="np-journal-page" onclick="goPage('journal-page')">Journal</button>
+  </nav>
+  <div class="sc-header-right">
+    <div class="sc-header-live">
+      <span class="sc-pulse-dot"></span>
+      <span>LIVE</span>
+    </div>
+    <div class="sc-header-time" id="clk2">00:00:00 UAE</div>
+    <button class="sc-header-cta" onclick="goPage('markets')">Open Platform</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<main class="sc-main-hero">
+  <!-- Text side -->
+  <div class="sc-hero-text">
+    <div class="sc-overline">
+      <span class="sc-overline-bar"></span>
+      Institutional Intelligence Platform
+    </div>
+    <h1 class="sc-hero-h1">
+      <span class="sc-word sc-word-1">Wall Street</span>
+      <span class="sc-word sc-word-2">Grade<em> Analysis</em></span>
+      <span class="sc-word sc-word-3">In Your Hands</span>
+    </h1>
+    <p class="sc-hero-p">120+ assets. 5 institutional frameworks. Real-time prices via Binance WebSocket. The same models used by Bridgewater, RenTech, Citadel, Two Sigma and Goldman Sachs.</p>
+
+    <div class="sc-hero-buttons">
+      <button class="sc-btn-launch" onclick="goPage('markets')">
+        <span class="sc-btn-launch-glow"></span>
+        <span class="sc-btn-launch-text">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 7.5M14 7.5L7.5 14M14 7.5H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Launch Intelligence
+        </span>
+      </button>
+      <button class="sc-btn-outline" onclick="goPage('journal-page')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 4h6M4 7h6M4 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Trading Journal
+      </button>
+    </div>
+
+    <div class="sc-hero-metrics">
+      <div class="sc-metric">
+        <div class="sc-metric-num" data-target="120">0<span>+</span></div>
+        <div class="sc-metric-lbl">Assets Tracked</div>
+      </div>
+      <div class="sc-metric-line"></div>
+      <div class="sc-metric">
+        <div class="sc-metric-num" data-target="5">0</div>
+        <div class="sc-metric-lbl">WS Frameworks</div>
+      </div>
+      <div class="sc-metric-line"></div>
+      <div class="sc-metric">
+        <div class="sc-metric-num"><span class="sc-metric-lt">&lt;</span>1<span class="sc-metric-s">s</span></div>
+        <div class="sc-metric-lbl">Price Update</div>
+      </div>
+      <div class="sc-metric-line"></div>
+      <div class="sc-metric">
+        <div class="sc-metric-num">24<span>/7</span></div>
+        <div class="sc-metric-lbl">Market Coverage</div>
+      </div>
+    </div>
+
+    <!-- Trusted frameworks -->
+    <div class="sc-trust">
+      <div class="sc-trust-lbl">Powered by frameworks from</div>
+      <div class="sc-trust-names">
+        <span>Bridgewater</span>
+        <span class="sc-trust-dot">·</span>
+        <span>RenTech</span>
+        <span class="sc-trust-dot">·</span>
+        <span>Citadel</span>
+        <span class="sc-trust-dot">·</span>
+        <span>Two Sigma</span>
+        <span class="sc-trust-dot">·</span>
+        <span>Goldman</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orb side -->
+  <div class="sc-hero-orb-wrap">
+    <div class="sc-orb-container">
+      <!-- Outer rings -->
+      <div class="sc-ring sc-ring-1"></div>
+      <div class="sc-ring sc-ring-2"></div>
+      <div class="sc-ring sc-ring-3"></div>
+      <!-- The orb -->
+      <canvas id="sc-orb" width="500" height="500"></canvas>
+      <!-- Floating data pills -->
+      <div class="sc-pill sc-pill-1">
+        <div class="sc-pill-dot"></div>
+        <div class="sc-pill-content">
+          <div class="sc-pill-label">BTC/USD</div>
+          <div class="sc-pill-value up" id="orb-btc">$—</div>
+        </div>
+        <div class="sc-pill-chg up" id="orb-btc-chg">—</div>
+      </div>
+      <div class="sc-pill sc-pill-2">
+        <div class="sc-pill-dot sc-pill-dot-gold"></div>
+        <div class="sc-pill-content">
+          <div class="sc-pill-label">XAU/USD</div>
+          <div class="sc-pill-value" id="orb-gold">$—</div>
+        </div>
+        <div class="sc-pill-chg" id="orb-gold-chg">—</div>
+      </div>
+      <div class="sc-pill sc-pill-3">
+        <div class="sc-pill-dot sc-pill-dot-blue"></div>
+        <div class="sc-pill-content">
+          <div class="sc-pill-label">EUR/USD</div>
+          <div class="sc-pill-value" id="orb-eur">—</div>
+        </div>
+        <div class="sc-pill-chg" id="orb-eur-chg">—</div>
+      </div>
+      <div class="sc-pill sc-pill-4">
+        <div class="sc-pill-dot sc-pill-dot-purple"></div>
+        <div class="sc-pill-content">
+          <div class="sc-pill-label">S&amp;P 500</div>
+          <div class="sc-pill-value" id="orb-spx">$—</div>
+        </div>
+        <div class="sc-pill-chg" id="orb-spx-chg">—</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FEATURE STRIP -->
+<div class="sc-strip">
+  <div class="sc-strip-item">
+    <div class="sc-strip-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1v4M9 13v4M1 9h4M13 9h4M3.2 3.2l2.8 2.8M11.9 11.9l2.9 2.9M3.2 14.8l2.8-2.8M11.9 6.1l2.9-2.9" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="sc-strip-title">Real-Time Prices</div>
+      <div class="sc-strip-desc">Binance WebSocket · Sub-second crypto · Live forex</div>
+    </div>
+  </div>
+  <div class="sc-strip-div"></div>
+  <div class="sc-strip-item">
+    <div class="sc-strip-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#22c55e" stroke-width="1.2"/><path d="M5.5 9.5l2.5 2.5 5-6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="sc-strip-title">Quant AI Analysis</div>
+      <div class="sc-strip-desc">5 Wall Street frameworks · Auto-generated daily</div>
+    </div>
+  </div>
+  <div class="sc-strip-div"></div>
+  <div class="sc-strip-item">
+    <div class="sc-strip-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h10M2 14h7" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><circle cx="15" cy="13" r="2.5" stroke="#22c55e" stroke-width="1.2"/><path d="M17 15l1.5 1.5" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="sc-strip-title">Live News Feed</div>
+      <div class="sc-strip-desc">Reuters · ForexLive · CoinTelegraph · OilPrice</div>
+    </div>
+  </div>
+  <div class="sc-strip-div"></div>
+  <div class="sc-strip-item">
+    <div class="sc-strip-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2.5" stroke="#22c55e" stroke-width="1.2"/><path d="M6 6h6M6 9h6M6 12h4" stroke="#22c55e" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="sc-strip-title">Trading Journal</div>
+      <div class="sc-strip-desc">MT5 auto-sync · P&amp;L · Win rate · R:R analytics</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end page-home -->
+<!-- MARKETS PAGE -->
+
+
+<div id="page-markets" class="page" style="display:none">
 <section class="hero z">
   <div class="htag"><div class="htag-dot"></div>AI-Powered · Institutional Grade · Real-Time</div>
   <h1>Market<i>Intelligence</i></h1>
@@ -388,6 +802,15 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     </div>
   </div>
 </div>
+</div><!-- end markets page -->
+
+<!-- JOURNAL PAGE -->
+<div id="page-journal-page" class="page" style="display:none">
+  <div class="main z" style="padding-top:80px">
+    <div id="journal-standalone"></div>
+  </div>
+</div>
+
 <footer>All analysis is AI-generated for educational and informational purposes only. Saving Capital does not provide financial advice. Past performance is not indicative of future results. Always conduct independent research before making trading decisions.</footer>
 </div>
 
@@ -892,6 +1315,598 @@ async function pollForexCommodities(){
 }
 
 
+
+// ══════════════════════════════════════════════════════
+//   SPECTACULAR HOME PAGE — 3D Globe + Particles
+// ══════════════════════════════════════════════════════
+
+(function initSpectacular(){
+
+// ── Cursor glow ──────────────────────────────────────
+const glw = document.getElementById('cursor-glow');
+if(glw){
+  document.addEventListener('mousemove', e=>{
+    glw.style.left = e.clientX+'px';
+    glw.style.top  = e.clientY+'px';
+    glw.style.opacity = '1';
+  });
+  document.addEventListener('mouseleave', ()=>{ glw.style.opacity='0'; });
+}
+
+// ── Background particle canvas ───────────────────────
+const bgCv = document.getElementById('globe-canvas');
+if(!bgCv) return;
+const bgCx = bgCv.getContext('2d');
+let W, H, particles = [], dataStreams = [];
+
+function resizeBg(){
+  W = bgCv.width  = window.innerWidth;
+  H = bgCv.height = window.innerHeight;
+}
+resizeBg();
+window.addEventListener('resize', resizeBg);
+
+// Create floating particles
+for(let i=0;i<120;i++){
+  particles.push({
+    x: Math.random()*window.innerWidth,
+    y: Math.random()*window.innerHeight,
+    r: Math.random()*1.5+0.3,
+    vx: (Math.random()-.5)*.3,
+    vy: (Math.random()-.5)*.3,
+    op: Math.random()*.5+.1,
+  });
+}
+
+// Data stream lines
+for(let i=0;i<18;i++){
+  dataStreams.push({
+    x: Math.random()*window.innerWidth,
+    y: -50,
+    speed: Math.random()*1.5+0.4,
+    len: Math.random()*80+40,
+    op: Math.random()*.4+.05,
+    width: Math.random()*.8+.2,
+  });
+}
+
+let mx=W/2, my=H/2;
+document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+
+function drawBg(){
+  bgCx.clearRect(0,0,W,H);
+
+  // Ambient glow at cursor
+  const grad = bgCx.createRadialGradient(mx,my,0,mx,my,400);
+  grad.addColorStop(0,'rgba(34,197,94,0.04)');
+  grad.addColorStop(1,'transparent');
+  bgCx.fillStyle=grad;
+  bgCx.fillRect(0,0,W,H);
+
+  // Bottom corner glow
+  const g2 = bgCx.createRadialGradient(W*.7,H,0,W*.7,H,600);
+  g2.addColorStop(0,'rgba(34,197,94,0.05)');
+  g2.addColorStop(1,'transparent');
+  bgCx.fillStyle=g2; bgCx.fillRect(0,0,W,H);
+
+  // Particles
+  for(const p of particles){
+    p.x += p.vx; p.y += p.vy;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    bgCx.beginPath();
+    bgCx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCx.fillStyle=`rgba(34,197,94,${p.op})`;
+    bgCx.fill();
+  }
+
+  // Connect nearby particles
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x;
+      const dy=particles[i].y-particles[j].y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<100){
+        bgCx.beginPath();
+        bgCx.moveTo(particles[i].x,particles[i].y);
+        bgCx.lineTo(particles[j].x,particles[j].y);
+        bgCx.strokeStyle=`rgba(34,197,94,${0.06*(1-dist/100)})`;
+        bgCx.lineWidth=.5;
+        bgCx.stroke();
+      }
+    }
+  }
+
+  // Data streams (vertical falling lines)
+  for(const s of dataStreams){
+    s.y += s.speed;
+    if(s.y > H+s.len){ s.y=-s.len; s.x=Math.random()*W; }
+    const sg=bgCx.createLinearGradient(s.x,s.y-s.len,s.x,s.y);
+    sg.addColorStop(0,'transparent');
+    sg.addColorStop(1,`rgba(34,197,94,${s.op})`);
+    bgCx.beginPath();
+    bgCx.moveTo(s.x,s.y-s.len);
+    bgCx.lineTo(s.x,s.y);
+    bgCx.strokeStyle=sg;
+    bgCx.lineWidth=s.width;
+    bgCx.stroke();
+  }
+
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ── 3D Dot Globe ─────────────────────────────────────
+const gc = document.getElementById('mini-globe');
+if(!gc) return;
+const gx = gc.getContext('2d');
+const GW = 520, GH = 520, GR = 220;
+let angle = 0;
+
+// Generate globe dots
+const dots = [];
+const ROWS=22, COLS=44;
+for(let lat=0;lat<ROWS;lat++){
+  const phi = (Math.PI * lat) / (ROWS-1);
+  const dotCount = Math.max(1, Math.round(Math.sin(phi)*COLS));
+  for(let lng=0;lng<dotCount;lng++){
+    const theta = (2*Math.PI*lng)/dotCount;
+    dots.push({ phi, theta });
+  }
+}
+
+// Major cities / data points (highlighted)
+const hotspots = [
+  {phi:1.05,theta:0.35,label:'NYC'},  // New York
+  {phi:0.90,theta:0,label:'LON'},     // London
+  {phi:0.87,theta:2.3,label:'DXB'},   // Dubai
+  {phi:0.80,theta:2.55,label:'HKG'},  // Hong Kong
+  {phi:1.15,theta:-1.57,label:'LAX'}, // LA
+  {phi:0.65,theta:2.4,label:'TKY'},   // Tokyo
+];
+
+function drawGlobe(){
+  gx.clearRect(0,0,GW,GH);
+  angle += 0.003;
+
+  // Globe glow
+  const ggrad = gx.createRadialGradient(GW/2,GH/2,0,GW/2,GH/2,GR);
+  ggrad.addColorStop(0,'rgba(34,197,94,0.04)');
+  ggrad.addColorStop(.7,'rgba(34,197,94,0.02)');
+  ggrad.addColorStop(1,'transparent');
+  gx.fillStyle=ggrad; gx.fillRect(0,0,GW,GH);
+
+  // Globe circle outline
+  gx.beginPath();
+  gx.arc(GW/2,GH/2,GR,0,Math.PI*2);
+  gx.strokeStyle='rgba(34,197,94,0.08)';
+  gx.lineWidth=1;
+  gx.stroke();
+
+  // Sort dots by z for depth
+  const projected = dots.map(d=>{
+    const x3 = GR * Math.sin(d.phi) * Math.cos(d.theta + angle);
+    const y3 = GR * Math.cos(d.phi);
+    const z3 = GR * Math.sin(d.phi) * Math.sin(d.theta + angle);
+    return { x:GW/2+x3, y:GH/2-y3, z:z3, phi:d.phi };
+  }).sort((a,b)=>a.z-b.z);
+
+  for(const p of projected){
+    const visible = p.z >= -GR*0.3;
+    const depth   = (p.z + GR) / (2*GR); // 0 to 1
+    const op      = visible ? 0.08 + depth*0.45 : 0.03;
+    const r       = visible ? 1.0 + depth*.8 : .5;
+    gx.beginPath();
+    gx.arc(p.x,p.y,r,0,Math.PI*2);
+    gx.fillStyle=`rgba(34,197,94,${op})`;
+    gx.fill();
+  }
+
+  // Hotspots
+  for(const h of hotspots){
+    const x3 = GR * Math.sin(h.phi) * Math.cos(h.theta + angle);
+    const y3 = GR * Math.cos(h.phi);
+    const z3 = GR * Math.sin(h.phi) * Math.sin(h.theta + angle);
+    if(z3 < 0) continue;
+    const depth = (z3+GR)/(2*GR);
+    const px = GW/2+x3, py = GH/2-y3;
+    // Pulse ring
+    const pulse = (Math.sin(Date.now()*.003 + h.phi)*0.5+0.5);
+    gx.beginPath();
+    gx.arc(px,py,4+pulse*6,0,Math.PI*2);
+    gx.strokeStyle=`rgba(34,197,94,${0.3*depth*(1-pulse)})`;
+    gx.lineWidth=1;
+    gx.stroke();
+    // Core dot
+    gx.beginPath();
+    gx.arc(px,py,2.5,0,Math.PI*2);
+    gx.fillStyle=`rgba(34,197,94,${0.9*depth})`;
+    gx.fill();
+    // Connection lines between hotspots
+    gx.shadowBlur=6;gx.shadowColor='rgba(34,197,94,0.4)';
+    gx.shadowBlur=0;
+  }
+
+  // Equator line
+  gx.beginPath();
+  for(let t=0;t<=Math.PI*2;t+=0.05){
+    const x3 = GR*Math.cos(t+angle);
+    const z3 = GR*Math.sin(t+angle);
+    const vis = z3 >= -50;
+    const px = GW/2+x3, py = GH/2;
+    if(t===0) gx.moveTo(px,py);
+    else gx.lineTo(px,py);
+  }
+  gx.strokeStyle='rgba(34,197,94,0.08)';
+  gx.lineWidth=.8;
+  gx.stroke();
+
+  requestAnimationFrame(drawGlobe);
+}
+drawGlobe();
+
+// ── Update globe data cards from live prices ─────────
+function updateGlobeCards(){
+  if(typeof prices !== 'undefined'){
+    const btc=prices['bitcoin'];
+    const gold=prices['XAUUSD'];
+    const eur=prices['EURUSD'];
+    const spx=prices['SPX'];
+    function fp2(p){if(!p)return'—';if(p>10000)return'$'+Math.round(p).toLocaleString();if(p>100)return'$'+p.toFixed(2);if(p>1)return'$'+p.toFixed(4);return'$'+p.toFixed(6);}
+    function fc2(c){if(c==null)return'—';return(c>=0?'+':'')+c.toFixed(2)+'%';}
+    function cc2(c){return c==null?'fl':c>0?'up':'dn';}
+    if(btc){const el=document.getElementById('gdc-btc');const ec=document.getElementById('gdc-btc-chg');if(el)el.textContent=fp2(btc.price);if(ec){ec.textContent=fc2(btc.change);ec.className='gdc-chg '+cc2(btc.change);}}
+    if(gold){const el=document.getElementById('gdc-gold');const ec=document.getElementById('gdc-gold-chg');if(el)el.textContent=fp2(gold.price);if(ec){ec.textContent=fc2(gold.change);ec.className='gdc-chg '+cc2(gold.change);}}
+    if(eur){const el=document.getElementById('gdc-eur');const ec=document.getElementById('gdc-eur-chg');if(el)el.textContent=eur.price?.toFixed(4)||'—';if(ec){ec.textContent=fc2(eur.change);ec.className='gdc-chg '+cc2(eur.change);}}
+    if(spx){const el=document.getElementById('gdc-spx');const ec=document.getElementById('gdc-spx-chg');if(el)el.textContent=fp2(spx.price);if(ec){ec.textContent=fc2(spx.change);ec.className='gdc-chg '+cc2(spx.change);}}
+  }
+  setTimeout(updateGlobeCards, 3000);
+}
+setTimeout(updateGlobeCards, 4000);
+
+// Clock for home page
+function tickHome(){
+  try{
+    const uae=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dubai',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    const el=document.getElementById('clk2');
+    if(el) el.textContent=uae+' UAE';
+  }catch(e){}
+}
+tickHome();
+setInterval(tickHome,1000);
+
+})();
+
+// ════════════════════════════════════════════════════════════
+//   SAVING CAPITAL — SPECTACULAR HOME
+//   Three.js fluid mesh + glass cards + live data
+// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//   SAVING CAPITAL HOME — WebGL Orb + Particles + Live Data
+// ═══════════════════════════════════════════════════════════════
+(function(){
+
+// ── BG canvas: particle field + data streams ─────────────────
+const bgCv = document.getElementById('sc-webgl');
+if(!bgCv) return;
+const bgCx = bgCv.getContext('2d');
+let BW, BH;
+function resizeBg(){ BW=bgCv.width=innerWidth; BH=bgCv.height=innerHeight; }
+resizeBg(); addEventListener('resize', resizeBg);
+
+const PARTS = Array.from({length:90}, ()=>({
+  x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+  vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+  r:Math.random()*1.3+.2, op:Math.random()*.4+.06,
+}));
+const STREAMS = Array.from({length:22}, ()=>({
+  x:Math.random()*innerWidth, y:-120,
+  speed:Math.random()*1.2+.3, len:Math.random()*100+50,
+  op:Math.random()*.35+.03, w:Math.random()*.7+.15,
+}));
+let bmx=BW*.5, bmy=BH*.5;
+addEventListener('mousemove', e=>{ bmx=e.clientX; bmy=e.clientY; });
+
+function drawBg(){
+  bgCx.clearRect(0,0,BW,BH);
+  // Mouse glow
+  const g=bgCx.createRadialGradient(bmx,bmy,0,bmx,bmy,500);
+  g.addColorStop(0,'rgba(34,197,94,0.045)'); g.addColorStop(1,'transparent');
+  bgCx.fillStyle=g; bgCx.fillRect(0,0,BW,BH);
+  // Corner glow
+  const g2=bgCx.createRadialGradient(BW*.75,BH,0,BW*.75,BH,700);
+  g2.addColorStop(0,'rgba(34,197,94,0.06)'); g2.addColorStop(1,'transparent');
+  bgCx.fillStyle=g2; bgCx.fillRect(0,0,BW,BH);
+  // Particles
+  PARTS.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=BW; if(p.x>BW)p.x=0;
+    if(p.y<0)p.y=BH; if(p.y>BH)p.y=0;
+    bgCx.beginPath(); bgCx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCx.fillStyle=`rgba(34,197,94,${p.op})`; bgCx.fill();
+  });
+  // Connections
+  for(let i=0;i<PARTS.length;i++) for(let j=i+1;j<PARTS.length;j++){
+    const dx=PARTS[i].x-PARTS[j].x, dy=PARTS[i].y-PARTS[j].y;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if(d<110){ bgCx.beginPath(); bgCx.moveTo(PARTS[i].x,PARTS[i].y);
+      bgCx.lineTo(PARTS[j].x,PARTS[j].y);
+      bgCx.strokeStyle=`rgba(34,197,94,${.055*(1-d/110)})`; bgCx.lineWidth=.4; bgCx.stroke(); }
+  }
+  // Data streams
+  STREAMS.forEach(s=>{
+    s.y+=s.speed; if(s.y>BH+s.len){ s.y=-s.len; s.x=Math.random()*BW; }
+    const sg=bgCx.createLinearGradient(s.x,s.y-s.len,s.x,s.y);
+    sg.addColorStop(0,'transparent'); sg.addColorStop(1,`rgba(34,197,94,${s.op})`);
+    bgCx.beginPath(); bgCx.moveTo(s.x,s.y-s.len); bgCx.lineTo(s.x,s.y);
+    bgCx.strokeStyle=sg; bgCx.lineWidth=s.w; bgCx.stroke();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ── 3D ORB (canvas, no Three.js dependency) ──────────────────
+const orb = document.getElementById('sc-orb');
+if(orb){
+  const ox = orb.getContext('2d');
+  const OR = 250; // canvas size = 500, radius = 250
+  let orbT = 0;
+  let orbMx=0, orbMy=0;
+  orb.addEventListener('mousemove', e=>{
+    const rect=orb.getBoundingClientRect();
+    orbMx=(e.clientX-rect.left-OR)/OR;
+    orbMy=(e.clientY-rect.top-OR)/OR;
+  });
+
+  // Generate sphere dots
+  const DOTS = [];
+  for(let i=0;i<2400;i++){
+    // Fibonacci sphere distribution — most even coverage
+    const phi = Math.acos(1 - 2*(i+.5)/2400);
+    const theta = Math.PI*(1+Math.sqrt(5))*i;
+    DOTS.push({ phi, theta });
+  }
+
+  function drawOrb(){
+    ox.clearRect(0,0,500,500);
+    orbT += 0.005;
+
+    // Orb ambient glow
+    const glow = ox.createRadialGradient(OR,OR,0,OR,OR,OR*1.2);
+    glow.addColorStop(0,'rgba(34,197,94,0.06)');
+    glow.addColorStop(.6,'rgba(34,197,94,0.03)');
+    glow.addColorStop(1,'transparent');
+    ox.fillStyle=glow; ox.fillRect(0,0,500,500);
+
+    // Subtle mouse tilt
+    const tiltX = orbMy * 0.3;
+    const tiltY = orbMx * 0.3;
+    const R = OR * .88;
+
+    // Project and sort dots
+    const pts = DOTS.map(d=>{
+      // 3D coordinates
+      let x3 = R*Math.sin(d.phi)*Math.cos(d.theta+orbT+tiltY);
+      let y3 = R*Math.cos(d.phi+tiltX);
+      let z3 = R*Math.sin(d.phi)*Math.sin(d.theta+orbT+tiltY);
+      return { px:OR+x3, py:OR-y3, z:z3, phi:d.phi };
+    }).sort((a,b)=>a.z-b.z);
+
+    pts.forEach(p=>{
+      const vis = p.z >= 0;
+      const depth = (p.z+R)/(2*R); // 0-1
+      if(!vis && Math.random()>.3) return; // skip most back dots
+      const op = vis ? 0.05 + depth*0.55 : 0.015;
+      const sz = vis ? 0.6 + depth*1.2 : 0.3;
+      // Color variation: green to teal based on phi
+      const hue = vis ? `rgba(34,197,94,${op})` : `rgba(34,197,94,${op})`;
+      const blend = Math.sin(p.phi*2+orbT);
+      const r2 = 34 + blend*20|0, g2 = 197 + blend*30|0, b2 = 94 + blend*40|0;
+      ox.beginPath(); ox.arc(p.px,p.py,sz,0,Math.PI*2);
+      ox.fillStyle=`rgba(${Math.min(255,r2)},${Math.min(255,g2)},${Math.min(255,b2)},${op})`;
+      ox.fill();
+    });
+
+    // Equatorial latitude lines
+    for(let lat=-2;lat<=2;lat++){
+      const phi = Math.PI/2 + lat*(Math.PI/10);
+      const path = [];
+      for(let t=0;t<=360;t+=3){
+        const th = t*Math.PI/180+orbT+tiltY;
+        const x3 = R*Math.sin(phi)*Math.cos(th);
+        const y3 = R*Math.cos(phi+tiltX);
+        const z3 = R*Math.sin(phi)*Math.sin(th);
+        if(z3>=-R*.2) path.push({x:OR+x3,y:OR-y3,z:z3});
+      }
+      if(path.length>1){
+        ox.beginPath(); ox.moveTo(path[0].x,path[0].y);
+        path.forEach(p=>ox.lineTo(p.x,p.y));
+        ox.strokeStyle='rgba(34,197,94,0.04)'; ox.lineWidth=.5; ox.stroke();
+      }
+    }
+
+    // Hotspot nodes — financial hubs
+    const HUBS = [
+      {phi:1.05,theta:0.35,col:'#22c55e'},    // NYC
+      {phi:0.90,theta:-.2,col:'#4ade80'},      // London
+      {phi:0.87,theta:2.3,col:'#22c55e'},      // Dubai
+      {phi:0.80,theta:2.55,col:'#86efac'},     // HK
+      {phi:1.15,theta:-1.55,col:'#22c55e'},    // LA
+      {phi:0.65,theta:2.42,col:'#4ade80'},     // Tokyo
+    ];
+    HUBS.forEach(h=>{
+      const x3=R*Math.sin(h.phi)*Math.cos(h.theta+orbT+tiltY);
+      const y3=R*Math.cos(h.phi+tiltX);
+      const z3=R*Math.sin(h.phi)*Math.sin(h.theta+orbT+tiltY);
+      if(z3<0) return;
+      const depth2=(z3+R)/(2*R);
+      const px=OR+x3, py=OR-y3;
+      const pulse=(Math.sin(Date.now()*.002+h.phi)*.5+.5);
+      // Outer pulse ring
+      ox.beginPath(); ox.arc(px,py,(5+pulse*10),0,Math.PI*2);
+      ox.strokeStyle=`rgba(34,197,94,${.4*depth2*(1-pulse)})`; ox.lineWidth=1; ox.stroke();
+      // Inner dot
+      ox.beginPath(); ox.arc(px,py,2.5,0,Math.PI*2);
+      ox.fillStyle=`rgba(34,197,94,${.95*depth2})`; ox.fill();
+      // Glow
+      ox.shadowBlur=12; ox.shadowColor='rgba(34,197,94,.5)';
+      ox.beginPath(); ox.arc(px,py,1.5,0,Math.PI*2);
+      ox.fillStyle=`rgba(255,255,255,${.7*depth2})`; ox.fill();
+      ox.shadowBlur=0;
+    });
+
+    // Orb rim light
+    const rim=ox.createRadialGradient(OR*.65,OR*.4,0,OR,OR,R*1.02);
+    rim.addColorStop(0,'transparent');
+    rim.addColorStop(.85,'transparent');
+    rim.addColorStop(.94,'rgba(34,197,94,0.06)');
+    rim.addColorStop(1,'rgba(34,197,94,0.12)');
+    ox.fillStyle=rim; ox.fillRect(0,0,500,500);
+
+    requestAnimationFrame(drawOrb);
+  }
+  drawOrb();
+}
+
+// ── Animated counters ────────────────────────────────────────
+function animateCounters(){
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const target=parseInt(el.getAttribute('data-target'));
+    const suffix=el.innerHTML.includes('+')?'<span>+</span>':'';
+    let start=0, dur=1800, startTime=null;
+    function step(ts){
+      if(!startTime) startTime=ts;
+      const prog=Math.min((ts-startTime)/dur,1);
+      const ease=1-Math.pow(1-prog,3);
+      el.innerHTML=Math.round(ease*target)+(suffix);
+      if(prog<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+setTimeout(animateCounters,600);
+
+// ── Home clock ────────────────────────────────────────────────
+function tickH(){
+  try{
+    const t=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dubai',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    const el=document.getElementById('clk2'); if(el) el.textContent=t+' UAE';
+  }catch(e){}
+}
+tickH(); setInterval(tickH,1000);
+
+// ── Live price pills ──────────────────────────────────────────
+function updatePills(){
+  if(typeof prices==='undefined'){ setTimeout(updatePills,2500); return; }
+  const fp=p=>{if(!p)return'—';if(p>10000)return'$'+p.toLocaleString('en',{maximumFractionDigits:0});if(p>100)return'$'+p.toFixed(2);return p.toFixed(4);};
+  const fc=c=>{if(c==null)return'—';return(c>=0?'+':'')+c.toFixed(2)+'%';};
+  const cc=c=>c==null?'':c>0?'up':'dn';
+  const set=(idP,idC,price,chg)=>{
+    const ep=document.getElementById(idP), ec=document.getElementById(idC);
+    if(ep){ep.textContent=fp(price);ep.className='sc-pill-value '+cc(chg);}
+    if(ec){ec.textContent=fc(chg);ec.className='sc-pill-chg '+cc(chg);}
+  };
+  const btc=prices['bitcoin'], gold=prices['XAUUSD'], eur=prices['EURUSD'], spx=prices['SPX'];
+  if(btc)  set('orb-btc','orb-btc-chg',btc.price,btc.change);
+  if(gold) set('orb-gold','orb-gold-chg',gold.price,gold.change);
+  if(eur)  set('orb-eur','orb-eur-chg',eur.price,eur.change);
+  if(spx)  set('orb-spx','orb-spx-chg',spx.price,spx.change);
+  setTimeout(updatePills,4000);
+}
+setTimeout(updatePills,3500);
+
+})();
+
+// ── Page Navigation ──────────────────────────────────────────────────────────
+function goPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  const el = document.getElementById('page-'+page);
+  if(el) el.style.display='block';
+  // Update nav buttons
+  document.querySelectorAll('.npbtn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('np-'+page);
+  if(btn) btn.classList.add('active');
+  // Handle journal standalone page
+  if(page==='journal-page'){
+    const con = document.getElementById('journal-standalone');
+    if(con){ const tmp=document.createElement('div'); tmp.id='s-journal-tmp'; con.innerHTML=''; con.appendChild(tmp); selId=null; renderJournalInto(con); }
+  }
+  window.scrollTo(0,0);
+}
+
+function renderJournalInto(con){
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
+  const mt5Block = mt5Info ? `
+    <div class="mt5-connected">
+      <div class="mt5-conn-dot"></div>
+      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
+    </div>` : `
+    <div class="mt5-connect" id="mt5-connect-box">
+      <div class="mt5-connect-title">Connect Your MT5 Account</div>
+      <div class="mt5-connect-sub">Enter your MetaTrader 5 credentials below to automatically sync your trades. Credentials are sent securely and never stored on our servers.</div>
+      <div class="mt5-form">
+        <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number"/></div>
+        <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password"/></div>
+        <div><label class="jlabel">Broker Server</label><input class="jinput" id="mt5-server" placeholder="e.g. ICMarkets-Live"/></div>
+        <div><label class="jlabel">Broker Name</label><input class="jinput" id="mt5-broker" placeholder="e.g. IC Markets"/></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
+        <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
+      </div>
+      <div class="mt5-status" id="mt5-status"></div>
+    </div>`;
+
+  const closed = jTrades.filter(t=>t.status==='CLOSED');
+  const wins = closed.filter(t=>(t.pnl||0)>0);
+  const totalPnl = closed.reduce((s,t)=>s+(t.pnl||0),0);
+  const winRate = closed.length?Math.round((wins.length/closed.length)*100):0;
+  const avgWin = wins.length?wins.reduce((s,t)=>s+(t.pnl||0),0)/wins.length:0;
+  const losses = closed.filter(t=>(t.pnl||0)<0);
+  const avgLoss = losses.length?Math.abs(losses.reduce((s,t)=>s+(t.pnl||0),0)/losses.length):0;
+  const rr = avgLoss>0?(avgWin/avgLoss).toFixed(2):'—';
+  const pnlCls = totalPnl>=0?'up':'dn';
+
+  con.innerHTML = `
+  <div class="jnl">
+    ${mt5Block}
+    <div class="jnl-header">
+      <div class="jnl-title">Trading Journal</div>
+      <div class="jnl-actions"><button class="jbtn jbtn-primary" onclick="openJModal()">+ Manual Trade</button></div>
+    </div>
+    <div class="jstats">
+      <div class="jstat"><div class="jstat-n">${jTrades.length}</div><div class="jstat-l">Total Trades</div></div>
+      <div class="jstat"><div class="jstat-n ${pnlCls}">${totalPnl>=0?'+':''}$${Math.abs(totalPnl).toFixed(0)}</div><div class="jstat-l">Total P&L</div></div>
+      <div class="jstat"><div class="jstat-n ${winRate>=50?'up':'dn'}">${winRate}%</div><div class="jstat-l">Win Rate</div></div>
+      <div class="jstat"><div class="jstat-n">${rr}</div><div class="jstat-l">Avg R:R</div></div>
+      <div class="jstat"><div class="jstat-n up">$${avgWin.toFixed(0)}</div><div class="jstat-l">Avg Win</div></div>
+      <div class="jstat"><div class="jstat-n dn">$${avgLoss.toFixed(0)}</div><div class="jstat-l">Avg Loss</div></div>
+    </div>
+    <div class="jtable-wrap">
+      ${jTrades.length===0?`<div class="jempty"><span>NO TRADES YET</span>Connect your MT5 account above or click "+ Manual Trade" to log your first trade</div>`:`
+      <table class="jtable">
+        <thead><tr><th>Date</th><th>Asset</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Size</th><th>P&L</th><th>Status</th><th>Strategy</th><th>Notes</th><th></th></tr></thead>
+        <tbody>${jTrades.map(t=>`<tr>
+          <td class="jmono">${t.date||'—'}</td>
+          <td><strong>${t.asset||'—'}</strong></td>
+          <td><span class="${t.direction==='LONG'?'jdir-long':'jdir-short'}">${t.direction||'—'}</span></td>
+          <td class="jmono">${t.entry?'$'+parseFloat(t.entry).toLocaleString():'—'}</td>
+          <td class="jmono">${t.exit?'$'+parseFloat(t.exit).toLocaleString():'—'}</td>
+          <td class="jmono">${t.size||'—'}</td>
+          <td class="${t.pnl!=null?(t.pnl>=0?'jpnl-pos':'jpnl-neg'):''}">${t.pnl!=null?(t.pnl>=0?'+':'')+' $'+Math.abs(t.pnl).toFixed(2):'—'}</td>
+          <td><span class="${t.status==='OPEN'?'jstatus-open':'jstatus-closed'}">${t.status||'—'}</span></td>
+          <td style="font-size:11px;color:var(--t3)">${t.strategy||'—'}</td>
+          <td class="jnotes" title="${t.notes||''}">${t.notes||'—'}</td>
+          <td style="white-space:nowrap;display:flex;gap:5px">
+            <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
+            <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
+          </td>
+        </tr>`).join('')}</tbody>
+      </table>`}
+    </div>
+  </div>`;
+}
+
 // ── MT5 Account Connection ─────────────────────────────────────────────────
 async function connectMT5(){
   const login    = document.getElementById('mt5-login')?.value?.trim();
@@ -960,7 +1975,7 @@ async function loadJournal(){
 }
 
 function renderJournal(){
-  const con = document.getElementById('s-journal');
+  const con = document.getElementById('s-journal') || document.getElementById('journal-standalone');
   if(!con) return;
 
   // Stats
