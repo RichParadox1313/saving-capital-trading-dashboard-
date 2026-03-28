@@ -81,7 +81,7 @@ CRYPTO_ASSETS = [
     {"id":"shiba-inu",          "name":"Shiba Inu",     "sym":"SHIB",   "tab":"crypto"},
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
-    {"id":"polygon-ecosystem-token",      "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
+    {"id":"pol-polygon-ecosystem-token",  "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
@@ -219,7 +219,7 @@ async def fetch_coingecko() -> dict:
                         "order": "market_cap_desc",
                         "per_page": "250",
                         "page": "1",
-                        "sparkline": "false",
+                        "sparkline": "true",
                         "price_change_percentage": "24h,7d",
                     },
                     headers=headers,
@@ -232,12 +232,18 @@ async def fetch_coingecko() -> dict:
                         for coin in data:
                             cid = coin.get("id")
                             if not cid: continue
+                            spark_prices = (coin.get("sparkline_in_7d") or {}).get("price") or []
+                            # Sample to 20 points max
+                            if len(spark_prices) > 20:
+                                step = len(spark_prices) // 20
+                                spark_prices = spark_prices[::step][:20]
                             result[cid] = {
                                 "usd":            coin.get("current_price"),
                                 "usd_24h_change": coin.get("price_change_percentage_24h") or 0,
                                 "usd_7d_change":  coin.get("price_change_percentage_7d_in_currency") or
                                                   coin.get("price_change_percentage_7d") or 0,
                                 "usd_market_cap": coin.get("market_cap"),
+                                "sparkline":      [round(p, 6) for p in spark_prices if p],
                             }
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
                         return result
@@ -335,22 +341,15 @@ async def load_all_prices() -> dict:
                 "change":   round(d.get("usd_24h_change", 0) or 0, 3),
                 "change5d": round(d.get("usd_7d_change",  0) or 0, 3),
                 "mcap":     d.get("usd_market_cap"),
-                "closes":   [],
+                "closes":   d.get("sparkline", []),
             }
             crypto_ok += 1
         else:
             result[a["id"]] = {**a, "price": None, "change": None, "change5d": None, "closes": []}
     print(f"  Crypto prices: {crypto_ok}/{len(CRYPTO_ASSETS)} loaded")
 
-    # 2. Crypto sparklines — top 8 only (rate limit friendly)
-    top8 = ["bitcoin","ethereum","ripple","solana","binancecoin","dogecoin","cardano","avalanche-2"]
-    async with aiohttp.ClientSession() as s:
-        for cid in top8:
-            if result.get(cid, {}).get("price"):
-                cl = await fetch_cg_sparkline(cid, s)
-                if cl:
-                    result[cid]["closes"] = cl
-                await asyncio.sleep(0.35)
+    # 2. Crypto sparklines — now included directly from /coins/markets sparkline_in_7d
+    #    No separate fetch needed
 
     # 3. Forex + Commodities — Yahoo Finance
     print("  Fetching Yahoo Finance (forex + commodities)...")
