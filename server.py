@@ -721,13 +721,15 @@ async def health():
 
 class AnalysisRequest(BaseModel):
     asset_id: str
+    lang: str = "en"  # en, bg, he
 
 @app.post("/api/analysis")
 async def api_analysis(req: AnalysisRequest):
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
     today     = datetime.utcnow().strftime("%Y-%m-%d")
-    cache_key = f"{req.asset_id}_{today}"
+    lang      = req.lang if req.lang in ("en","bg","he") else "en"
+    cache_key = f"{req.asset_id}_{today}_{lang}"
     if cache_key in analysis_cache:
         c = analysis_cache[cache_key]
         if time.time() - c["ts"] < ANALYSIS_TTL:
@@ -755,7 +757,15 @@ async def api_analysis(req: AnalysisRequest):
     ph   = detect_phase(prices)
     aph  = asset_phase(a.get("change"), a.get("change5d"))
     ps,cs,c5s = fmt_p(a.get("price")), fmt_c(a.get("change")), fmt_c(a.get("change5d"))
+    lang_instruction = ""
+    if lang == "bg":
+        lang_instruction = "IMPORTANT: Write ALL text fields in Bulgarian (Български). Only keep financial symbols, numbers, and technical indicators in English."
+    elif lang == "he":
+        lang_instruction = "IMPORTANT: Write ALL text fields in Hebrew (עברית). Only keep financial symbols, numbers, and technical indicators in English."
+
     prompt = f"""You are a senior quantitative analyst combining frameworks from the world's top hedge funds and quant trading desks including macro debt-cycle analysis, statistical momentum and mean-reversion signals, multi-strategy risk-adjusted positioning, factor decomposition (momentum, carry, value, quality), and institutional flow analysis.
+
+{lang_instruction}
 
 LIVE DATA — {datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}:
 Asset: {a['name']} ({a['sym']}) | Price: {ps} | 24h: {cs} | 5d: {c5s} | Phase: {aph}
