@@ -134,25 +134,24 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 
 /* RIGHT: holographic charts visual */
 .hp-right{position:relative;display:flex;align-items:center;justify-content:center;height:580px}
-.hp-visual-wrap{position:relative;width:520px;height:520px;display:flex;align-items:center;justify-content:center}
+.hp-visual-wrap{position:relative;width:560px;height:560px;display:flex;align-items:center;justify-content:center;overflow:visible}
 
 /* Glow behind the image */
-.hp-visual-glow{
-  position:absolute;inset:-20px;border-radius:20px;
-  background:radial-gradient(ellipse at center,rgba(34,197,94,.12) 0%,rgba(34,197,94,.05) 50%,transparent 75%);
-  animation:vglow 4s ease-in-out infinite;
-}
-@keyframes vglow{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+.hp-visual-glow{display:none}
 
 /* The hero image */
 .hp-visual-img{
-  width:480px;height:480px;object-fit:contain;
+  width:520px;height:520px;object-fit:contain;
   position:relative;z-index:2;
-  filter:drop-shadow(0 20px 60px rgba(34,197,94,.25)) drop-shadow(0 0 100px rgba(34,197,94,.1));
+  mix-blend-mode:screen;
+  filter:drop-shadow(0 0 80px rgba(34,197,94,.4)) drop-shadow(0 0 160px rgba(34,197,94,.2)) brightness(1.1) saturate(1.15);
   animation:vfloat 6s ease-in-out infinite;
   transition:transform .12s linear;
 }
-@keyframes vfloat{0%,100%{transform:translateY(0) perspective(1000px) rotateY(-2deg)}50%{transform:translateY(-14px) perspective(1000px) rotateY(2deg)}}
+@keyframes vfloat{
+  0%,100%{transform:translateY(0) perspective(1200px) rotateY(-4deg) rotateX(2deg)}
+  50%{transform:translateY(-18px) perspective(1200px) rotateY(4deg) rotateX(-1deg)}
+}
 
 /* Pills */
 .hp-pill{position:absolute;z-index:5;display:flex;align-items:center;gap:9px;background:rgba(3,8,3,.86);backdrop-filter:blur(18px);border:1px solid rgba(34,197,94,.15);border-radius:100px;padding:9px 15px 9px 11px;box-shadow:0 6px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(34,197,94,.06);transition:all .25s}
@@ -165,10 +164,10 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 .hp-plab{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,.3);font-family:'DM Mono',monospace;margin-bottom:2px}
 .hp-pval{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--t1);line-height:1}
 .hp-pchg{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap}
-.hp-ptl{top:6%;left:-5%;animation:hpf1 5s ease-in-out infinite}
-.hp-ptr{top:8%;right:0%;animation:hpf2 6.5s 1s ease-in-out infinite}
-.hp-pbl{bottom:14%;left:-8%;animation:hpf3 5.5s .5s ease-in-out infinite}
-.hp-pbr{bottom:7%;right:0%;animation:hpf4 7s 2s ease-in-out infinite}
+.hp-ptl{top:5%;left:-2%;animation:hpf1 5s ease-in-out infinite}
+.hp-ptr{top:5%;right:-2%;animation:hpf2 6.5s 1s ease-in-out infinite}
+.hp-pbl{bottom:12%;left:-2%;animation:hpf3 5.5s .5s ease-in-out infinite}
+.hp-pbr{bottom:10%;right:-2%;animation:hpf4 7s 2s ease-in-out infinite}
 @keyframes hpf1{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 @keyframes hpf2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-10px) rotate(-1deg)}}
 @keyframes hpf3{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
@@ -727,14 +726,23 @@ function goPage(page){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   const el = document.getElementById('page-'+page);
   if(el) el.style.display='block';
-  // Update nav buttons
-  document.querySelectorAll('.npbtn').forEach(b=>b.classList.remove('active'));
-  const btn = document.getElementById('np-'+page);
-  if(btn) btn.classList.add('active');
-  // Handle journal standalone page
+
+  // Update ALL nav buttons across both navs
+  document.querySelectorAll('.npbtn, .hp-np, .sc-hn').forEach(b=>b.classList.remove('active','hp-np-on','sc-hn-active'));
+  ['np-'+page, 'np-'+page].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(btn){ btn.classList.add('active'); btn.classList.add('hp-np-on'); }
+  });
+
+  if(page==='markets'){
+    // Ensure prices are loaded and tab is rendered
+    if(Object.keys(prices).length===0) loadPrices();
+    else renderAll();
+  }
   if(page==='journal-page'){
     const con = document.getElementById('journal-standalone');
-    if(con){ const tmp=document.createElement('div'); tmp.id='s-journal-tmp'; con.innerHTML=''; con.appendChild(tmp); selId=null; renderJournalInto(con); }
+    if(con){ con.innerHTML=''; selId=null; renderJournalInto(con); }
+    loadJournal();
   }
   window.scrollTo(0,0);
 }
@@ -1058,7 +1066,12 @@ function editJTrade(id){ openJModal(id); }
 // Load journal on init
 loadJournal();
 
-loadPrices().then(()=>initLivePrices());
+loadPrices().then(()=>{
+  initLivePrices();
+  // If user is already on markets page, render immediately
+  const mp = document.getElementById('page-markets');
+  if(mp && mp.style.display !== 'none') renderAll();
+});
 setInterval(()=>{ loadPrices(); },5*60*1000);
 </script>
 </body>
