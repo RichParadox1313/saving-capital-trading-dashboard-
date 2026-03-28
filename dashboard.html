@@ -1656,19 +1656,6 @@ function renderTab(tab){
     }
   },50);
 }
-  setTimeout(()=>{
-    TABS[t].forEach(a=>{
-      const cv=con.querySelector('[data-spark="'+a.id+'"]');
-      const p=prices[a.id];
-      if(cv&&p?.closes?.length>1) drawSpark(cv,p.closes,(p.change||0)>=0,false);
-    });
-    if(sel){
-      const bc=con.querySelector('.bigspark');
-      const p=prices[selId];
-      if(bc&&p?.closes?.length>1) drawSpark(bc,p.closes,(p.change||0)>=0,true);
-    }
-  },50);
-}
 
 function skelCard(){
   return '<div class="skel"><div class="skl w60"></div><div class="skl w40"></div><div class="skc"></div><div class="skl w80"></div></div>';
@@ -1809,8 +1796,8 @@ async function loadNewsTicker(){
     if(!r.ok) return;
     const items=await r.json();
     if(!items||items.length<2) return;
-    const catCls=t=>t==='crypto'?'nc-crypto':t==='forex'?'nc-forex':t==='commodity'?'nc-commodity':'nc-macro';
-    const catLbl=t=>t==='crypto'?'Crypto':t==='forex'?'Forex':t==='commodity'?'Commodity':'Macro';
+    const catCls=cat=>cat==='crypto'?'nc-crypto':cat==='forex'?'nc-forex':cat==='commodity'?'nc-commodity':'nc-macro';
+    const catLbl=cat=>cat==='crypto'?'Crypto':cat==='forex'?'Forex':cat==='commodity'?'Commodity':'Macro';
     const doubled=[...items,...items];
     const scroll=document.getElementById('nt-scroll');
     if(!scroll) return;
@@ -1833,6 +1820,9 @@ loadPrices().then(()=>initLivePrices());
 setInterval(loadPrices, 5*60*1000);
 loadNewsTicker();
 setInterval(loadNewsTicker, 10*60*1000);
+
+// Apply saved language
+setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
 </body>
