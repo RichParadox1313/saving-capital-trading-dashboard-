@@ -81,7 +81,8 @@ CRYPTO_ASSETS = [
     {"id":"shiba-inu",          "name":"Shiba Inu",     "sym":"SHIB",   "tab":"crypto"},
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
-    {"id":"pol-polygon-ecosystem-token",  "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
+    {"id":"matic-network",               "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
+    {"id":"pol-polygon-ecosystem-token", "name":"Polygon-POL",    "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
@@ -245,6 +246,11 @@ async def fetch_coingecko() -> dict:
                                 "usd_market_cap": coin.get("market_cap"),
                                 "sparkline":      [round(p, 6) for p in spark_prices if p],
                             }
+                        # Polygon remap: CoinGecko uses the new ID, dashboard uses the old one
+                        if "pol-polygon-ecosystem-token" in result and "matic-network" not in result:
+                            result["matic-network"] = result.pop("pol-polygon-ecosystem-token")
+                        elif "pol-polygon-ecosystem-token" in result:
+                            result.pop("pol-polygon-ecosystem-token")  # avoid dupe
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
                         return result
                     elif r.status == 429:
@@ -333,6 +339,7 @@ async def load_all_prices() -> dict:
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
+        if a["id"] == "pol-polygon-ecosystem-token": continue  # handled via remap
         d = cg.get(a["id"], {})
         if d.get("usd"):
             result[a["id"]] = {
