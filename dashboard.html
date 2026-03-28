@@ -1042,7 +1042,7 @@ function setLang(lang){
   document.title = lang==='he'?'Saving Capital — מודיעין שוק'
                  : lang==='bg'?'Saving Capital — Пазарно разузнаване'
                  : 'Saving Capital — Market Intelligence';
-  // Re-render visible page content
+  // Re-render visible page content (will trigger re-fetch in new language if asset selected)
   if(typeof renderAll==='function') renderAll();
   if(document.getElementById('page-journal-page')?.style.display!=='none' && typeof loadJournal==='function') loadJournal();
 }
@@ -1682,13 +1682,13 @@ function pick(id,tab){
   document.getElementById('s-'+tab).classList.add('on');
   renderTab(tab);
   setTimeout(()=>document.querySelector('.detail')?.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
-  if(!analyses[id+'_'+TODAY]) fetchAnalysis(id,tab);
+  if(!analyses[id+'_'+TODAY+'_'+currentLang]) fetchAnalysis(id,tab);
 }
 
 function detailPanel(id,tab){
   const a=TABS[tab].find(x=>x.id===id); if(!a)return'';
   const p=prices[id]; const s=sent(p?.change); const ph=phaseData.phase||'—';
-  const cached=analyses[id+'_'+TODAY];
+  const cached=analyses[id+'_'+TODAY+'_'+currentLang];
   return '<div class="detail">'+
     '<div class="dh">'+
       '<div><div class="dname">'+a.name+'</div><div class="dsym">'+a.sym+'</div>'+(a.desc?'<div class="ddesc">'+a.desc+'</div>':'')+'</div>'+
@@ -1737,10 +1737,15 @@ function analysisBlocks(d,id,tab){
 
 async function fetchAnalysis(id,tab){
   try{
-    const r=await fetch('/api/analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({asset_id:id})});
+    const r=await fetch('/api/analysis',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({asset_id:id, lang:currentLang})
+    });
     if(!r.ok) throw new Error(await r.text());
     const data=await r.json();
-    analyses[id+'_'+TODAY]=data;
+    // Cache per language so switching language re-fetches in new language
+    analyses[id+'_'+TODAY+'_'+currentLang]=data;
     if(selId===id) renderTab(tab);
   }catch(e){
     console.error('Analysis error:',e);
@@ -1750,7 +1755,9 @@ async function fetchAnalysis(id,tab){
 }
 
 async function forceRefresh(id,tab){
-  delete analyses[id+'_'+TODAY]; selId=id; renderTab(tab); await fetchAnalysis(id,tab);
+  // Clear all language variants of this analysis
+  ['en','bg','he'].forEach(l=>delete analyses[id+'_'+TODAY+'_'+l]);
+  selId=id; renderTab(tab); await fetchAnalysis(id,tab);
 }
 
 // ── Live Binance WebSocket ────────────────────────────────
