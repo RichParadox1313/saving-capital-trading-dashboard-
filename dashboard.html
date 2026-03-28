@@ -924,6 +924,129 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 </div>
 
 <script>
+
+// ── i18n: must be first — other functions call t() ──────────────────────────
+const LANGS = {
+  en: {
+    home:"Home", marketIntel:"Market Intelligence", journal:"Trading Journal",
+    intelligence:"Intelligence", journalShort:"Journal", journalBtn:"Trading Journal",
+    heroLine1:"The Future of",
+    heroTag:"AI-Powered · Institutional Grade · Real-Time",
+    launch:"Launch Platform",
+    tracked:"Tracked", bullish:"Bullish", bearish:"Bearish", neutral:"Neutral", quantGrade:"Quant Grade",
+    mktPhase:"Market Phase", regime:"Regime", riskAppetite:"Risk Appetite",
+    cryptoTab:"Crypto Top 30", forexTab:"Forex", goldTab:"Gold & Commodities",
+    indexesTab:"Global Indexes", stocksTab:"Top 30 Stocks",
+    feat1Title:"Real-Time Prices", feat1Sub:"Binance WebSocket · Sub-second crypto",
+    feat2Title:"Quant AI Analysis", feat2Sub:"5 Wall Street frameworks",
+    feat3Title:"Live News Feed", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
+    feat4Title:"Trading Journal", feat4Sub:"MT5 auto-sync · P&L · Win rate",
+    live:"Live", liveNews:"Live News",
+    selectAsset:"SELECT", selectMsg:"Click an asset above to view AI market analysis",
+    price:"Price", change24h:"24h", change5d:"5-Day", sentiment:"Sentiment", phase:"Phase", mktCap:"Mkt Cap",
+    execSummary:"Executive Summary", nearTerm:"Near-term · 1–7 Days",
+    medTerm:"Medium-term · 1–3 Months", macroNarrative:"Macro Narrative & Regime",
+    catalysts:"Key Catalysts & Risk Factors", positioning:"Positioning Recommendation",
+    regenerate:"↻ Regenerate",
+    strongBull:"Strong Bull", bullishL:"Bullish", mildBull:"Mildly Bullish",
+    strongBear:"Strong Bear", bearishL:"Bearish", mildBear:"Mildly Bearish",
+    generatingAnalysis:"Generating Wall Street-grade analysis for",
+    analysingLive:"Analysing live price · market phase · macro regime · institutional flows",
+    step1:"Live price data", step2:"Market phase detection",
+    step3:"Macro context analysis", step4:"Generating research note",
+    journalTitle:"Trading Journal", newTrade:"+ Manual Trade",
+    totalTrades:"Total Trades", totalPnl:"Total P&L", winRate:"Win Rate",
+    avgRR:"Avg R:R", avgWin:"Avg Win", avgLoss:"Avg Loss",
+  },
+  bg: {
+    home:"Начало", marketIntel:"Пазарно разузнаване", journal:"Търговски дневник",
+    intelligence:"Разузнаване", journalShort:"Дневник", journalBtn:"Търговски дневник",
+    heroLine1:"Бъдещето на",
+    heroTag:"AI-базиран · Институционален · В реално време",
+    launch:"Стартирай платформата",
+    tracked:"Проследени", bullish:"Бичи", bearish:"Мечи", neutral:"Неутрален", quantGrade:"Quant ниво",
+    mktPhase:"Пазарна фаза", regime:"Режим", riskAppetite:"Рисков апетит",
+    cryptoTab:"Крипто Топ 30", forexTab:"Форекс", goldTab:"Злато и суровини",
+    indexesTab:"Глобални индекси", stocksTab:"Топ 30 акции",
+    feat1Title:"Цени в реално време", feat1Sub:"Binance WebSocket · Крипто под секунда",
+    feat2Title:"Quant AI анализ", feat2Sub:"5 Уолстрийт методологии",
+    feat3Title:"Живи новини", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
+    feat4Title:"Търговски дневник", feat4Sub:"MT5 синхронизация · P&L · % печалба",
+    live:"Живо", liveNews:"Живи новини",
+    selectAsset:"ИЗБЕРИ", selectMsg:"Кликнете актив за AI пазарен анализ",
+    price:"Цена", change24h:"24ч", change5d:"5 дни", sentiment:"Настроение", phase:"Фаза", mktCap:"Пазарна кап.",
+    execSummary:"Изпълнително резюме", nearTerm:"Краткосрочен · 1–7 дни",
+    medTerm:"Средносрочен · 1–3 месеца", macroNarrative:"Макро разказ и режим",
+    catalysts:"Ключови катализатори и рискове", positioning:"Препоръка за позиция",
+    regenerate:"↻ Обнови",
+    strongBull:"Силен бик", bullishL:"Бичи", mildBull:"Слабо бичи",
+    strongBear:"Силна мечка", bearishL:"Мечи", mildBear:"Слабо мечи",
+    generatingAnalysis:"Генериране на анализ за",
+    analysingLive:"Анализ: жива цена · пазарна фаза · макро режим · институционални потоци",
+    step1:"Живи ценови данни", step2:"Определяне на пазарна фаза",
+    step3:"Макро контекстен анализ", step4:"Генериране на изследователска бележка",
+    journalTitle:"Търговски дневник", newTrade:"+ Ръчна сделка",
+    totalTrades:"Общо сделки", totalPnl:"Общ P&L", winRate:"% Печалба",
+    avgRR:"Ср. R:R", avgWin:"Ср. печалба", avgLoss:"Ср. загуба",
+  },
+  he: {
+    home:"בית", marketIntel:"מודיעין שוק", journal:"יומן מסחר",
+    intelligence:"מודיעין", journalShort:"יומן", journalBtn:"יומן מסחר",
+    heroLine1:"עתיד",
+    heroTag:"מבוסס AI · רמה מוסדית · זמן אמת",
+    launch:"הפעל פלטפורמה",
+    tracked:"נעקב", bullish:"שורי", bearish:"דובי", neutral:"ניטרלי", quantGrade:"רמת Quant",
+    mktPhase:"שלב השוק", regime:"משטר", riskAppetite:"תיאבון סיכון",
+    cryptoTab:"קריפטו טופ 30", forexTab:"פורקס", goldTab:"זהב וסחורות",
+    indexesTab:"מדדים גלובליים", stocksTab:"טופ 30 מניות",
+    feat1Title:"מחירים בזמן אמת", feat1Sub:"Binance WebSocket · קריפטו תת-שנייתי",
+    feat2Title:"ניתוח Quant AI", feat2Sub:"5 מסגרות וול סטריט",
+    feat3Title:"עדכוני חדשות חי", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
+    feat4Title:"יומן מסחר", feat4Sub:"סינכרון MT5 · P&L · שיעור זכייה",
+    live:"חי", liveNews:"חדשות חי",
+    selectAsset:"בחר", selectMsg:"לחץ על נכס לעיל לצפייה בניתוח שוק AI",
+    price:"מחיר", change24h:"24ש", change5d:"5 ימים", sentiment:"סנטימנט", phase:"שלב", mktCap:"שווי שוק",
+    execSummary:"סיכום מנהלים", nearTerm:"קצר טווח · 1–7 ימים",
+    medTerm:"טווח בינוני · 1–3 חודשים", macroNarrative:"נרטיב מאקרו ומשטר",
+    catalysts:"זרזים עיקריים וגורמי סיכון", positioning:"המלצת פוזיציה",
+    regenerate:"↻ חדש",
+    strongBull:"שורי חזק", bullishL:"שורי", mildBull:"שורי מתון",
+    strongBear:"דובי חזק", bearishL:"דובי", mildBear:"דובי מתון",
+    generatingAnalysis:"יוצר ניתוח עבור",
+    analysingLive:"מנתח: מחיר חי · שלב שוק · משטר מאקרו · זרימות מוסדיות",
+    step1:"נתוני מחיר חי", step2:"זיהוי שלב שוק",
+    step3:"ניתוח הקשר מאקרו", step4:"יצירת הערת מחקר",
+    journalTitle:"יומן מסחר", newTrade:"+ עסקה ידנית",
+    totalTrades:"סה״כ עסקאות", totalPnl:"סה״כ P&L", winRate:"% זכייה",
+    avgRR:"ממוצע R:R", avgWin:"ממוצע זכייה", avgLoss:"ממוצע הפסד",
+  },
+};
+let currentLang = localStorage.getItem('sc_lang') || 'en';
+function t(key){ return (LANGS[currentLang]||LANGS.en)[key]||(LANGS.en)[key]||key; }
+
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('sc_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.trim().toLowerCase()===lang);
+  });
+  document.documentElement.dir = lang==='he'?'rtl':'ltr';
+  document.body.style.fontFamily = lang==='he'
+    ? "'Segoe UI','Arial Hebrew','David',sans-serif"
+    : "'DM Sans',sans-serif";
+  // Update all static data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    const v=t(k); if(v) el.textContent=v;
+  });
+  document.title = lang==='he'?'Saving Capital — מודיעין שוק'
+                 : lang==='bg'?'Saving Capital — Пазарно разузнаване'
+                 : 'Saving Capital — Market Intelligence';
+  // Re-render visible page content
+  if(typeof renderAll==='function') renderAll();
+  if(document.getElementById('page-journal-page')?.style.display!=='none' && typeof loadJournal==='function') loadJournal();
+}
+// ─────────────────────────────────────────────────────────────────────────────
 // ── HOME: Mouse parallax + Clock + Live prices ───────────────
 (function(){
 
@@ -1501,25 +1624,38 @@ function updateStats(){
 }
 
 // ── Tab rendering ─────────────────────────────────────────
-function renderAll(){ Object.keys(TABS).forEach(t=>renderTab(t)); }
+function renderAll(){ Object.keys(TABS).forEach(tab=>renderTab(tab)); }
 
-function swTab(t,el){
-  curTab=t; selId=null;
+function swTab(tabName,el){
+  curTab=tabName; selId=null;
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
-  document.getElementById('s-'+t).classList.add('on');
-  renderTab(t);
+  document.getElementById('s-'+tabName).classList.add('on');
+  renderTab(tabName);
 }
 
-function renderTab(t){
-  const con=document.getElementById('s-'+t);
+function renderTab(tab){
+  const con=document.getElementById('s-'+tab);
   if(!con) return;
   const loading=Object.keys(prices).length===0;
-  const grid='<div class="agrid">'+TABS[t].map(a=>loading?skelCard():assetCard(a)).join('')+'</div>';
-  const sel=selId&&TABS[t].find(a=>a.id===selId);
-  const det=sel?detailPanel(selId,t):'<div class="empty"><span>'+t('selectAsset')+'</span>'+t('selectMsg')+'</div>';
+  const grid='<div class="agrid">'+TABS[tab].map(a=>loading?skelCard():assetCard(a)).join('')+'</div>';
+  const sel=selId&&TABS[tab].find(a=>a.id===selId);
+  const det=sel?detailPanel(selId,tab):'<div class="empty"><span>'+t('selectAsset')+'</span>'+t('selectMsg')+'</div>';
   con.innerHTML=grid+det;
+  setTimeout(()=>{
+    TABS[tab].forEach(a=>{
+      const cv=con.querySelector('[data-spark="'+a.id+'"]');
+      const p=prices[a.id];
+      if(cv&&p?.closes?.length>1) drawSpark(cv,p.closes,(p.change||0)>=0,false);
+    });
+    if(sel){
+      const bc=con.querySelector('.bigspark');
+      const p=prices[selId];
+      if(bc&&p?.closes?.length>1) drawSpark(bc,p.closes,(p.change||0)>=0,true);
+    }
+  },50);
+}
   setTimeout(()=>{
     TABS[t].forEach(a=>{
       const cv=con.querySelector('[data-spark="'+a.id+'"]');
@@ -1540,7 +1676,7 @@ function skelCard(){
 
 function assetCard(a){
   const p=prices[a.id]; const s=sent(p?.change);
-  const tab=Object.keys(TABS).find(t=>TABS[t].find(x=>x.id===a.id));
+  const tab=Object.keys(TABS).find(tb=>TABS[tb].find(x=>x.id===a.id));
   return '<div class="acard'+(selId===a.id?' sel':'')+'" onclick="pick(\''+a.id+'\',\''+tab+'\')">'+
     '<div class="act"><div class="ac-left"><div class="acn">'+a.name+'</div><div class="acs">'+a.sym+'</div></div>'+
     '<div class="acp"><div class="acpn '+cc(p?.change)+'">'+fp(p?.price)+'</div><div class="acpc '+cc(p?.change)+'">'+fc(p?.change)+'</div></div></div>'+
@@ -1698,252 +1834,6 @@ setInterval(loadPrices, 5*60*1000);
 loadNewsTicker();
 setInterval(loadNewsTicker, 10*60*1000);
 
-
-// ═══════════════════════════════════════════════════════════
-//  i18n — Language Switcher (EN / BG / HE)
-// ═══════════════════════════════════════════════════════════
-
-const LANGS = {
-  en: {
-    // Nav
-    home: "Home", marketIntel: "Market Intelligence", journal: "Trading Journal",
-    intelligence: "Intelligence", journalShort: "Journal", journalBtn: "Trading Journal",
-
-    // Home hero
-    heroLine1: "The Future of",
-    heroTag: "AI-Powered · Institutional Grade · Real-Time",
-    launch: "Launch Platform",
-
-    // Stats
-    tracked: "Tracked", bullish: "Bullish", bearish: "Bearish",
-    neutral: "Neutral", quantGrade: "Quant Grade",
-
-    // Phase bar
-    mktPhase: "Market Phase", regime: "Regime", riskAppetite: "Risk Appetite",
-
-    // Tabs
-    cryptoTab: "Crypto Top 30", forexTab: "Forex", goldTab: "Gold & Commodities",
-    indexesTab: "Global Indexes", stocksTab: "Top 30 Stocks",
-
-    // Features strip
-    feat1Title: "Real-Time Prices",   feat1Sub: "Binance WebSocket · Sub-second crypto",
-    feat2Title: "Quant AI Analysis",  feat2Sub: "5 Wall Street frameworks",
-    feat3Title: "Live News Feed",     feat3Sub: "Reuters · ForexLive · CoinTelegraph",
-    feat4Title: "Trading Journal",    feat4Sub: "MT5 auto-sync · P&L · Win rate",
-
-    // Misc
-    live: "Live", liveNews: "Live News",
-
-    // Asset card / detail
-    selectAsset: "SELECT", selectMsg: "Click an asset above to view AI market analysis",
-    price: "Price", change24h: "24h", change5d: "5-Day",
-    sentiment: "Sentiment", phase: "Phase", mktCap: "Mkt Cap",
-
-    // Analysis labels
-    execSummary: "Executive Summary", nearTerm: "Near-term · 1–7 Days",
-    medTerm: "Medium-term · 1–3 Months", macroNarrative: "Macro Narrative & Regime",
-    catalysts: "Key Catalysts & Risk Factors", positioning: "Positioning Recommendation",
-    regenerate: "↻ Regenerate",
-
-    // Sentiment labels
-    strongBull: "Strong Bull", bullishL: "Bullish", mildBull: "Mildly Bullish",
-    strongBear: "Strong Bear", bearishL: "Bearish", mildBear: "Mildly Bearish",
-
-    // Loading
-    generatingAnalysis: "Generating Wall Street-grade analysis for",
-    analysingLive: "Analysing live price · market phase · macro regime · institutional flows",
-    step1: "Live price data", step2: "Market phase detection",
-    step3: "Macro context analysis", step4: "Generating research note",
-
-    // Journal
-    journalTitle: "Trading Journal", newTrade: "+ Manual Trade",
-    totalTrades: "Total Trades", totalPnl: "Total P&L", winRate: "Win Rate",
-    avgRR: "Avg R:R", avgWin: "Avg Win", avgLoss: "Avg Loss",
-    noTrades: "NO TRADES YET", noTradesMsg: 'Connect MT5 or click "+ Manual Trade"',
-    date: "Date", asset: "Asset", direction: "Direction", entry: "Entry",
-    exit: "Exit", size: "Size", status: "Status", strategy: "Strategy",
-    notes: "Notes", edit: "Edit",
-
-    // MT5
-    connectMT5: "Connect Your MT5 Account", connectBtn: "🔗 Connect Account",
-  },
-
-  bg: {
-    // Nav
-    home: "Начало", marketIntel: "Пазарно разузнаване", journal: "Търговски дневник",
-    intelligence: "Разузнаване", journalShort: "Дневник", journalBtn: "Търговски дневник",
-
-    // Home hero
-    heroLine1: "Бъдещето на",
-    heroTag: "AI-базиран · Институционален · В реално време",
-    launch: "Стартирай платформата",
-
-    // Stats
-    tracked: "Проследени", bullish: "Бичи", bearish: "Мечи",
-    neutral: "Неутрален", quantGrade: "Quant ниво",
-
-    // Phase bar
-    mktPhase: "Пазарна фаза", regime: "Режим", riskAppetite: "Рисков апетит",
-
-    // Tabs
-    cryptoTab: "Крипто Топ 30", forexTab: "Форекс", goldTab: "Злато и суровини",
-    indexesTab: "Глобални индекси", stocksTab: "Топ 30 акции",
-
-    // Features strip
-    feat1Title: "Цени в реално време", feat1Sub: "Binance WebSocket · Крипто под секунда",
-    feat2Title: "Quant AI анализ",      feat2Sub: "5 Уолстрийт методологии",
-    feat3Title: "Живи новини",          feat3Sub: "Reuters · ForexLive · CoinTelegraph",
-    feat4Title: "Търговски дневник",    feat4Sub: "MT5 синхронизация · P&L · % печалба",
-
-    // Misc
-    live: "Живо", liveNews: "Живи новини",
-
-    // Asset card / detail
-    selectAsset: "ИЗБЕРИ", selectMsg: "Кликнете актив по-горе за AI пазарен анализ",
-    price: "Цена", change24h: "24ч", change5d: "5 дни",
-    sentiment: "Настроение", phase: "Фаза", mktCap: "Пазарна кап.",
-
-    // Analysis labels
-    execSummary: "Изпълнително резюме", nearTerm: "Краткосрочен · 1–7 дни",
-    medTerm: "Средносрочен · 1–3 месеца", macroNarrative: "Макро разказ и режим",
-    catalysts: "Ключови катализатори и рискове", positioning: "Препоръка за позиция",
-    regenerate: "↻ Обнови",
-
-    // Sentiment labels
-    strongBull: "Силен бик", bullishL: "Бичи", mildBull: "Слабо бичи",
-    strongBear: "Силна мечка", bearishL: "Мечи", mildBear: "Слабо мечи",
-
-    // Loading
-    generatingAnalysis: "Генериране на Уолстрийт анализ за",
-    analysingLive: "Анализ: жива цена · пазарна фаза · макро режим · институционални потоци",
-    step1: "Живи ценови данни", step2: "Определяне на пазарна фаза",
-    step3: "Макро контекстен анализ", step4: "Генериране на изследователска бележка",
-
-    // Journal
-    journalTitle: "Търговски дневник", newTrade: "+ Ръчна сделка",
-    totalTrades: "Общо сделки", totalPnl: "Общ P&L", winRate: "% Печалба",
-    avgRR: "Ср. R:R", avgWin: "Ср. печалба", avgLoss: "Ср. загуба",
-    noTrades: "НЯМА СДЕЛКИ", noTradesMsg: 'Свържете MT5 или кликнете "+ Ръчна сделка"',
-    date: "Дата", asset: "Актив", direction: "Посока", entry: "Вход",
-    exit: "Изход", size: "Размер", status: "Статус", strategy: "Стратегия",
-    notes: "Бележки", edit: "Редакция",
-
-    // MT5
-    connectMT5: "Свържете вашия MT5 акаунт", connectBtn: "🔗 Свържи акаунт",
-  },
-
-  he: {
-    // Nav
-    home: "בית", marketIntel: "מודיעין שוק", journal: "יומן מסחר",
-    intelligence: "מודיעין", journalShort: "יומן", journalBtn: "יומן מסחר",
-
-    // Home hero
-    heroLine1: "עתיד",
-    heroTag: "מבוסס AI · רמה מוסדית · זמן אמת",
-    launch: "הפעל פלטפורמה",
-
-    // Stats
-    tracked: "נעקב", bullish: "שורי", bearish: "דובי",
-    neutral: "ניטרלי", quantGrade: "רמת Quant",
-
-    // Phase bar
-    mktPhase: "שלב השוק", regime: "משטר", riskAppetite: "תיאבון סיכון",
-
-    // Tabs
-    cryptoTab: "קריפטו טופ 30", forexTab: "פורקס", goldTab: "זהב וסחורות",
-    indexesTab: "מדדים גלובליים", stocksTab: "טופ 30 מניות",
-
-    // Features strip
-    feat1Title: "מחירים בזמן אמת",  feat1Sub: "Binance WebSocket · קריפטו תת-שנייתי",
-    feat2Title: "ניתוח Quant AI",    feat2Sub: "5 מסגרות וול סטריט",
-    feat3Title: "עדכוני חדשות חי",   feat3Sub: "Reuters · ForexLive · CoinTelegraph",
-    feat4Title: "יומן מסחר",         feat4Sub: "סינכרון MT5 · P&L · שיעור זכייה",
-
-    // Misc
-    live: "חי", liveNews: "חדשות חי",
-
-    // Asset card / detail
-    selectAsset: "בחר", selectMsg: "לחץ על נכס לעיל לצפייה בניתוח שוק AI",
-    price: "מחיר", change24h: "24ש", change5d: "5 ימים",
-    sentiment: "סנטימנט", phase: "שלב", mktCap: "שווי שוק",
-
-    // Analysis labels
-    execSummary: "סיכום מנהלים", nearTerm: "קצר טווח · 1–7 ימים",
-    medTerm: "טווח בינוני · 1–3 חודשים", macroNarrative: "נרטיב מאקרו ומשטר",
-    catalysts: "זרזים עיקריים וגורמי סיכון", positioning: "המלצת פוזיציה",
-    regenerate: "↻ חדש",
-
-    // Sentiment labels
-    strongBull: "שורי חזק", bullishL: "שורי", mildBull: "שורי מתון",
-    strongBear: "דובי חזק", bearishL: "דובי", mildBear: "דובי מתון",
-
-    // Loading
-    generatingAnalysis: "יוצר ניתוח רמת וול סטריט עבור",
-    analysingLive: "מנתח: מחיר חי · שלב שוק · משטר מאקרו · זרימות מוסדיות",
-    step1: "נתוני מחיר חי", step2: "זיהוי שלב שוק",
-    step3: "ניתוח הקשר מאקרו", step4: "יצירת הערת מחקר",
-
-    // Journal
-    journalTitle: "יומן מסחר", newTrade: "+ עסקה ידנית",
-    totalTrades: "סה״כ עסקאות", totalPnl: "סה״כ P&L", winRate: "% זכייה",
-    avgRR: "ממוצע R:R", avgWin: "ממוצע זכייה", avgLoss: "ממוצע הפסד",
-    noTrades: "אין עסקאות עדיין", noTradesMsg: 'חבר MT5 או לחץ "+ עסקה ידנית"',
-    date: "תאריך", asset: "נכס", direction: "כיוון", entry: "כניסה",
-    exit: "יציאה", size: "גודל", status: "סטטוס", strategy: "אסטרטגיה",
-    notes: "הערות", edit: "עריכה",
-
-    // MT5
-    connectMT5: "חבר את חשבון MT5 שלך", connectBtn: "🔗 חבר חשבון",
-  },
-};
-
-let currentLang = localStorage.getItem('sc_lang') || 'en';
-
-function t(key) {
-  return (LANGS[currentLang] || LANGS.en)[key] || (LANGS.en)[key] || key;
-}
-
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('sc_lang', lang);
-
-  // Update active button
-  document.querySelectorAll('.lang-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim().toLowerCase() === lang);
-  });
-
-  // RTL for Hebrew
-  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
-  document.body.style.fontFamily = lang === 'he'
-    ? "'Segoe UI', 'Arial Hebrew', 'David', sans-serif"
-    : "'DM Sans', sans-serif";
-
-  // Apply all translations
-  applyTranslations();
-
-  // Re-render current tab if on markets page
-  if (document.getElementById('page-markets')?.style.display !== 'none') {
-    renderAll();
-  }
-  // Re-render journal if visible
-  if (document.getElementById('page-journal-page')?.style.display !== 'none') {
-    loadJournal();
-  }
-}
-
-function applyTranslations() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (t(key)) el.textContent = t(key);
-  });
-  // Update page title
-  document.title = currentLang === 'he' ? 'Saving Capital — מודיעין שוק'
-                 : currentLang === 'bg' ? 'Saving Capital — Пазарно разузнаване'
-                 : 'Saving Capital — Market Intelligence';
-}
-
-// Init language on load
-setLang(currentLang);
 </script>
 </body>
 </html>
