@@ -629,6 +629,39 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .tab{font-size:7px;padding:7px 8px}
   h1{font-size:2.2rem}
 }
+
+/* ── i18n: Language switcher ────────────────────────────── */
+.lang-switcher{display:flex;gap:3px;background:var(--s1);border:1px solid var(--br);border-radius:6px;padding:2px}
+.lang-btn{font-size:9px;letter-spacing:.5px;padding:4px 8px;border:none;border-radius:4px;background:transparent;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;font-weight:500}
+.lang-btn:hover{color:var(--t2)}
+.lang-btn.active{background:var(--g);color:#030704}
+
+/* RTL support for Hebrew */
+[dir="rtl"] .hp-hero{direction:rtl}
+[dir="rtl"] .hp-left{text-align:right}
+[dir="rtl"] .hp-eyebrow{flex-direction:row-reverse}
+[dir="rtl"] .hp-actions{flex-direction:row-reverse}
+[dir="rtl"] .hp-nums{flex-direction:row-reverse}
+[dir="rtl"] .pbar{direction:rtl}
+[dir="rtl"] .act{flex-direction:row-reverse}
+[dir="rtl"] .acp{text-align:left}
+[dir="rtl"] .acb{flex-direction:row-reverse}
+[dir="rtl"] .dh{direction:rtl}
+[dir="rtl"] .dr{align-items:flex-start}
+[dir="rtl"] .abody{direction:rtl}
+[dir="rtl"] .drv{flex-direction:row-reverse}
+[dir="rtl"] .gsftr{flex-direction:row-reverse}
+[dir="rtl"] .tabs{direction:rtl}
+[dir="rtl"] .jnl-header{flex-direction:row-reverse}
+[dir="rtl"] .jstats{direction:rtl}
+[dir="rtl"] .nt-label{border-right:none;border-left:1px solid var(--br)}
+[dir="rtl"] .hp-strip{direction:rtl}
+[dir="rtl"] .hp-firms{flex-direction:row-reverse}
+[dir="rtl"] .hp-sf{flex-direction:row-reverse;text-align:right}
+[dir="rtl"] .nav-pages{direction:rtl}
+[dir="rtl"] .hstat{direction:rtl}
+[dir="rtl"] h1,[dir="rtl"] .hp-h1{direction:rtl}
+@media(max-width:480px){.lang-btn{font-size:8px;padding:3px 6px}}
 </style>
 </head>
 <body>
@@ -638,17 +671,25 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 <nav>
   <div class="nlogo" onclick="goPage('home')" style="cursor:pointer">SAVING <b>CAPITAL</b></div>
   <div class="nav-pages">
-    <button class="npbtn active" id="np-home" onclick="goPage('home')">Home</button>
-    <button class="npbtn" id="np-markets" onclick="goPage('markets')">Market Intelligence</button>
-    <button class="npbtn" id="np-journal-page" onclick="goPage('journal-page')">Trading Journal</button>
+    <button class="npbtn active" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
+    <button class="npbtn" id="np-markets" onclick="goPage('markets')" data-i18n="marketIntel">Market Intelligence</button>
+    <button class="npbtn" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journal">Trading Journal</button>
   </div>
-  <div class="nr"><div class="live"><div class="ldot"></div>Live</div><div class="clk" id="clk">—</div></div>
+  <div class="nr">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('bg')">BG</button>
+      <button class="lang-btn" onclick="setLang('he')">HE</button>
+    </div>
+    <div class="live"><div class="ldot"></div><span data-i18n="live">Live</span></div>
+    <div class="clk" id="clk">—</div>
+  </div>
 </nav>
 
 
 <!-- LIVE NEWS TICKER -->
 <div class="news-ticker" id="news-ticker">
-  <div class="nt-label">Live News</div>
+  <div class="nt-label" data-i18n="liveNews">Live News</div>
   <div class="nt-track">
     <div class="nt-scroll" id="nt-scroll">
       <span class="nt-loading">Fetching live market news...</span>
@@ -672,9 +713,9 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     SAVING<span>CAPITAL</span>
   </button>
   <div class="hp-nav-pills">
-    <button class="hp-np hp-np-on" id="np-home" onclick="goPage('home')">Home</button>
-    <button class="hp-np" id="np-markets" onclick="goPage('markets')">Intelligence</button>
-    <button class="hp-np" id="np-journal-page" onclick="goPage('journal-page')">Journal</button>
+    <button class="hp-np hp-np-on" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
+    <button class="hp-np" id="np-markets" onclick="goPage('markets')" data-i18n="intelligence">Intelligence</button>
+    <button class="hp-np" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journalShort">Journal</button>
   </div>
   <div class="hp-nav-r">
     <div class="hp-live"><span class="hp-dot"></span>LIVE</div>
@@ -690,7 +731,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <p class="hp-eyebrow"><span class="hp-eyebrow-line"></span>Wall Street Intelligence · AI-Powered · Real-Time</p>
 
     <h1 class="hp-h1">
-      The Future of<br>
+      <span data-i18n="heroLine1">The Future of</span><br>
       <span class="hp-h1-g">Market<br>Intelligence</span>
     </h1>
 
@@ -701,7 +742,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
         Launch Platform
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <button class="hp-cta2" onclick="goPage('journal-page')">Trading Journal</button>
+      <button class="hp-cta2" onclick="goPage('journal-page')" data-i18n="journalBtn">Trading Journal</button>
     </div>
 
     <div class="hp-nums">
@@ -759,13 +800,13 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <!-- BOTTOM STRIP -->
 <div class="hp-strip">
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Real-Time Prices</b><span>Binance WebSocket · Sub-second crypto</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Real-Time Prices</b><span data-i18n="feat1Sub">Binance WebSocket · Sub-second crypto</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.5v6l-5.5 3-5.5-3v-6z" stroke="#22c55e" stroke-width="1.1"/></svg><div><b>Quant AI Analysis</b><span>5 Wall Street frameworks</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.5v6l-5.5 3-5.5-3v-6z" stroke="#22c55e" stroke-width="1.1"/></svg><div><b data-i18n="feat2Title">Quant AI Analysis</b><span data-i18n="feat2Sub">5 Wall Street frameworks</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b>Live News Feed</b><span>Reuters · ForexLive · CoinTelegraph</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live News Feed</b><span data-i18n="feat3Sub">Reuters · ForexLive · CoinTelegraph</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b>Trading Journal</b><span>MT5 auto-sync · P&L · Win rate</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
 </div>
 
 </div>
@@ -774,34 +815,34 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <div id="page-markets" class="page" style="display:none">
 <section class="hero z">
-  <div class="htag"><div class="htag-dot"></div>AI-Powered · Institutional Grade · Real-Time</div>
+  <div class="htag"><div class="htag-dot"></div><span data-i18n="heroTag">AI-Powered · Institutional Grade · Real-Time</span></div>
   <h1>Market<i>Intelligence</i></h1>
   <p class="hsub">Wall Street-calibre quantitative analysis across Gold, Crypto, Forex and Commodities. Multi-factor institutional models running 24/7 on live prices — powered by the same frameworks used by the world's top hedge funds and quant trading desks.</p>
   <div class="pbar" id="pbar">
-    <div class="pi"><div class="pl">Market Phase</div><div class="pv" id="gphase">Loading</div></div>
-    <div class="pi"><div class="pl">Regime</div><div class="pv" id="gregime">—</div></div>
-    <div class="pi"><div class="pl">Risk Appetite</div><div class="pv" id="grisk">—</div></div>
+    <div class="pi"><div class="pl" data-i18n="mktPhase">Market Phase</div><div class="pv" id="gphase">Loading</div></div>
+    <div class="pi"><div class="pl" data-i18n="regime">Regime</div><div class="pv" id="gregime">—</div></div>
+    <div class="pi"><div class="pl" data-i18n="riskAppetite">Risk Appetite</div><div class="pv" id="grisk">—</div></div>
     <div class="pnote">
       <div class="pnote-main" id="pnote">Detecting market conditions...</div>
       <div class="pdate" id="pdate">—</div>
     </div>
   </div>
   <div class="sstrip">
-    <div class="sbox"><div class="sn">120+</div><div class="sl">Tracked</div></div>
-    <div class="sbox"><div class="sn" id="sbull">—</div><div class="sl">Bullish</div></div>
-    <div class="sbox"><div class="sn" id="sbear">—</div><div class="sl">Bearish</div></div>
-    <div class="sbox"><div class="sn" id="sneut">—</div><div class="sl">Neutral</div></div>
-    <div class="sbox"><div class="sn">WS</div><div class="sl">Quant Grade</div></div>
+    <div class="sbox"><div class="sn">120+</div><div class="sl" data-i18n="tracked">Tracked</div></div>
+    <div class="sbox"><div class="sn" id="sbull">—</div><div class="sl" data-i18n="bullish">Bullish</div></div>
+    <div class="sbox"><div class="sn" id="sbear">—</div><div class="sl" data-i18n="bearish">Bearish</div></div>
+    <div class="sbox"><div class="sn" id="sneut">—</div><div class="sl" data-i18n="neutral">Neutral</div></div>
+    <div class="sbox"><div class="sn">WS</div><div class="sl" data-i18n="quantGrade">Quant Grade</div></div>
   </div>
 </section>
 
 <div class="main z">
   <div class="tabs">
-    <button class="tab on" onclick="swTab('crypto',this)">Crypto Top 30</button>
-    <button class="tab" onclick="swTab('forex',this)">Forex</button>
-    <button class="tab" onclick="swTab('oil',this)">Gold & Commodities</button>
-    <button class="tab" onclick="swTab('indexes',this)">Global Indexes</button>
-    <button class="tab" onclick="swTab('stocks',this)">Top 30 Stocks</button>
+    <button class="tab on" onclick="swTab('crypto',this)" data-i18n="cryptoTab">Crypto Top 30</button>
+    <button class="tab" onclick="swTab('forex',this)" data-i18n="forexTab">Forex</button>
+    <button class="tab" onclick="swTab('oil',this)" data-i18n="goldTab">Gold & Commodities</button>
+    <button class="tab" onclick="swTab('indexes',this)" data-i18n="indexesTab">Global Indexes</button>
+    <button class="tab" onclick="swTab('stocks',this)" data-i18n="stocksTab">Top 30 Stocks</button>
   </div>
   <div id="s-gold" class="sec"></div>
   <div id="s-crypto" class="sec on"></div>
@@ -1653,6 +1694,360 @@ loadPrices().then(()=>initLivePrices());
 setInterval(loadPrices, 5*60*1000);
 loadNewsTicker();
 setInterval(loadNewsTicker, 10*60*1000);
+
+
+// ═══════════════════════════════════════════════════════════
+//  i18n — Language Switcher (EN / BG / HE)
+// ═══════════════════════════════════════════════════════════
+
+const LANGS = {
+  en: {
+    // Nav
+    home: "Home", marketIntel: "Market Intelligence", journal: "Trading Journal",
+    intelligence: "Intelligence", journalShort: "Journal", journalBtn: "Trading Journal",
+
+    // Home hero
+    heroLine1: "The Future of",
+    heroTag: "AI-Powered · Institutional Grade · Real-Time",
+    launch: "Launch Platform",
+
+    // Stats
+    tracked: "Tracked", bullish: "Bullish", bearish: "Bearish",
+    neutral: "Neutral", quantGrade: "Quant Grade",
+
+    // Phase bar
+    mktPhase: "Market Phase", regime: "Regime", riskAppetite: "Risk Appetite",
+
+    // Tabs
+    cryptoTab: "Crypto Top 30", forexTab: "Forex", goldTab: "Gold & Commodities",
+    indexesTab: "Global Indexes", stocksTab: "Top 30 Stocks",
+
+    // Features strip
+    feat1Title: "Real-Time Prices",   feat1Sub: "Binance WebSocket · Sub-second crypto",
+    feat2Title: "Quant AI Analysis",  feat2Sub: "5 Wall Street frameworks",
+    feat3Title: "Live News Feed",     feat3Sub: "Reuters · ForexLive · CoinTelegraph",
+    feat4Title: "Trading Journal",    feat4Sub: "MT5 auto-sync · P&L · Win rate",
+
+    // Misc
+    live: "Live", liveNews: "Live News",
+
+    // Asset card / detail
+    selectAsset: "SELECT", selectMsg: "Click an asset above to view AI market analysis",
+    price: "Price", change24h: "24h", change5d: "5-Day",
+    sentiment: "Sentiment", phase: "Phase", mktCap: "Mkt Cap",
+
+    // Analysis labels
+    execSummary: "Executive Summary", nearTerm: "Near-term · 1–7 Days",
+    medTerm: "Medium-term · 1–3 Months", macroNarrative: "Macro Narrative & Regime",
+    catalysts: "Key Catalysts & Risk Factors", positioning: "Positioning Recommendation",
+    regenerate: "↻ Regenerate",
+
+    // Sentiment labels
+    strongBull: "Strong Bull", bullishL: "Bullish", mildBull: "Mildly Bullish",
+    strongBear: "Strong Bear", bearishL: "Bearish", mildBear: "Mildly Bearish",
+
+    // Loading
+    generatingAnalysis: "Generating Wall Street-grade analysis for",
+    analysingLive: "Analysing live price · market phase · macro regime · institutional flows",
+    step1: "Live price data", step2: "Market phase detection",
+    step3: "Macro context analysis", step4: "Generating research note",
+
+    // Journal
+    journalTitle: "Trading Journal", newTrade: "+ Manual Trade",
+    totalTrades: "Total Trades", totalPnl: "Total P&L", winRate: "Win Rate",
+    avgRR: "Avg R:R", avgWin: "Avg Win", avgLoss: "Avg Loss",
+    noTrades: "NO TRADES YET", noTradesMsg: 'Connect MT5 or click "+ Manual Trade"',
+    date: "Date", asset: "Asset", direction: "Direction", entry: "Entry",
+    exit: "Exit", size: "Size", status: "Status", strategy: "Strategy",
+    notes: "Notes", edit: "Edit",
+
+    // MT5
+    connectMT5: "Connect Your MT5 Account", connectBtn: "🔗 Connect Account",
+  },
+
+  bg: {
+    // Nav
+    home: "Начало", marketIntel: "Пазарно разузнаване", journal: "Търговски дневник",
+    intelligence: "Разузнаване", journalShort: "Дневник", journalBtn: "Търговски дневник",
+
+    // Home hero
+    heroLine1: "Бъдещето на",
+    heroTag: "AI-базиран · Институционален · В реално време",
+    launch: "Стартирай платформата",
+
+    // Stats
+    tracked: "Проследени", bullish: "Бичи", bearish: "Мечи",
+    neutral: "Неутрален", quantGrade: "Quant ниво",
+
+    // Phase bar
+    mktPhase: "Пазарна фаза", regime: "Режим", riskAppetite: "Рисков апетит",
+
+    // Tabs
+    cryptoTab: "Крипто Топ 30", forexTab: "Форекс", goldTab: "Злато и суровини",
+    indexesTab: "Глобални индекси", stocksTab: "Топ 30 акции",
+
+    // Features strip
+    feat1Title: "Цени в реално време", feat1Sub: "Binance WebSocket · Крипто под секунда",
+    feat2Title: "Quant AI анализ",      feat2Sub: "5 Уолстрийт методологии",
+    feat3Title: "Живи новини",          feat3Sub: "Reuters · ForexLive · CoinTelegraph",
+    feat4Title: "Търговски дневник",    feat4Sub: "MT5 синхронизация · P&L · % печалба",
+
+    // Misc
+    live: "Живо", liveNews: "Живи новини",
+
+    // Asset card / detail
+    selectAsset: "ИЗБЕРИ", selectMsg: "Кликнете актив по-горе за AI пазарен анализ",
+    price: "Цена", change24h: "24ч", change5d: "5 дни",
+    sentiment: "Настроение", phase: "Фаза", mktCap: "Пазарна кап.",
+
+    // Analysis labels
+    execSummary: "Изпълнително резюме", nearTerm: "Краткосрочен · 1–7 дни",
+    medTerm: "Средносрочен · 1–3 месеца", macroNarrative: "Макро разказ и режим",
+    catalysts: "Ключови катализатори и рискове", positioning: "Препоръка за позиция",
+    regenerate: "↻ Обнови",
+
+    // Sentiment labels
+    strongBull: "Силен бик", bullishL: "Бичи", mildBull: "Слабо бичи",
+    strongBear: "Силна мечка", bearishL: "Мечи", mildBear: "Слабо мечи",
+
+    // Loading
+    generatingAnalysis: "Генериране на Уолстрийт анализ за",
+    analysingLive: "Анализ: жива цена · пазарна фаза · макро режим · институционални потоци",
+    step1: "Живи ценови данни", step2: "Определяне на пазарна фаза",
+    step3: "Макро контекстен анализ", step4: "Генериране на изследователска бележка",
+
+    // Journal
+    journalTitle: "Търговски дневник", newTrade: "+ Ръчна сделка",
+    totalTrades: "Общо сделки", totalPnl: "Общ P&L", winRate: "% Печалба",
+    avgRR: "Ср. R:R", avgWin: "Ср. печалба", avgLoss: "Ср. загуба",
+    noTrades: "НЯМА СДЕЛКИ", noTradesMsg: 'Свържете MT5 или кликнете "+ Ръчна сделка"',
+    date: "Дата", asset: "Актив", direction: "Посока", entry: "Вход",
+    exit: "Изход", size: "Размер", status: "Статус", strategy: "Стратегия",
+    notes: "Бележки", edit: "Редакция",
+
+    // MT5
+    connectMT5: "Свържете вашия MT5 акаунт", connectBtn: "🔗 Свържи акаунт",
+  },
+
+  he: {
+    // Nav
+    home: "בית", marketIntel: "מודיעין שוק", journal: "יומן מסחר",
+    intelligence: "מודיעין", journalShort: "יומן", journalBtn: "יומן מסחר",
+
+    // Home hero
+    heroLine1: "עתיד",
+    heroTag: "מבוסס AI · רמה מוסדית · זמן אמת",
+    launch: "הפעל פלטפורמה",
+
+    // Stats
+    tracked: "נעקב", bullish: "שורי", bearish: "דובי",
+    neutral: "ניטרלי", quantGrade: "רמת Quant",
+
+    // Phase bar
+    mktPhase: "שלב השוק", regime: "משטר", riskAppetite: "תיאבון סיכון",
+
+    // Tabs
+    cryptoTab: "קריפטו טופ 30", forexTab: "פורקס", goldTab: "זהב וסחורות",
+    indexesTab: "מדדים גלובליים", stocksTab: "טופ 30 מניות",
+
+    // Features strip
+    feat1Title: "מחירים בזמן אמת",  feat1Sub: "Binance WebSocket · קריפטו תת-שנייתי",
+    feat2Title: "ניתוח Quant AI",    feat2Sub: "5 מסגרות וול סטריט",
+    feat3Title: "עדכוני חדשות חי",   feat3Sub: "Reuters · ForexLive · CoinTelegraph",
+    feat4Title: "יומן מסחר",         feat4Sub: "סינכרון MT5 · P&L · שיעור זכייה",
+
+    // Misc
+    live: "חי", liveNews: "חדשות חי",
+
+    // Asset card / detail
+    selectAsset: "בחר", selectMsg: "לחץ על נכס לעיל לצפייה בניתוח שוק AI",
+    price: "מחיר", change24h: "24ש", change5d: "5 ימים",
+    sentiment: "סנטימנט", phase: "שלב", mktCap: "שווי שוק",
+
+    // Analysis labels
+    execSummary: "סיכום מנהלים", nearTerm: "קצר טווח · 1–7 ימים",
+    medTerm: "טווח בינוני · 1–3 חודשים", macroNarrative: "נרטיב מאקרו ומשטר",
+    catalysts: "זרזים עיקריים וגורמי סיכון", positioning: "המלצת פוזיציה",
+    regenerate: "↻ חדש",
+
+    // Sentiment labels
+    strongBull: "שורי חזק", bullishL: "שורי", mildBull: "שורי מתון",
+    strongBear: "דובי חזק", bearishL: "דובי", mildBear: "דובי מתון",
+
+    // Loading
+    generatingAnalysis: "יוצר ניתוח רמת וול סטריט עבור",
+    analysingLive: "מנתח: מחיר חי · שלב שוק · משטר מאקרו · זרימות מוסדיות",
+    step1: "נתוני מחיר חי", step2: "זיהוי שלב שוק",
+    step3: "ניתוח הקשר מאקרו", step4: "יצירת הערת מחקר",
+
+    // Journal
+    journalTitle: "יומן מסחר", newTrade: "+ עסקה ידנית",
+    totalTrades: "סה״כ עסקאות", totalPnl: "סה״כ P&L", winRate: "% זכייה",
+    avgRR: "ממוצע R:R", avgWin: "ממוצע זכייה", avgLoss: "ממוצע הפסד",
+    noTrades: "אין עסקאות עדיין", noTradesMsg: 'חבר MT5 או לחץ "+ עסקה ידנית"',
+    date: "תאריך", asset: "נכס", direction: "כיוון", entry: "כניסה",
+    exit: "יציאה", size: "גודל", status: "סטטוס", strategy: "אסטרטגיה",
+    notes: "הערות", edit: "עריכה",
+
+    // MT5
+    connectMT5: "חבר את חשבון MT5 שלך", connectBtn: "🔗 חבר חשבון",
+  },
+};
+
+let currentLang = localStorage.getItem('sc_lang') || 'en';
+
+function t(key) {
+  return (LANGS[currentLang] || LANGS.en)[key] || (LANGS.en)[key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('sc_lang', lang);
+
+  // Update active button
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().toLowerCase() === lang);
+  });
+
+  // RTL for Hebrew
+  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.body.style.fontFamily = lang === 'he'
+    ? "'Segoe UI', 'Arial Hebrew', 'David', sans-serif"
+    : "'DM Sans', sans-serif";
+
+  // Apply all translations
+  applyTranslations();
+
+  // Re-render current tab if on markets page
+  if (document.getElementById('page-markets')?.style.display !== 'none') {
+    renderAll();
+  }
+  // Re-render journal if visible
+  if (document.getElementById('page-journal-page')?.style.display !== 'none') {
+    loadJournal();
+  }
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t(key)) el.textContent = t(key);
+  });
+  // Update page title
+  document.title = currentLang === 'he' ? 'Saving Capital — מודיעין שוק'
+                 : currentLang === 'bg' ? 'Saving Capital — Пазарно разузнаване'
+                 : 'Saving Capital — Market Intelligence';
+}
+
+// Patch sent() to return translated sentiment labels
+const _origSent = sent;
+function sent(c) {
+  const base = _origSent(c);
+  const labelMap = {
+    'Strong Bull':    t('strongBull'),
+    'Bullish':        t('bullishL'),
+    'Mildly Bullish': t('mildBull'),
+    'Strong Bear':    t('strongBear'),
+    'Bearish':        t('bearishL'),
+    'Mildly Bearish': t('mildBear'),
+    'Neutral':        t('neutral'),
+  };
+  return {...base, l: labelMap[base.l] || base.l};
+}
+
+// Patch skelCard, assetCard, detailPanel, loadingState, analysisBlocks to use t()
+const _origSkelCard = skelCard;
+function skelCard() { return _origSkelCard(); }
+
+const _origAssetCard = assetCard;
+function assetCard(a) { return _origAssetCard(a); }
+
+// Patch renderTab to use translated empty state
+const _origRenderTab = renderTab;
+function renderTab(t_arg) {
+  const con = document.getElementById('s-' + t_arg);
+  if (!con) return;
+  const loading = Object.keys(prices).length === 0;
+  const grid = '<div class="agrid">' + TABS[t_arg].map(a => loading ? skelCard() : assetCard(a)).join('') + '</div>';
+  const sel = selId && TABS[t_arg].find(a => a.id === selId);
+  const det = sel
+    ? detailPanel(selId, t_arg)
+    : '<div class="empty"><span>' + t('selectAsset') + '</span>' + t('selectMsg') + '</div>';
+  con.innerHTML = grid + det;
+  setTimeout(() => {
+    TABS[t_arg].forEach(a => {
+      const cv = con.querySelector('[data-spark="' + a.id + '"]');
+      const p = prices[a.id];
+      if (cv && p?.closes?.length > 1) drawSpark(cv, p.closes, (p.change || 0) >= 0, false);
+    });
+    if (sel) {
+      const bc = con.querySelector('.bigspark');
+      const p = prices[selId];
+      if (bc && p?.closes?.length > 1) drawSpark(bc, p.closes, (p.change || 0) >= 0, true);
+    }
+  }, 50);
+}
+
+// Patch loadingState to use translations
+function loadingState(name) {
+  return '<div class="ldet"><div class="lring"></div>' +
+    '<div class="ltitle">' + t('generatingAnalysis') + ' ' + name + '</div>' +
+    '<div class="lsub">' + t('analysingLive') + '</div>' +
+    '<div class="lsteps">' +
+      '<div class="lstep"><div class="lsd"></div>' + t('step1') + '</div>' +
+      '<div class="lstep"><div class="lsd d2"></div>' + t('step2') + '</div>' +
+      '<div class="lstep"><div class="lsd d3"></div>' + t('step3') + '</div>' +
+      '<div class="lstep"><div class="lsd d4"></div>' + t('step4') + '</div>' +
+    '</div></div>';
+}
+
+// Patch analysisBlocks to use translations
+function analysisBlocks(data, id, tab) {
+  const pc = data.assetPhase?.includes('Uptrend') || data.assetPhase?.includes('Bull') ? 'ptbull'
+           : data.assetPhase?.includes('Down') || data.assetPhase?.includes('Bear') ? 'ptbear' : 'ptneut';
+  const drvHtml = (data.drivers || []).map((dr, i) =>
+    '<div class="drv"><div class="drvn">' + (i+1) + '</div><div class="drvt">' + dr + '</div></div>'
+  ).join('');
+  return '<div class="abody">' +
+    '<div class="as acc"><div class="dptag ' + pc + '" style="margin-bottom:10px;display:inline-flex;">' + (data.assetPhase || '—') + ' · ' + (data.generatedAt || TODAY) + '</div>' +
+    '<div class="albl">' + t('execSummary') + '</div><div class="atxt">' + (data.exec || '—') + '</div></div>' +
+    '<div class="as hg"><div><div class="albl">' + t('nearTerm') + '</div><div class="atxt">' + (data.shortTerm || '—') + '</div></div>' +
+    '<div><div class="albl">' + t('medTerm') + '</div><div class="atxt">' + (data.longTerm || '—') + '</div></div></div>' +
+    '<div class="as"><div class="albl">' + t('macroNarrative') + '</div><div class="atxt">' + (data.narrative || '—') + '</div></div>' +
+    '<div class="as"><div class="albl">' + t('catalysts') + '</div><div class="drvs">' + drvHtml + '</div></div>' +
+    '<div class="as acc"><div class="albl">' + t('positioning') + '</div><div class="atxt">' + (data.positioning || '—') + '</div></div>' +
+    '<div class="gsftr"><div class="gsm"><div class="gsl"></div>Wall Street Quant Grade · ' + (data.generatedAt || TODAY) + '</div>' +
+    '<button class="rgbtn" onclick="forceRefresh(\'' + id + '\',\'' + tab + '\')">' + t('regenerate') + '</button></div>' +
+  '</div>';
+}
+
+// Patch detailPanel to use translated metric labels
+function detailPanel(id, tab) {
+  const a = TABS[tab].find(x => x.id === id); if (!a) return '';
+  const p = prices[id]; const s = sent(p?.change); const ph = phaseData.phase || '—';
+  const cached = analyses[id + '_' + TODAY];
+  return '<div class="detail">' +
+    '<div class="dh">' +
+      '<div><div class="dname">' + a.name + '</div><div class="dsym">' + a.sym + '</div>' + (a.desc ? '<div class="ddesc">' + a.desc + '</div>' : '') + '</div>' +
+      '<div class="dr"><div class="dprice ' + cc(p?.change) + '">' + fp(p?.price) + '</div><div class="dchg ' + cc(p?.change) + '">' + fc(p?.change) + ' 24h · ' + fc(p?.change5d) + ' 5d</div><div class="dptag ' + s.dc + '">' + s.l + '</div></div>' +
+    '</div>' +
+    '<div class="dchart"><canvas class="bigspark" data-spark="' + id + '"></canvas></div>' +
+    '<div class="mrow">' +
+      '<div class="mb"><div class="ml">' + t('price') + '</div><div class="mv ' + cc(p?.change) + '">' + fp(p?.price) + '</div></div>' +
+      '<div class="mb"><div class="ml">' + t('change24h') + '</div><div class="mv ' + cc(p?.change) + '">' + fc(p?.change) + '</div></div>' +
+      '<div class="mb"><div class="ml">' + t('change5d') + '</div><div class="mv ' + cc(p?.change5d) + '">' + fc(p?.change5d) + '</div></div>' +
+      '<div class="mb"><div class="ml">' + t('sentiment') + '</div><div class="mv">' + s.l + '</div></div>' +
+      '<div class="mb"><div class="ml">' + t('phase') + '</div><div class="mv">' + ph + '</div></div>' +
+      (p?.mcap ? '<div class="mb"><div class="ml">' + t('mktCap') + '</div><div class="mv">$' + (p.mcap/1e9).toFixed(1) + 'B</div></div>' : '') +
+    '</div>' +
+    (cached ? analysisBlocks(cached, id, tab) : loadingState(a.name)) +
+  '</div>';
+}
+
+// Apply language on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setLang(currentLang);
+});
 
 </script>
 </body>
