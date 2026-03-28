@@ -1425,14 +1425,14 @@ function fp(p){if(p==null)return'—';if(p>10000)return'$'+p.toLocaleString('en'
 function fc(c){if(c==null)return'—';return(c>=0?'+':'')+c.toFixed(2)+'%'}
 function cc(c){return c==null?'fl':c>0?'up':'dn'}
 function sent(c){
-  if(c==null)return{l:'Neutral',bc:'bneut',dc:'ptneut'};
-  if(c>3)return{l:'Strong Bull',bc:'bbull',dc:'ptbull'};
-  if(c>1)return{l:'Bullish',bc:'bbull',dc:'ptbull'};
-  if(c>0.3)return{l:'Mildly Bullish',bc:'bbull',dc:'ptbull'};
-  if(c<-3)return{l:'Strong Bear',bc:'bbear',dc:'ptbear'};
-  if(c<-1)return{l:'Bearish',bc:'bbear',dc:'ptbear'};
-  if(c<-0.3)return{l:'Mildly Bearish',bc:'bbear',dc:'ptbear'};
-  return{l:'Neutral',bc:'bneut',dc:'ptneut'};
+  if(c==null)return{l:t('neutral'),bc:'bneut',dc:'ptneut'};
+  if(c>3)return{l:t('strongBull'),bc:'bbull',dc:'ptbull'};
+  if(c>1)return{l:t('bullishL'),bc:'bbull',dc:'ptbull'};
+  if(c>0.3)return{l:t('mildBull'),bc:'bbull',dc:'ptbull'};
+  if(c<-3)return{l:t('strongBear'),bc:'bbear',dc:'ptbear'};
+  if(c<-1)return{l:t('bearishL'),bc:'bbear',dc:'ptbear'};
+  if(c<-0.3)return{l:t('mildBear'),bc:'bbear',dc:'ptbear'};
+  return{l:t('neutral'),bc:'bneut',dc:'ptneut'};
 }
 
 // Sparkline
@@ -1518,7 +1518,7 @@ function renderTab(t){
   const loading=Object.keys(prices).length===0;
   const grid='<div class="agrid">'+TABS[t].map(a=>loading?skelCard():assetCard(a)).join('')+'</div>';
   const sel=selId&&TABS[t].find(a=>a.id===selId);
-  const det=sel?detailPanel(selId,t):'<div class="empty"><span>SELECT</span>Click an asset above to view AI market analysis</div>';
+  const det=sel?detailPanel(selId,t):'<div class="empty"><span>'+t('selectAsset')+'</span>'+t('selectMsg')+'</div>';
   con.innerHTML=grid+det;
   setTimeout(()=>{
     TABS[t].forEach(a=>{
@@ -1573,11 +1573,11 @@ function detailPanel(id,tab){
     '</div>'+
     '<div class="dchart"><canvas class="bigspark" data-spark="'+id+'"></canvas></div>'+
     '<div class="mrow">'+
-      '<div class="mb"><div class="ml">Price</div><div class="mv '+cc(p?.change)+'">'+fp(p?.price)+'</div></div>'+
-      '<div class="mb"><div class="ml">24h</div><div class="mv '+cc(p?.change)+'">'+fc(p?.change)+'</div></div>'+
-      '<div class="mb"><div class="ml">5-Day</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d)+'</div></div>'+
-      '<div class="mb"><div class="ml">Sentiment</div><div class="mv">'+s.l+'</div></div>'+
-      '<div class="mb"><div class="ml">Phase</div><div class="mv">'+ph+'</div></div>'+
+      '<div class="mb"><div class="ml">'+t('price')+'</div><div class="mv '+cc(p?.change)+'">'+fp(p?.price)+'</div></div>'+
+      '<div class="mb"><div class="ml">'+t('change24h')+'</div><div class="mv '+cc(p?.change)+'">'+fc(p?.change)+'</div></div>'+
+      '<div class="mb"><div class="ml">'+t('change5d')+'</div><div class="mv '+cc(p?.change5d)+'">'+fc(p?.change5d)+'</div></div>'+
+      '<div class="mb"><div class="ml">'+t('sentiment')+'</div><div class="mv">'+s.l+'</div></div>'+
+      '<div class="mb"><div class="ml">'+t('phase')+'</div><div class="mv">'+ph+'</div></div>'+
       (p?.mcap?'<div class="mb"><div class="ml">Mkt Cap</div><div class="mv">$'+(p.mcap/1e9).toFixed(1)+'B</div></div>':'')+
     '</div>'+
     (cached?analysisBlocks(cached,id,tab):loadingState(a.name))+
@@ -1585,12 +1585,15 @@ function detailPanel(id,tab){
 }
 
 function loadingState(name){
-  return '<div class="ldet"><div class="lring"></div><div class="ltitle">Generating Wall Street-grade analysis for '+name+'</div>'+
-    '<div class="lsub">Analysing live price · market phase · macro regime · institutional flows</div>'+
-    '<div class="lsteps"><div class="lstep"><div class="lsd"></div>Live price data</div>'+
-    '<div class="lstep"><div class="lsd d2"></div>Market phase detection</div>'+
-    '<div class="lstep"><div class="lsd d3"></div>Macro context analysis</div>'+
-    '<div class="lstep"><div class="lsd d4"></div>Generating research note</div></div></div>';
+  return '<div class="ldet"><div class="lring"></div>'+
+    '<div class="ltitle">'+t('generatingAnalysis')+' '+name+'</div>'+
+    '<div class="lsub">'+t('analysingLive')+'</div>'+
+    '<div class="lsteps">'+
+      '<div class="lstep"><div class="lsd"></div>'+t('step1')+'</div>'+
+      '<div class="lstep"><div class="lsd d2"></div>'+t('step2')+'</div>'+
+      '<div class="lstep"><div class="lsd d3"></div>'+t('step3')+'</div>'+
+      '<div class="lstep"><div class="lsd d4"></div>'+t('step4')+'</div>'+
+    '</div></div>';
 }
 
 function analysisBlocks(d,id,tab){
@@ -1598,14 +1601,14 @@ function analysisBlocks(d,id,tab){
   const drvHtml=(d.drivers||[]).map((dr,i)=>'<div class="drv"><div class="drvn">'+(i+1)+'</div><div class="drvt">'+dr+'</div></div>').join('');
   return '<div class="abody">'+
     '<div class="as acc"><div class="dptag '+pc+'" style="margin-bottom:10px;display:inline-flex;">'+(d.assetPhase||'—')+' · '+(d.generatedAt||TODAY)+'</div>'+
-    '<div class="albl">Executive Summary</div><div class="atxt">'+(d.exec||'—')+'</div></div>'+
-    '<div class="as hg"><div><div class="albl">Near-term · 1–7 Days</div><div class="atxt">'+(d.shortTerm||'—')+'</div></div>'+
-    '<div><div class="albl">Medium-term · 1–3 Months</div><div class="atxt">'+(d.longTerm||'—')+'</div></div></div>'+
-    '<div class="as"><div class="albl">Macro Narrative & Regime</div><div class="atxt">'+(d.narrative||'—')+'</div></div>'+
-    '<div class="as"><div class="albl">Key Catalysts & Risk Factors</div><div class="drvs">'+drvHtml+'</div></div>'+
-    '<div class="as acc"><div class="albl">Positioning Recommendation</div><div class="atxt">'+(d.positioning||'—')+'</div></div>'+
+    '<div class="albl">'+t('execSummary')+'</div><div class="atxt">'+(d.exec||'—')+'</div></div>'+
+    '<div class="as hg"><div><div class="albl">'+t('nearTerm')+'</div><div class="atxt">'+(d.shortTerm||'—')+'</div></div>'+
+    '<div><div class="albl">'+t('medTerm')+'</div><div class="atxt">'+(d.longTerm||'—')+'</div></div></div>'+
+    '<div class="as"><div class="albl">'+t('macroNarrative')+'</div><div class="atxt">'+(d.narrative||'—')+'</div></div>'+
+    '<div class="as"><div class="albl">'+t('catalysts')+'</div><div class="drvs">'+drvHtml+'</div></div>'+
+    '<div class="as acc"><div class="albl">'+t('positioning')+'</div><div class="atxt">'+(d.positioning||'—')+'</div></div>'+
     '<div class="gsftr"><div class="gsm"><div class="gsl"></div>Wall Street Quant Grade · '+(d.generatedAt||TODAY)+'</div>'+
-    '<button class="rgbtn" onclick="forceRefresh(\''+id+'\',\''+tab+'\')">↻ Regenerate</button></div>'+
+    '<button class="rgbtn" onclick="forceRefresh(\''+id+'\',\''+tab+'\')">'+t('regenerate')+'</button></div>'+
   '</div>';
 }
 
@@ -1939,116 +1942,8 @@ function applyTranslations() {
                  : 'Saving Capital — Market Intelligence';
 }
 
-// Patch sent() to return translated sentiment labels
-const _origSent = sent;
-function sent(c) {
-  const base = _origSent(c);
-  const labelMap = {
-    'Strong Bull':    t('strongBull'),
-    'Bullish':        t('bullishL'),
-    'Mildly Bullish': t('mildBull'),
-    'Strong Bear':    t('strongBear'),
-    'Bearish':        t('bearishL'),
-    'Mildly Bearish': t('mildBear'),
-    'Neutral':        t('neutral'),
-  };
-  return {...base, l: labelMap[base.l] || base.l};
-}
-
-// Patch skelCard, assetCard, detailPanel, loadingState, analysisBlocks to use t()
-const _origSkelCard = skelCard;
-function skelCard() { return _origSkelCard(); }
-
-const _origAssetCard = assetCard;
-function assetCard(a) { return _origAssetCard(a); }
-
-// Patch renderTab to use translated empty state
-const _origRenderTab = renderTab;
-function renderTab(t_arg) {
-  const con = document.getElementById('s-' + t_arg);
-  if (!con) return;
-  const loading = Object.keys(prices).length === 0;
-  const grid = '<div class="agrid">' + TABS[t_arg].map(a => loading ? skelCard() : assetCard(a)).join('') + '</div>';
-  const sel = selId && TABS[t_arg].find(a => a.id === selId);
-  const det = sel
-    ? detailPanel(selId, t_arg)
-    : '<div class="empty"><span>' + t('selectAsset') + '</span>' + t('selectMsg') + '</div>';
-  con.innerHTML = grid + det;
-  setTimeout(() => {
-    TABS[t_arg].forEach(a => {
-      const cv = con.querySelector('[data-spark="' + a.id + '"]');
-      const p = prices[a.id];
-      if (cv && p?.closes?.length > 1) drawSpark(cv, p.closes, (p.change || 0) >= 0, false);
-    });
-    if (sel) {
-      const bc = con.querySelector('.bigspark');
-      const p = prices[selId];
-      if (bc && p?.closes?.length > 1) drawSpark(bc, p.closes, (p.change || 0) >= 0, true);
-    }
-  }, 50);
-}
-
-// Patch loadingState to use translations
-function loadingState(name) {
-  return '<div class="ldet"><div class="lring"></div>' +
-    '<div class="ltitle">' + t('generatingAnalysis') + ' ' + name + '</div>' +
-    '<div class="lsub">' + t('analysingLive') + '</div>' +
-    '<div class="lsteps">' +
-      '<div class="lstep"><div class="lsd"></div>' + t('step1') + '</div>' +
-      '<div class="lstep"><div class="lsd d2"></div>' + t('step2') + '</div>' +
-      '<div class="lstep"><div class="lsd d3"></div>' + t('step3') + '</div>' +
-      '<div class="lstep"><div class="lsd d4"></div>' + t('step4') + '</div>' +
-    '</div></div>';
-}
-
-// Patch analysisBlocks to use translations
-function analysisBlocks(data, id, tab) {
-  const pc = data.assetPhase?.includes('Uptrend') || data.assetPhase?.includes('Bull') ? 'ptbull'
-           : data.assetPhase?.includes('Down') || data.assetPhase?.includes('Bear') ? 'ptbear' : 'ptneut';
-  const drvHtml = (data.drivers || []).map((dr, i) =>
-    '<div class="drv"><div class="drvn">' + (i+1) + '</div><div class="drvt">' + dr + '</div></div>'
-  ).join('');
-  return '<div class="abody">' +
-    '<div class="as acc"><div class="dptag ' + pc + '" style="margin-bottom:10px;display:inline-flex;">' + (data.assetPhase || '—') + ' · ' + (data.generatedAt || TODAY) + '</div>' +
-    '<div class="albl">' + t('execSummary') + '</div><div class="atxt">' + (data.exec || '—') + '</div></div>' +
-    '<div class="as hg"><div><div class="albl">' + t('nearTerm') + '</div><div class="atxt">' + (data.shortTerm || '—') + '</div></div>' +
-    '<div><div class="albl">' + t('medTerm') + '</div><div class="atxt">' + (data.longTerm || '—') + '</div></div></div>' +
-    '<div class="as"><div class="albl">' + t('macroNarrative') + '</div><div class="atxt">' + (data.narrative || '—') + '</div></div>' +
-    '<div class="as"><div class="albl">' + t('catalysts') + '</div><div class="drvs">' + drvHtml + '</div></div>' +
-    '<div class="as acc"><div class="albl">' + t('positioning') + '</div><div class="atxt">' + (data.positioning || '—') + '</div></div>' +
-    '<div class="gsftr"><div class="gsm"><div class="gsl"></div>Wall Street Quant Grade · ' + (data.generatedAt || TODAY) + '</div>' +
-    '<button class="rgbtn" onclick="forceRefresh(\'' + id + '\',\'' + tab + '\')">' + t('regenerate') + '</button></div>' +
-  '</div>';
-}
-
-// Patch detailPanel to use translated metric labels
-function detailPanel(id, tab) {
-  const a = TABS[tab].find(x => x.id === id); if (!a) return '';
-  const p = prices[id]; const s = sent(p?.change); const ph = phaseData.phase || '—';
-  const cached = analyses[id + '_' + TODAY];
-  return '<div class="detail">' +
-    '<div class="dh">' +
-      '<div><div class="dname">' + a.name + '</div><div class="dsym">' + a.sym + '</div>' + (a.desc ? '<div class="ddesc">' + a.desc + '</div>' : '') + '</div>' +
-      '<div class="dr"><div class="dprice ' + cc(p?.change) + '">' + fp(p?.price) + '</div><div class="dchg ' + cc(p?.change) + '">' + fc(p?.change) + ' 24h · ' + fc(p?.change5d) + ' 5d</div><div class="dptag ' + s.dc + '">' + s.l + '</div></div>' +
-    '</div>' +
-    '<div class="dchart"><canvas class="bigspark" data-spark="' + id + '"></canvas></div>' +
-    '<div class="mrow">' +
-      '<div class="mb"><div class="ml">' + t('price') + '</div><div class="mv ' + cc(p?.change) + '">' + fp(p?.price) + '</div></div>' +
-      '<div class="mb"><div class="ml">' + t('change24h') + '</div><div class="mv ' + cc(p?.change) + '">' + fc(p?.change) + '</div></div>' +
-      '<div class="mb"><div class="ml">' + t('change5d') + '</div><div class="mv ' + cc(p?.change5d) + '">' + fc(p?.change5d) + '</div></div>' +
-      '<div class="mb"><div class="ml">' + t('sentiment') + '</div><div class="mv">' + s.l + '</div></div>' +
-      '<div class="mb"><div class="ml">' + t('phase') + '</div><div class="mv">' + ph + '</div></div>' +
-      (p?.mcap ? '<div class="mb"><div class="ml">' + t('mktCap') + '</div><div class="mv">$' + (p.mcap/1e9).toFixed(1) + 'B</div></div>' : '') +
-    '</div>' +
-    (cached ? analysisBlocks(cached, id, tab) : loadingState(a.name)) +
-  '</div>';
-}
-
-// Apply language on page load
-document.addEventListener('DOMContentLoaded', () => {
-  setLang(currentLang);
-});
-
+// Init language on load
+setLang(currentLang);
 </script>
 </body>
 </html>
