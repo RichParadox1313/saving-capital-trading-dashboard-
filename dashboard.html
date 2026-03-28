@@ -480,22 +480,155 @@ h1 i{color:var(--g);font-style:normal;display:block}
 
 footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:11px;color:var(--t4);max-width:800px;margin:0 auto;line-height:1.8;font-weight:300}
 
+/* ── Mobile: Tablet (≤768px) ──────────────────────────────── */
 @media(max-width:768px){
-  nav{padding:0 16px}.nmid{display:none}
-  .hero{padding:76px 16px 0}
-  h1{font-size:clamp(3.2rem,16vw,5rem)}
-  .pbar{grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px}.pi{border-right:none;border-bottom:1px solid var(--br);padding-bottom:10px}.pnote{padding-left:0;grid-column:1/-1}
+  /* Nav */
+  nav{padding:0 12px;height:50px}
+  .nav-pages{gap:1px;padding:2px}
+  .npbtn{font-size:9px;padding:4px 8px;letter-spacing:.5px}
+  .nlogo{font-size:1.1rem;letter-spacing:2px}
+  .clk{font-size:9px}
+
+  /* News ticker */
+  .news-ticker{top:50px;height:38px}
+  .nt-label{font-size:8px;padding:0 10px}
+  .nt-item{font-size:11px;padding:0 14px}
+
+  /* Home page */
+  .hp-hero{grid-template-columns:1fr;padding:70px 16px 30px;min-height:auto}
+  .hp-right{display:none}
+  .hp-h1{font-size:clamp(2.8rem,11vw,4.5rem);letter-spacing:-1px}
+  .hp-body{font-size:13px;margin-bottom:20px}
+  .hp-actions{flex-direction:column;gap:10px}
+  .hp-cta,.hp-cta2{width:100%;justify-content:center;font-size:13px;padding:12px 20px}
+  .hp-nums{flex-wrap:wrap;gap:8px}
+  .hp-num strong{font-size:1.4rem}
+  .hp-ndiv{display:none}
+  .hp-strip{padding:14px 16px;gap:10px}
+  .hp-sf b{font-size:11px}
+  .hp-sf span{font-size:9px}
+  .hp-sdiv{display:none}
+  .hp-nav{padding:0 14px;height:50px}
+  .hp-np{font-size:9px;padding:5px 10px}
+
+  /* Market intelligence hero */
+  .hero{padding:68px 14px 0}
+  h1{font-size:clamp(2.8rem,14vw,4.5rem);letter-spacing:2px}
+  .hsub{font-size:13px;margin-bottom:20px}
+
+  /* Phase bar */
+  .pbar{grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px}
+  .pi{border-right:none;border-bottom:1px solid var(--br);padding-bottom:8px}
+  .pnote{padding-left:0;grid-column:1/-1}
+  .pv{font-size:1.4rem}
+  .pl{font-size:8px}
+
+  /* Stats strip */
   .sstrip{grid-template-columns:repeat(3,1fr)}
-  .main{padding:40px 16px 60px}
-  .agrid{grid-template-columns:1fr 1fr;gap:8px}
-  .acard{padding:14px}.acpn{font-size:14px}
-  .dh{grid-template-columns:1fr}.dr{align-items:flex-start}
-  .dname{font-size:1.8rem}.dprice{font-size:1.6rem}
+  .sn{font-size:1.2rem}
+  .sl{font-size:8px}
+
+  /* Main content */
+  .main{padding:28px 12px 60px}
+
+  /* Tabs — horizontally scrollable, no wrap */
+  .tabs{margin-bottom:16px;gap:0}
+  .tab{font-size:9px;padding:10px 12px;letter-spacing:1px}
+
+  /* Asset grid — 2 columns on tablet */
+  .agrid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .acard{padding:12px}
+  .acn{font-size:13px}
+  .acs{font-size:9px}
+  .acpn{font-size:15px}
+  .acpc{font-size:10px}
+  .swrap{height:36px;margin-bottom:10px}
+  .bx{font-size:8px;padding:2px 7px}
+  .ac5{font-size:9px}
+
+  /* Detail panel */
+  .dh{grid-template-columns:1fr;gap:12px;padding:16px}
+  .dr{align-items:flex-start}
+  .dname{font-size:1.6rem;letter-spacing:2px}
+  .dsym{font-size:10px}
+  .dprice{font-size:1.5rem}
+  .dchg{font-size:12px}
+  .dptag{font-size:8px;padding:3px 9px}
+  .dchart{padding:12px 16px}
+  .dchart canvas{height:80px}
+  .mrow{grid-template-columns:repeat(3,1fr)}
+  .mb{padding:10px 12px}
+  .ml{font-size:8px}
+  .mv{font-size:12px}
+  .abody{padding:14px;gap:10px}
+  .as{padding:14px}
   .as.hg{grid-template-columns:1fr}
-  .abody{padding:16px;gap:10px}
-  .dchart{padding:14px 16px}
+  .albl{font-size:8px;margin-bottom:7px}
+  .atxt{font-size:12px;line-height:1.8}
+  .drvt{font-size:12px}
+  .gsftr{padding:12px 14px}
+  .gsm{font-size:8px}
+  .rgbtn{font-size:9px;padding:5px 12px}
+
+  /* Journal */
+  .jstats{grid-template-columns:repeat(3,1fr)}
+  .jtable-wrap{overflow-x:auto}
+  .jtable{min-width:600px}
+  .jmodal{padding:16px;margin:8px}
+  .jform-grid{grid-template-columns:1fr}
+
+  /* MT5 */
+  .mt5-form{grid-template-columns:1fr}
 }
-@media(max-width:400px){.agrid{grid-template-columns:1fr}.sstrip{grid-template-columns:repeat(2,1fr)}}
+
+/* ── Mobile: Phone (≤480px) ──────────────────────────────── */
+@media(max-width:480px){
+  /* Nav — hide page labels, show icons */
+  .nav-pages{padding:2px}
+  .npbtn{font-size:8px;padding:4px 7px;letter-spacing:0}
+
+  /* Home */
+  .hp-h1{font-size:clamp(2.4rem,13vw,3.5rem)}
+  .hp-firms{display:none}
+  .hp-nums .hp-num:nth-child(n+6){display:none}
+
+  /* Hero section */
+  .hero{padding:62px 12px 0}
+  h1{font-size:clamp(2.4rem,15vw,3.8rem)}
+
+  /* Phase bar — stack all */
+  .pbar{grid-template-columns:1fr;gap:8px}
+  .pi{border-bottom:1px solid var(--br);padding-bottom:6px}
+  .pi:last-child{border-bottom:none}
+
+  /* Stats — 2 col */
+  .sstrip{grid-template-columns:repeat(2,1fr)}
+
+  /* Asset grid — single column */
+  .agrid{grid-template-columns:1fr;gap:8px}
+  .acard{padding:14px}
+  .acpn{font-size:16px}
+
+  /* Detail panel */
+  .mrow{grid-template-columns:repeat(2,1fr)}
+  .dname{font-size:1.4rem}
+  .dprice{font-size:1.4rem}
+
+  /* Journal */
+  .jstats{grid-template-columns:repeat(2,1fr)}
+
+  /* Tabs — smaller text */
+  .tab{font-size:8px;padding:8px 10px}
+}
+
+/* ── Mobile: Very small (≤360px) ─────────────────────────── */
+@media(max-width:360px){
+  .npbtn{font-size:7px;padding:3px 6px}
+  .agrid{gap:6px}
+  .acard{padding:12px}
+  .tab{font-size:7px;padding:7px 8px}
+  h1{font-size:2.2rem}
+}
 </style>
 </head>
 <body>
@@ -669,7 +802,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="tab" onclick="swTab('oil',this)">Gold & Commodities</button>
     <button class="tab" onclick="swTab('indexes',this)">Global Indexes</button>
     <button class="tab" onclick="swTab('stocks',this)">Top 30 Stocks</button>
-    <button class="tab" onclick="swTab('journal',this)">📓 Trading Journal</button>
   </div>
   <div id="s-gold" class="sec"></div>
   <div id="s-crypto" class="sec on"></div>
@@ -677,7 +809,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   <div id="s-oil" class="sec"></div>
   <div id="s-indexes" class="sec"></div>
   <div id="s-stocks" class="sec"></div>
-  <div id="s-journal" class="sec"></div>
 </div>
 
 
