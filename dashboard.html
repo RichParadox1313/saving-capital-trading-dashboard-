@@ -1491,36 +1491,25 @@ function initLivePrices(){
 }
 
 // ── News ticker ───────────────────────────────────────────
-const RSS2JSON='https://api.rss2json.com/v1/api.json?count=6&rss_url=';
-const FEEDS=[
-  {url:RSS2JSON+encodeURIComponent('https://cointelegraph.com/rss'),type:'crypto'},
-  {url:RSS2JSON+encodeURIComponent('https://decrypt.co/feed'),type:'crypto'},
-  {url:RSS2JSON+encodeURIComponent('https://oilprice.com/rss/main'),type:'commodity'},
-  {url:RSS2JSON+encodeURIComponent('https://www.forexlive.com/feed/news'),type:'forex'},
-  {url:RSS2JSON+encodeURIComponent('https://feeds.reuters.com/reuters/businessNews'),type:'macro'},
-  {url:RSS2JSON+encodeURIComponent('https://www.kitco.com/rss/news.xml'),type:'commodity'},
-];
-const ntCls=t=>t==='crypto'?'nc-crypto':t==='forex'?'nc-forex':t==='commodity'?'nc-commodity':'nc-macro';
-const ntLbl=t=>t==='crypto'?'Crypto':t==='forex'?'Forex':t==='commodity'?'Commodity':'Macro';
-
+// ── News ticker uses server-side /api/news ───────────────
 async function loadNewsTicker(){
-  const items=[];
-  const results=await Promise.allSettled(FEEDS.map(async f=>{
-    const r=await fetch(f.url,{signal:AbortSignal.timeout(8000)});
-    const d=await r.json();
-    return (d.items||[]).slice(0,5).map(i=>({title:i.title?.trim(),link:i.link||'#',type:f.type}));
-  }));
-  for(const res of results) if(res.status==='fulfilled') items.push(...res.value.filter(i=>i.title&&i.title.length>10));
-  if(items.length<3) return;
-  items.sort(()=>Math.random()-.5);
-  const doubled=[...items,...items];
-  const scroll=document.getElementById('nt-scroll');
-  if(!scroll) return;
-  scroll.innerHTML=doubled.map(item=>'<a class="nt-item" href="'+item.link+'" target="_blank" rel="noopener">'+
-    '<span class="nt-cat '+ntCls(item.type)+'">'+ntLbl(item.type)+'</span>'+
-    (item.title.length>90?item.title.slice(0,90)+'…':item.title)+
-  '</a>').join('');
-  scroll.style.animationDuration=Math.max(50,items.length*8)+'s';
+  try{
+    const r=await fetch('/api/news');
+    if(!r.ok) return;
+    const items=await r.json();
+    if(!items||items.length<2) return;
+    const catCls=t=>t==='crypto'?'nc-crypto':t==='forex'?'nc-forex':t==='commodity'?'nc-commodity':'nc-macro';
+    const catLbl=t=>t==='crypto'?'Crypto':t==='forex'?'Forex':t==='commodity'?'Commodity':'Macro';
+    const doubled=[...items,...items];
+    const scroll=document.getElementById('nt-scroll');
+    if(!scroll) return;
+    scroll.innerHTML=doubled.map(item=>'<a class="nt-item" href="'+(item.link||'#')+'" target="_blank" rel="noopener">'+
+      '<span class="nt-cat '+catCls(item.category||'macro')+'">'+catLbl(item.category||'macro')+'</span>'+
+      ((item.title||'').length>95?(item.title||'').slice(0,95)+'…':(item.title||''))+
+    '</a>').join('');
+    const spd=Math.max(60,Math.min(180,items.length*9));
+    scroll.style.animationDuration=spd+'s';
+  }catch(e){ console.warn('News ticker:',e); }
 }
 
 // ── Markets page tab switching ────────────────────────────
