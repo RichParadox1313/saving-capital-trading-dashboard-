@@ -2365,7 +2365,7 @@ const TABS = {
     {id:'chainlink',name:'Chainlink',sym:'LINK'},{id:'polkadot',name:'Polkadot',sym:'DOT'},
     {id:'the-open-network',name:'Toncoin',sym:'TON'},{id:'shiba-inu',name:'Shiba Inu',sym:'SHIB'},
     {id:'litecoin',name:'Litecoin',sym:'LTC'},{id:'tron',name:'TRON',sym:'TRX'},
-    {id:'matic-network',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},
+    {id:'pol-polygon-ecosystem-token',name:'Polygon',sym:'POL'},{id:'uniswap',name:'Uniswap',sym:'UNI'},
     {id:'stellar',name:'Stellar',sym:'XLM'},{id:'near',name:'NEAR',sym:'NEAR'},
     {id:'arbitrum',name:'Arbitrum',sym:'ARB'},{id:'aptos',name:'Aptos',sym:'APT'},
     {id:'internet-computer',name:'ICP',sym:'ICP'},{id:'filecoin',name:'Filecoin',sym:'FIL'},
@@ -2452,7 +2452,7 @@ const TABS = {
 
 let prices={}, analyses={}, phaseData={}, curTab='crypto', selId=null;
 const TODAY=new Date().toISOString().slice(0,10);
-const BINANCE_IDS={bitcoin:'BTCUSDT',ethereum:'ETHUSDT',ripple:'XRPUSDT',solana:'SOLUSDT',binancecoin:'BNBUSDT',dogecoin:'DOGEUSDT',cardano:'ADAUSDT','avalanche-2':'AVAXUSDT',chainlink:'LINKUSDT',polkadot:'DOTUSDT','the-open-network':'TONUSDT','shiba-inu':'SHIBUSDT',litecoin:'LTCUSDT',tron:'TRXUSDT','matic-network':'POLUSDT',uniswap:'UNIUSDT',stellar:'XLMUSDT',near:'NEARUSDT',arbitrum:'ARBUSDT',aptos:'APTUSDT','internet-computer':'ICPUSDT',filecoin:'FILUSDT','render-token':'RENDERUSDT','injective-protocol':'INJUSDT',monero:'XMRUSDT',sui:'SUIUSDT',pepe:'PEPEUSDT','fetch-ai':'FETUSDT','sei-network':'SEIUSDT',bittensor:'TAOUSDT'};
+const BINANCE_IDS={bitcoin:'BTCUSDT',ethereum:'ETHUSDT',ripple:'XRPUSDT',solana:'SOLUSDT',binancecoin:'BNBUSDT',dogecoin:'DOGEUSDT',cardano:'ADAUSDT','avalanche-2':'AVAXUSDT',chainlink:'LINKUSDT',polkadot:'DOTUSDT','the-open-network':'TONUSDT','shiba-inu':'SHIBUSDT',litecoin:'LTCUSDT',tron:'TRXUSDT','pol-polygon-ecosystem-token':'POLUSDT',uniswap:'UNIUSDT',stellar:'XLMUSDT',near:'NEARUSDT',arbitrum:'ARBUSDT',aptos:'APTUSDT','internet-computer':'ICPUSDT',filecoin:'FILUSDT','render-token':'RENDERUSDT','injective-protocol':'INJUSDT',monero:'XMRUSDT',sui:'SUIUSDT',pepe:'PEPEUSDT','fetch-ai':'FETUSDT','sei-network':'SEIUSDT',bittensor:'TAOUSDT'};
 
 // Format helpers
 function fp(p){if(p==null)return'—';if(p>10000)return'$'+p.toLocaleString('en',{maximumFractionDigits:0});if(p>100)return'$'+p.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(p>1)return'$'+p.toFixed(4);return'$'+p.toFixed(8)}
