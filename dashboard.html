@@ -1158,6 +1158,27 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <script>
 
+// ── Clock & Timezone — global so onchange="setTz()" works ───────────────────
+let _tz = localStorage.getItem('sc_tz') || 'Asia/Dubai';
+const _tzLabels = {'Asia/Dubai':'UAE','America/New_York':'NY','Europe/London':'LON','Europe/Berlin':'BER','Europe/Sofia':'SOF','Asia/Tokyo':'TKY'};
+function setTz(tz){
+  _tz = tz;
+  localStorage.setItem('sc_tz', tz);
+  tick();
+  const sel = document.getElementById('tz-sel');
+  if(sel) sel.value = tz;
+}
+function tick(){
+  try{
+    const t = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    const lbl = _tzLabels[_tz] || 'UTC';
+    const el = document.getElementById('clk');  if(el)  el.textContent  = t+' '+lbl;
+    const el2= document.getElementById('clk2'); if(el2) el2.textContent = t+' '+lbl;
+  }catch(e){}
+}
+tick();
+setInterval(tick, 1000);
+
 // ── i18n: must be first — other functions call t() ──────────────────────────
 const LANGS = {
   en: {
@@ -1297,22 +1318,10 @@ function setLang(lang){
   }
   raf();
 
-  // Clock
-  let _tz = localStorage.getItem('sc_tz') || 'Asia/Dubai';
-  const _tzLabels = {'Asia/Dubai':'UAE','America/New_York':'NY','Europe/London':'LON','Europe/Berlin':'BER','Europe/Sofia':'SOF','Asia/Tokyo':'TKY'};
-  function setTz(tz){ _tz=tz; localStorage.setItem('sc_tz',tz); tick(); const sel=document.getElementById('tz-sel'); if(sel) sel.value=tz; }
-  function tick(){
-    try{
-      const t = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
-      const lbl = _tzLabels[_tz] || 'UTC';
-      const el = document.getElementById('clk'); if(el) el.textContent = t+' '+lbl;
-      const el2 = document.getElementById('clk2'); if(el2) el2.textContent = t+' '+lbl;
-    }catch(e){}
-  }
   // Set saved timezone on load
   const tzSel = document.getElementById('tz-sel');
   if(tzSel) tzSel.value = _tz;
-  tick(); setInterval(tick, 1000);
+  tick();
 
   // Live prices
   function updatePills(){
