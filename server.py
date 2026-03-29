@@ -368,8 +368,39 @@ async def load_all_prices() -> dict:
             result[a["id"]] = {**a, "price": None, "change": None, "change5d": None, "closes": []}
     print(f"  Crypto prices: {crypto_ok}/{len(CRYPTO_ASSETS)} loaded")
 
-    # 2. Crypto sparklines — now included directly from /coins/markets sparkline_in_7d
-    #    No separate fetch needed
+    # Polygon sparkline direct fix — if closes is empty, fetch via market_chart endpoint directly
+    pol_key = "pol-polygon-ecosystem-token"
+    if pol_key in result and not result[pol_key].get("closes"):
+        print("  Polygon sparkline empty — fetching directly via market_chart...")
+        async with aiohttp.ClientSession() as _s:
+            headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
+            # Try both IDs
+            for pol_id in ("matic-network", "pol-polygon-ecosystem-token", "polygon-ecosystem-token"):
+                try:
+                    async with _s.get(
+                        f"https://api.coingecko.com/api/v3/coins/{pol_id}/market_chart",
+                        params={"vs_currency": "usd", "days": "7"},
+                        headers=headers,
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as r:
+                        if r.status == 200:
+                            mc = await r.json()
+                            raw = mc.get("prices", [])
+                            if raw:
+                                step = max(1, len(raw) // 20)
+                                closes = [float(f"{p[1]:.8g}") for p in raw[::step][:20] if p and p[1]]
+                                if closes:
+                                    result[pol_key]["closes"] = closes
+                                    # Also get 7d change from first/last price
+                                    if len(raw) >= 2:
+                                        chg7d = ((raw[-1][1] - raw[0][1]) / raw[0][1]) * 100
+                                        result[pol_key]["change5d"] = round(chg7d, 3)
+                                    print(f"  Polygon sparkline fetched via {pol_id}: {len(closes)} pts")
+                                    break
+                        else:
+                            print(f"  market_chart {pol_id}: HTTP {r.status}")
+                except Exception as e:
+                    print(f"  market_chart {pol_id}: {e}")
 
     # 3. Forex + Commodities — Yahoo Finance
     print("  Fetching Yahoo Finance (forex + commodities)...")
