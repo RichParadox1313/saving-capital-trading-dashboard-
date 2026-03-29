@@ -345,11 +345,10 @@ async def load_all_prices() -> dict:
     result = {}
     print(f"\n[{datetime.utcnow().strftime('%H:%M:%S')}] === Loading all prices ===")
 
-    # 1. Crypto — CoinGecko (reliable, no issues)
+    # 1. Crypto — CoinGecko (price + 24h change)
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
-        # Look up by asset ID; for Polygon try both IDs since CoinGecko switches between them
         if a["id"] == "pol-polygon-ecosystem-token":
             d = cg.get("pol-polygon-ecosystem-token") or cg.get("matic-network") or {}
         else:
@@ -368,6 +367,52 @@ async def load_all_prices() -> dict:
             result[a["id"]] = {**a, "price": None, "change": None, "change5d": None, "closes": []}
     print(f"  Crypto prices: {crypto_ok}/{len(CRYPTO_ASSETS)} loaded")
 
+    # 2. Polygon sparkline — fetch from Binance klines (POLUSDT, public API, no key needed)
+    #    CoinGecko free tier never returns sparkline for POL. Binance always works.
+    BINANCE_SYM = {
+        "bitcoin":"BTCUSDT","ethereum":"ETHUSDT","ripple":"XRPUSDT",
+        "solana":"SOLUSDT","binancecoin":"BNBUSDT","dogecoin":"DOGEUSDT",
+        "cardano":"ADAUSDT","avalanche-2":"AVAXUSDT","chainlink":"LINKUSDT",
+        "polkadot":"DOTUSDT","the-open-network":"TONUSDT","shiba-inu":"SHIBUSDT",
+        "litecoin":"LTCUSDT","tron":"TRXUSDT","pol-polygon-ecosystem-token":"POLUSDT",
+        "uniswap":"UNIUSDT","stellar":"XLMUSDT","near":"NEARUSDT",
+        "arbitrum":"ARBUSDT","aptos":"APTUSDT","internet-computer":"ICPUSDT",
+        "filecoin":"FILUSDT","render-token":"RENDERUSDT","injective-protocol":"INJUSDT",
+        "monero":"XMRUSDT","sui":"SUIUSDT","pepe":"PEPEUSDT",
+        "fetch-ai":"FETUSDT","sei-network":"SEIUSDT","bittensor":"TAOUSDT",
+    }
+    # Fill missing sparklines from Binance for any crypto asset that has no closes
+    missing_spark = [a["id"] for a in CRYPTO_ASSETS
+                     if a["id"] in result and not result[a["id"]].get("closes")
+                     and a["id"] in BINANCE_SYM]
+    if missing_spark:
+        print(f"  Fetching Binance klines for {len(missing_spark)} assets with missing sparklines: {missing_spark}")
+        try:
+            async with aiohttp.ClientSession() as _s:
+                for cid in missing_spark:
+                    sym = BINANCE_SYM[cid]
+                    try:
+                        async with _s.get(
+                            "https://api.binance.com/api/v3/klines",
+                            params={"symbol": sym, "interval": "4h", "limit": "42"},
+                            timeout=aiohttp.ClientTimeout(total=10),
+                        ) as r:
+                            if r.status == 200:
+                                klines = await r.json()
+                                closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
+                                if len(closes) >= 2:
+                                    result[cid]["closes"] = closes[-20:]
+                                    w5 = closes[-30] if len(closes) >= 30 else closes[0]
+                                    result[cid]["change5d"] = round(((closes[-1] - w5) / w5) * 100, 3)
+                                    print(f"    {sym}: {len(closes)} pts OK")
+                            else:
+                                print(f"    {sym}: HTTP {r.status}")
+                        await asyncio.sleep(0.05)
+                    except Exception as e:
+                        print(f"    {sym} error: {e}")
+        except Exception as e:
+            print(f"  Binance klines session error: {e}")
+
     # 3. Forex + Commodities — Yahoo Finance
     print("  Fetching Yahoo Finance (forex + commodities)...")
     jar = aiohttp.CookieJar(unsafe=True)
@@ -383,23 +428,6 @@ async def load_all_prices() -> dict:
                 print(f"  Yahoo warmup: HTTP {r.status}")
         except Exception as e:
             print(f"  Yahoo warmup failed: {e}")
-
-        # Polygon sparkline — CoinGecko free tier does NOT return sparkline for POL
-        # Try multiple Yahoo Finance tickers until one works
-        pol_key = "pol-polygon-ecosystem-token"
-        pol_yahoo = {}
-        for pol_ticker in ("POL-USD", "MATIC-USD", "POL1-USD"):
-            pol_yahoo = await fetch_yahoo_chart(session, pol_ticker)
-            if pol_yahoo.get("closes"):
-                print(f"  Polygon sparkline via Yahoo {pol_ticker}: {len(pol_yahoo['closes'])} pts, 5d={pol_yahoo['change5d']}%")
-                break
-            else:
-                print(f"  Polygon Yahoo {pol_ticker} failed: {pol_yahoo}")
-        if pol_yahoo.get("closes") and pol_key in result:
-            result[pol_key]["closes"]   = pol_yahoo["closes"]
-            result[pol_key]["change5d"] = pol_yahoo["change5d"]
-        else:
-            print(f"  WARNING: All Polygon Yahoo tickers failed")
 
         # Now fetch all other assets
         yahoo_ok = 0
