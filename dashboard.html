@@ -414,6 +414,93 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .nt-dot{padding:0 12px;flex-shrink:0}
 .nt-loading{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;padding:0 16px;font-style:italic}
 
+
+
+/* ── Trade Analysis Modal ───────────────────────────────── */
+.ta-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--br);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.ta-stat{background:var(--s2);padding:12px 14px;text-align:center}
+.ta-stat-l{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:4px}
+.ta-stat-v{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.ta-section{background:var(--s2);border:1px solid var(--br);border-radius:6px;padding:14px 16px;margin-bottom:10px}
+.ta-section.acc{border-left:2px solid var(--g)}
+.ta-section.neg{border-left:2px solid var(--r)}
+.ta-label{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:8px}
+.ta-text{font-size:13px;color:var(--t2);line-height:1.85;font-weight:300}
+
+/* ── Quick-pick popup ───────────────────────────────────── */
+.qpick-wrap{position:relative;display:inline-block}
+.qpick-menu{display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:400;
+  background:var(--s1);border:1px solid var(--br2);border-radius:10px;
+  padding:6px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.qpick-menu.open{display:block}
+.qpick-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;
+  cursor:pointer;transition:background .15s;border:none;background:transparent;
+  width:100%;text-align:left;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px}
+.qpick-item:hover{background:var(--s2)}
+.qpick-label{font-weight:500}
+.qpick-sub{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;margin-top:1px}
+
+.qpick-icon{font-size:10px;font-family:'DM Mono',monospace;font-weight:600;width:28px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--g);background:var(--gdim);border:1px solid var(--br2);border-radius:4px;flex-shrink:0;letter-spacing:.5px}
+.qpick-divider{height:1px;background:var(--br);margin:4px 0}
+
+/* ── Upgraded trade modal ───────────────────────────────── */
+.jmodal{background:var(--s1);border:1px solid var(--br);border-radius:12px;
+  padding:0;width:100%;max-width:620px;max-height:92vh;overflow-y:auto}
+.jmodal-header{padding:20px 24px 0;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;background:var(--s1);
+  z-index:10;border-bottom:1px solid var(--br);padding-bottom:14px;margin-bottom:0}
+.jmodal-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;
+  letter-spacing:2px;color:var(--t1);margin:0}
+.jmodal-type-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace;
+  background:var(--gdim);color:var(--g);border:1px solid var(--br2)}
+.jmodal-body{padding:20px 24px}
+.jform-section{margin-bottom:18px}
+.jform-section-title{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--g);font-family:'DM Mono',monospace;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px}
+.jform-section-title::after{content:'';flex:1;height:1px;background:var(--br)}
+
+/* Psychology tags */
+.psych-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ptag-btn{font-size:10px;padding:4px 12px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--br);background:transparent;color:var(--t4);
+  font-family:'DM Mono',monospace;transition:all .2s;white-space:nowrap}
+.ptag-btn:hover{border-color:var(--br2);color:var(--t2)}
+.ptag-btn.selected{border-color:var(--g);background:var(--gdim);color:var(--g)}
+.ptag-btn.selected.negative{border-color:var(--r);background:var(--rdim);color:#f87171}
+
+/* R:R calculator */
+.rr-display{background:var(--s2);border:1px solid var(--br);border-radius:8px;
+  padding:12px 16px;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--br);overflow:hidden;border-radius:8px;margin-top:10px}
+.rr-box{background:var(--s2);padding:10px 14px;text-align:center}
+.rr-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:4px}
+.rr-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.rr-val.good{color:var(--g)}.rr-val.bad{color:var(--r)}.rr-val.ok{color:var(--gold)}
+
+/* Image upload */
+.img-upload-area{border:1px dashed var(--br2);border-radius:8px;padding:20px;
+  text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.img-upload-area:hover{border-color:var(--g);background:var(--gdim)}
+.img-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-label{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace}
+.img-upload-label span{display:block;font-size:1.4rem;margin-bottom:6px}
+.img-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.img-thumb{position:relative;width:70px;height:70px;border-radius:6px;
+  overflow:hidden;border:1px solid var(--br)}
+.img-thumb img{width:100%;height:100%;object-fit:cover}
+.img-thumb-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);
+  border:none;color:#f87171;cursor:pointer;border-radius:4px;
+  font-size:10px;padding:1px 4px;line-height:1}
+
+@media(max-width:768px){
+  .jmodal{max-width:100%;margin:8px}
+  .jmodal-body{padding:14px 16px}
+  .rr-display{grid-template-columns:repeat(3,1fr)}
+}
+
 /* ── Trading Journal ─────────────────────────────────────────────────────── */
 .jnl{display:flex;flex-direction:column;gap:16px}
 .jnl-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
@@ -854,63 +941,153 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 
 <!-- Trading Journal Modal -->
+<!-- Quick-pick popup -->
+<div class="jmodal-bg" id="jquick-bg" onclick="if(event.target===this)closeQuickPick()" style="display:none;position:fixed;inset:0;z-index:299"></div>
+
+<!-- Trade Modal -->
 <div class="jmodal-bg" id="jmodal-bg">
   <div class="jmodal">
-    <div class="jmodal-title" id="jmodal-title">New Trade</div>
-    <div class="jform-grid">
-      <div>
-        <label class="jlabel">Asset</label>
-        <input class="jinput" id="j-asset" placeholder="BTC, EURUSD, AAPL..." />
-      </div>
-      <div>
-        <label class="jlabel">Date</label>
-        <input class="jinput" type="date" id="j-date" />
-      </div>
-      <div>
-        <label class="jlabel">Direction</label>
-        <select class="jselect" id="j-direction">
-          <option value="LONG">LONG</option>
-          <option value="SHORT">SHORT</option>
-        </select>
-      </div>
-      <div>
-        <label class="jlabel">Status</label>
-        <select class="jselect" id="j-status">
-          <option value="OPEN">OPEN</option>
-          <option value="CLOSED">CLOSED</option>
-        </select>
-      </div>
-      <div>
-        <label class="jlabel">Entry Price</label>
-        <input class="jinput" type="number" step="any" id="j-entry" placeholder="0.00" />
-      </div>
-      <div>
-        <label class="jlabel">Exit Price (optional)</label>
-        <input class="jinput" type="number" step="any" id="j-exit" placeholder="0.00" />
-      </div>
-      <div>
-        <label class="jlabel">Position Size ($)</label>
-        <input class="jinput" type="number" step="any" id="j-size" placeholder="1000" />
-      </div>
-      <div>
-        <label class="jlabel">P&L ($)</label>
-        <input class="jinput" type="number" step="any" id="j-pnl" placeholder="Auto-calculated" />
-      </div>
-      <div class="jform-full">
-        <label class="jlabel">Strategy / Setup</label>
-        <input class="jinput" id="j-strategy" placeholder="e.g. Breakout, Mean Reversion, Trend Follow..." />
-      </div>
-      <div class="jform-full">
-        <label class="jlabel">Notes</label>
-        <textarea class="jinput" id="j-notes" rows="3" placeholder="Trade rationale, market conditions, lessons learned..."></textarea>
+    <!-- Header -->
+    <div class="jmodal-header">
+      <div class="jmodal-title" id="jmodal-title">New Trade</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="jmodal-type-badge" id="jmodal-type-badge">Manual</div>
+        <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="closeJModal()">✕</button>
       </div>
     </div>
-    <div class="jmodal-btns">
+
+    <div class="jmodal-body">
+
+      <!-- SECTION: Trade Details -->
+      <div class="jform-section">
+        <div class="jform-section-title">Trade Details</div>
+        <div class="jform-grid">
+          <div>
+            <label class="jlabel">Asset</label>
+            <input class="jinput" id="j-asset" placeholder="BTC, EURUSD, XAUUSD..." />
+          </div>
+          <div>
+            <label class="jlabel">Date</label>
+            <input class="jinput" type="date" id="j-date" />
+          </div>
+          <div>
+            <label class="jlabel">Direction</label>
+            <select class="jselect" id="j-direction" onchange="calcAll()">
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div>
+            <label class="jlabel">Status</label>
+            <select class="jselect" id="j-status">
+              <option value="OPEN">OPEN</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+          </div>
+          <div>
+            <label class="jlabel">Entry Price</label>
+            <input class="jinput" type="number" step="any" id="j-entry" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Exit Price</label>
+            <input class="jinput" type="number" step="any" id="j-exit" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Stop Loss</label>
+            <input class="jinput" type="number" step="any" id="j-sl" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Take Profit</label>
+            <input class="jinput" type="number" step="any" id="j-tp" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Position Size ($)</label>
+            <input class="jinput" type="number" step="any" id="j-size" placeholder="1000" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">P&amp;L ($)</label>
+            <input class="jinput" type="number" step="any" id="j-pnl" placeholder="Auto-calculated" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: R:R Calculator -->
+      <div class="jform-section">
+        <div class="jform-section-title">Risk : Reward Calculator</div>
+        <div class="rr-display" id="rr-display">
+          <div class="rr-box"><div class="rr-label">Risk $</div><div class="rr-val" id="rr-risk">—</div></div>
+          <div class="rr-box"><div class="rr-label">Reward $</div><div class="rr-val" id="rr-reward">—</div></div>
+          <div class="rr-box"><div class="rr-label">R:R Ratio</div><div class="rr-val" id="rr-ratio">—</div></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Strategy -->
+      <div class="jform-section">
+        <div class="jform-section-title">Strategy & Notes</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label class="jlabel">Strategy / Setup</label>
+            <input class="jinput" id="j-strategy" placeholder="e.g. Breakout, Mean Reversion, Trend Follow..." />
+          </div>
+          <div>
+            <label class="jlabel">Notes</label>
+            <textarea class="jinput" id="j-notes" rows="2" placeholder="Trade rationale, market conditions, lessons learned..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Psychology -->
+      <div class="jform-section">
+        <div class="jform-section-title">Trading Psychology</div>
+        <label class="jlabel">Emotional State</label>
+        <div class="psych-tags" id="psych-tags">
+          <button class="ptag-btn" onclick="togglePsych(this,'Disciplined')">Disciplined</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Patient')">Patient</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Confident')">Confident</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Rule-Based')">Rule-Based</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'FOMO')">FOMO</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Revenge')">Revenge Trade</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Overtrading')">Overtrading</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Anxious')">Anxious</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Greedy')">Greedy</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Impulsive')">Impulsive</button>
+        </div>
+      </div>
+
+      <!-- SECTION: Chart Screenshot -->
+      <div class="jform-section">
+        <div class="jform-section-title">Chart Screenshots</div>
+        <div class="img-upload-area" onclick="document.getElementById('j-imgs').click()">
+          <input type="file" id="j-imgs" accept="image/*" multiple style="display:none" onchange="handleImgUpload(this)" />
+          <div class="img-upload-label">
+            
+            Click to attach chart screenshots — PNG, JPG
+          </div>
+        </div>
+        <div class="img-preview" id="img-preview"></div>
+      </div>
+
+    </div><!-- end modal-body -->
+
+    <div class="jmodal-btns" style="padding:14px 24px;border-top:1px solid var(--br);margin:0">
       <button class="jbtn jbtn-outline" onclick="closeJModal()">Cancel</button>
       <button class="jbtn jbtn-primary" onclick="saveJTrade()">Save Trade</button>
     </div>
   </div>
 </div>
+<!-- Trade Analysis Modal -->
+<div class="jmodal-bg" id="jtrade-analysis-bg">
+  <div class="jmodal" style="max-width:640px">
+    <div class="jmodal-header">
+      <div class="jmodal-title">AI Trade Analysis</div>
+      <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="document.getElementById('jtrade-analysis-bg').classList.remove('open')">✕</button>
+    </div>
+    <div class="jmodal-body" id="jtrade-analysis-body">
+      <div class="ldet"><div class="lring"></div><div class="ltitle">Generating analysis...</div></div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end markets page -->
 
 <!-- JOURNAL PAGE -->
@@ -1133,8 +1310,8 @@ function renderJournalInto(con){
       <div class="mt5-form">
         <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number"/></div>
         <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password"/></div>
-        <div><label class="jlabel">Broker Server</label><input class="jinput" id="mt5-server" placeholder="e.g. ICMarkets-Live"/></div>
-        <div><label class="jlabel">Broker Name</label><input class="jinput" id="mt5-broker" placeholder="e.g. IC Markets"/></div>
+        <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
+        <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
       </div>
       <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
@@ -1158,7 +1335,18 @@ function renderJournalInto(con){
     ${mt5Block}
     <div class="jnl-header">
       <div class="jnl-title">Trading Journal</div>
-      <div class="jnl-actions"><button class="jbtn jbtn-primary" onclick="openJModal()">+ Manual Trade</button></div>
+      <div class="jnl-actions"><div class="qpick-wrap" id="qpick-wrap1">
+        <button class="jbtn jbtn-primary" onclick="openQuickPick('qpick-wrap1')">+ Manual Trade ▾</button>
+        <div class="qpick-menu" id="qpick-menu1">
+          <button class="qpick-item" onclick="openJModal(null,'Forex')"><div><div class="qpick-label">Forex</div><div class="qpick-sub">EUR/USD · GBP/USD · USD/JPY</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Crypto')"><div><div class="qpick-label">Crypto</div><div class="qpick-sub">BTC · ETH · SOL</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Gold')"><div><div class="qpick-label">Gold / Commodities</div><div class="qpick-sub">XAUUSD · XAGUSD · Oil</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Stocks')"><div><div class="qpick-label">Stocks</div><div class="qpick-sub">AAPL · NVDA · TSLA</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Indices')"><div><div class="qpick-label">Indices</div><div class="qpick-sub">SPX · DAX · NASDAQ</div></div></button>
+          <div class="qpick-divider"></div>
+          <button class="qpick-item" onclick="openJModal(null,'Other')"><div><div class="qpick-label">Other / Custom</div><div class="qpick-sub">Any other asset</div></div></button>
+        </div>
+      </div></div>
     </div>
     <div class="jstats">
       <div class="jstat"><div class="jstat-n">${jTrades.length}</div><div class="jstat-l">Total Trades</div></div>
@@ -1258,6 +1446,7 @@ async function loadJournal(){
     if(r.ok){ jTrades = await r.json(); }
   }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
   renderJournal();
+  setTimeout(populateBrokers, 50);
 }
 
 function renderJournal(){
@@ -1288,8 +1477,8 @@ function renderJournal(){
       <div class="mt5-form">
         <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number" /></div>
         <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password" /></div>
-        <div><label class="jlabel">Broker Server</label><input class="jinput" id="mt5-server" placeholder="e.g. ICMarkets-Live" /></div>
-        <div><label class="jlabel">Broker Name</label><input class="jinput" id="mt5-broker" placeholder="e.g. IC Markets" /></div>
+        <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
+        <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
       </div>
       <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
@@ -1304,7 +1493,18 @@ function renderJournal(){
     <div class="jnl-header">
       <div class="jnl-title">Trading Journal</div>
       <div class="jnl-actions">
-        <button class="jbtn jbtn-primary" onclick="openJModal()">+ Manual Trade</button>
+        <div class="qpick-wrap" id="qpick-wrap1">
+        <button class="jbtn jbtn-primary" onclick="openQuickPick('qpick-wrap1')">+ Manual Trade ▾</button>
+        <div class="qpick-menu" id="qpick-menu1">
+          <button class="qpick-item" onclick="openJModal(null,'Forex')"><div><div class="qpick-label">Forex</div><div class="qpick-sub">EUR/USD · GBP/USD · USD/JPY</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Crypto')"><div><div class="qpick-label">Crypto</div><div class="qpick-sub">BTC · ETH · SOL</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Gold')"><div><div class="qpick-label">Gold / Commodities</div><div class="qpick-sub">XAUUSD · XAGUSD · Oil</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Stocks')"><div><div class="qpick-label">Stocks</div><div class="qpick-sub">AAPL · NVDA · TSLA</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Indices')"><div><div class="qpick-label">Indices</div><div class="qpick-sub">SPX · DAX · NASDAQ</div></div></button>
+          <div class="qpick-divider"></div>
+          <button class="qpick-item" onclick="openJModal(null,'Other')"><div><div class="qpick-label">Other / Custom</div><div class="qpick-sub">Any other asset</div></div></button>
+        </div>
+      </div>
       </div>
     </div>
     <div class="jstats">
@@ -1343,6 +1543,7 @@ function renderJournal(){
               <td class="jnotes" title="${t.notes||''}">${t.notes||'—'}</td>
               <td style="white-space:nowrap;display:flex;gap:5px">
                 <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
+                <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade('${t.id}')">AI</button>
                 <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
               </td>
             </tr>
@@ -1354,71 +1555,202 @@ function renderJournal(){
   </div>`;
 }
 
-function openJModal(editId=null){
-  jEditId = editId;
-  const t = editId ? jTrades.find(x=>x.id===editId) : null;
-  document.getElementById('jmodal-title').textContent = editId ? 'Edit Trade' : 'New Trade';
-  document.getElementById('j-asset').value     = t?.asset||'';
-  document.getElementById('j-date').value      = t?.date||new Date().toISOString().slice(0,10);
-  document.getElementById('j-direction').value = t?.direction||'LONG';
-  document.getElementById('j-status').value    = t?.status||'OPEN';
-  document.getElementById('j-entry').value     = t?.entry||'';
-  document.getElementById('j-exit').value      = t?.exit||'';
-  document.getElementById('j-size').value      = t?.size||'';
-  document.getElementById('j-pnl').value       = t?.pnl!==null&&t?.pnl!==undefined?t.pnl:'';
-  document.getElementById('j-strategy').value  = t?.strategy||'';
-  document.getElementById('j-notes').value     = t?.notes||'';
-  // Auto-calc PnL when exit changes
-  document.getElementById('j-exit').oninput = calcPnl;
-  document.getElementById('j-entry').oninput = calcPnl;
-  document.getElementById('j-size').oninput = calcPnl;
-  document.getElementById('j-direction').onchange = calcPnl;
-  document.getElementById('jmodal-bg').classList.add('open');
+// ── Quick-pick popup ─────────────────────────────────────────────────────────
+function openQuickPick(wrapId){
+  // Close any other open menus first
+  document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
+  const menu = document.getElementById(wrapId).querySelector('.qpick-menu');
+  menu.classList.toggle('open');
+  // Close when clicking outside
+  setTimeout(()=>{
+    document.addEventListener('click', function handler(e){
+      if(!e.target.closest('.qpick-wrap')){ 
+        document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+function closeQuickPick(){
+  document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
 }
 
-function calcPnl(){
+// ── Psychology tags ───────────────────────────────────────────────────────────
+let selectedPsychTags = [];
+function togglePsych(btn, tag){
+  btn.classList.toggle('selected');
+  if(selectedPsychTags.includes(tag)){
+    selectedPsychTags = selectedPsychTags.filter(t=>t!==tag);
+  } else {
+    selectedPsychTags.push(tag);
+  }
+}
+function resetPsychTags(tags=[]){
+  selectedPsychTags = [...tags];
+  document.querySelectorAll('.ptag-btn').forEach(btn=>{
+    const tag = btn.textContent.trim().replace(/^[^ ]+ /,'');
+    btn.classList.toggle('selected', tags.includes(tag));
+  });
+}
+
+// ── Image upload ──────────────────────────────────────────────────────────────
+let tradeImages = []; // array of {name, dataUrl}
+function handleImgUpload(input){
+  const files = Array.from(input.files);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      tradeImages.push({name: file.name, dataUrl: e.target.result});
+      renderImgPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // reset so same file can be added again
+}
+function renderImgPreviews(){
+  const wrap = document.getElementById('img-preview');
+  if(!wrap) return;
+  wrap.innerHTML = tradeImages.map((img,i)=>
+    '<div class="img-thumb">'+
+      '<img src="'+img.dataUrl+'" alt="'+img.name+'" />'+
+      '<button class="img-thumb-del" onclick="removeImg('+i+')">✕</button>'+
+    '</div>'
+  ).join('');
+}
+function removeImg(i){
+  tradeImages.splice(i,1);
+  renderImgPreviews();
+}
+
+// ── R:R + PnL Calculator ──────────────────────────────────────────────────────
+function calcAll(){
   const entry = parseFloat(document.getElementById('j-entry').value)||0;
   const exit  = parseFloat(document.getElementById('j-exit').value)||0;
+  const sl    = parseFloat(document.getElementById('j-sl').value)||0;
+  const tp    = parseFloat(document.getElementById('j-tp').value)||0;
   const size  = parseFloat(document.getElementById('j-size').value)||0;
   const dir   = document.getElementById('j-direction').value;
-  if(entry&&exit&&size){
+
+  // PnL from entry/exit
+  if(entry && exit && size){
     const pct = dir==='LONG' ? (exit-entry)/entry : (entry-exit)/entry;
     document.getElementById('j-pnl').value = (pct*size).toFixed(2);
   }
+
+  // R:R from SL/TP
+  const rrRisk   = document.getElementById('rr-risk');
+  const rrReward = document.getElementById('rr-reward');
+  const rrRatio  = document.getElementById('rr-ratio');
+  if(entry && sl && tp && size){
+    const riskPips   = dir==='LONG' ? entry-sl : sl-entry;
+    const rewardPips = dir==='LONG' ? tp-entry : entry-tp;
+    if(riskPips>0 && rewardPips>0){
+      const riskDollar   = (riskPips/entry)*size;
+      const rewardDollar = (rewardPips/entry)*size;
+      const ratio        = rewardDollar/riskDollar;
+      rrRisk.textContent   = '$'+riskDollar.toFixed(2);
+      rrRisk.className     = 'rr-val bad';
+      rrReward.textContent = '$'+rewardDollar.toFixed(2);
+      rrReward.className   = 'rr-val good';
+      rrRatio.textContent  = '1:'+ratio.toFixed(2);
+      rrRatio.className    = 'rr-val '+(ratio>=2?'good':ratio>=1?'ok':'bad');
+      return;
+    }
+  }
+  if(rrRisk)   rrRisk.textContent   = '—';
+  if(rrReward) rrReward.textContent = '—';
+  if(rrRatio)  rrRatio.textContent  = '—';
+  if(rrRisk)   rrRisk.className     = 'rr-val';
+  if(rrReward) rrReward.className   = 'rr-val';
+  if(rrRatio)  rrRatio.className    = 'rr-val';
+}
+
+// Legacy alias
+function calcPnl(){ calcAll(); }
+
+// ── Open/close modal ──────────────────────────────────────────────────────────
+function openJModal(editId=null, tradeType='Manual'){
+  closeQuickPick();
+  jEditId = editId;
+  const tr = editId ? jTrades.find(x=>x.id===editId) : null;
+
+  document.getElementById('jmodal-title').textContent = editId ? 'Edit Trade' : 'New Trade';
+  document.getElementById('jmodal-type-badge').textContent = tr?.tradeType || tradeType;
+  document.getElementById('j-asset').value     = tr?.asset||'';
+  document.getElementById('j-date').value      = tr?.date||new Date().toISOString().slice(0,10);
+  document.getElementById('j-direction').value = tr?.direction||'LONG';
+  document.getElementById('j-status').value    = tr?.status||'OPEN';
+  document.getElementById('j-entry').value     = tr?.entry||'';
+  document.getElementById('j-exit').value      = tr?.exit||'';
+  document.getElementById('j-sl').value        = tr?.sl||'';
+  document.getElementById('j-tp').value        = tr?.tp||'';
+  document.getElementById('j-size').value      = tr?.size||'';
+  document.getElementById('j-pnl').value       = tr?.pnl!=null?tr.pnl:'';
+  document.getElementById('j-strategy').value  = tr?.strategy||'';
+  document.getElementById('j-notes').value     = tr?.notes||'';
+
+  // Reset psychology tags
+  resetPsychTags(tr?.psychTags||[]);
+
+  // Reset images
+  tradeImages = tr?.images ? [...tr.images] : [];
+  renderImgPreviews();
+
+  // Recalc
+  calcAll();
+
+  document.getElementById('jmodal-bg').classList.add('open');
 }
 
 function closeJModal(){
   document.getElementById('jmodal-bg').classList.remove('open');
-  jEditId=null;
+  jEditId = null;
+  tradeImages = [];
+  selectedPsychTags = [];
 }
 
 async function saveJTrade(){
   const trade = {
     id:        jEditId || Date.now().toString(36)+Math.random().toString(36).slice(2),
+    tradeType: document.getElementById('jmodal-type-badge').textContent,
     date:      document.getElementById('j-date').value,
     asset:     document.getElementById('j-asset').value.toUpperCase().trim(),
     direction: document.getElementById('j-direction').value,
     status:    document.getElementById('j-status').value,
     entry:     parseFloat(document.getElementById('j-entry').value)||null,
     exit:      parseFloat(document.getElementById('j-exit').value)||null,
+    sl:        parseFloat(document.getElementById('j-sl').value)||null,
+    tp:        parseFloat(document.getElementById('j-tp').value)||null,
     size:      parseFloat(document.getElementById('j-size').value)||null,
     pnl:       parseFloat(document.getElementById('j-pnl').value)||null,
     strategy:  document.getElementById('j-strategy').value.trim(),
     notes:     document.getElementById('j-notes').value.trim(),
+    psychTags: [...selectedPsychTags],
+    images:    tradeImages.map(img=>({name:img.name, dataUrl:img.dataUrl})),
     createdAt: new Date().toISOString(),
   };
   if(!trade.asset){ alert('Please enter an asset'); return; }
+
+  // Calculate R:R for storage
+  if(trade.entry && trade.sl && trade.tp && trade.size){
+    const dir = trade.direction;
+    const riskPips   = dir==='LONG' ? trade.entry-trade.sl : trade.sl-trade.entry;
+    const rewardPips = dir==='LONG' ? trade.tp-trade.entry : trade.entry-trade.tp;
+    if(riskPips>0 && rewardPips>0){
+      trade.rr = parseFloat((rewardPips/riskPips).toFixed(2));
+    }
+  }
+
   try{
     if(jEditId){
       await fetch('/api/journal/'+jEditId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
-      jTrades = jTrades.map(t=>t.id===jEditId?trade:t);
+      jTrades = jTrades.map(tr=>tr.id===jEditId?trade:tr);
     } else {
       await fetch('/api/journal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
       jTrades.unshift(trade);
     }
   }catch(e){
-    // fallback to localStorage
-    if(jEditId) jTrades = jTrades.map(t=>t.id===jEditId?trade:t);
+    if(jEditId) jTrades = jTrades.map(tr=>tr.id===jEditId?trade:tr);
     else jTrades.unshift(trade);
     localStorage.setItem('sc_journal', JSON.stringify(jTrades));
   }
@@ -1429,12 +1761,591 @@ async function saveJTrade(){
 async function deleteJTrade(id){
   if(!confirm('Delete this trade?')) return;
   try{ await fetch('/api/journal/'+id,{method:'DELETE'}); }catch(e){}
-  jTrades = jTrades.filter(t=>t.id!==id);
+  jTrades = jTrades.filter(tr=>tr.id!==id);
   localStorage.setItem('sc_journal', JSON.stringify(jTrades));
   renderJournal();
 }
 
 function editJTrade(id){ openJModal(id); }
+
+
+const BROKERS = [
+  // ── IC Markets ───────────────────────────────────────────────────────────
+  // Global entity (ASIC / AU) — server prefix ICMarkets
+  { name:"IC Markets (Global)",        servers:["ICMarkets-Live","ICMarkets-Live02","ICMarkets-Live03","ICMarkets-Live04","ICMarkets-Live05","ICMarkets-Live06","ICMarkets-Demo"] },
+  // Seychelles entity — server prefix ICMarketsSC (most common for non-AU/EU)
+  { name:"IC Markets (SC)",            servers:["ICMarketsSC-Live","ICMarketsSC-Live01","ICMarketsSC-Live02","ICMarketsSC-Live03","ICMarketsSC-Live04","ICMarketsSC-Live05","ICMarketsSC-Live06","ICMarketsSC-Live07","ICMarketsSC-Live08","ICMarketsSC-Live09","ICMarketsSC-Live10","ICMarketsSC-Live11","ICMarketsSC-Live12","ICMarketsSC-Live13","ICMarketsSC-Live14","ICMarketsSC-Live15","ICMarketsSC-Live16","ICMarketsSC-Live17","ICMarketsSC-Live18","ICMarketsSC-Live19","ICMarketsSC-Live20","ICMarketsSC-Live21","ICMarketsSC-Live22","ICMarketsSC-Live23","ICMarketsSC-Live24","ICMarketsSC-Live25","ICMarketsSC-Live26","ICMarketsSC-Demo"] },
+  // EU entity (CySEC) — Raw Trading Ltd branding since Feb 2025
+  { name:"IC Markets (EU / Raw Trading Ltd)", servers:["ICMarketsEU-Live","ICMarketsEU-Live2","ICMarketsEU-Live3","ICMarketsEU-Demo"] },
+
+  // ── Pepperstone ───────────────────────────────────────────────────────────
+  // Global (ASIC/DFSA/SCB) and UK/EU (FCA/CySEC/BaFin) entities
+  { name:"Pepperstone",                servers:["Pepperstone-MT5-Live01","Pepperstone-MT5-Live02","Pepperstone-Demo"] },
+  { name:"Pepperstone (UK/EU)",        servers:["PepperstoneUK-Live","PepperstoneUK-Live2","PepperstoneUK-Demo"] },
+
+  // ── Vantage ───────────────────────────────────────────────────────────────
+  // International entity (8 live servers confirmed from Vantage webtrader portal)
+  { name:"Vantage (International)",    servers:["VantageInternational-Live","VantageInternational-Live 3","VantageInternational-Live 4","VantageInternational-Live 5","VantageInternational-Live 6","VantageInternational-Live 7","VantageInternational-Live 8","VantageInternational-Live 10","VantageInternational-Demo"] },
+  // UK entity (FCA regulated)
+  { name:"Vantage (UK / FCA)",         servers:["VantageGlobalPrime-Live","VantageGlobalPrime-Live2","VantageGlobalPrime-Demo"] },
+
+  // ── FP Markets ────────────────────────────────────────────────────────────
+  { name:"FP Markets",                 servers:["FPMarkets-Live","FPMarkets-Live2","FPMarkets-Live3","FPMarkets-Demo"] },
+
+  // ── XM ───────────────────────────────────────────────────────────────────
+  { name:"XM (XMGlobal)",              servers:["XMGlobal-Real","XMGlobal-Real 2","XMGlobal-Real 3","XMGlobal-Real 4","XMGlobal-Real 5","XMGlobal-Demo"] },
+  { name:"XM (Trading Point / EU)",   servers:["TradingPoint-Real","TradingPoint-Real2","TradingPoint-Demo"] },
+
+  // ── Exness ───────────────────────────────────────────────────────────────
+  { name:"Exness",                     servers:["Exness-Real","Exness-Real2","Exness-Real3","Exness-Real4","Exness-Real5","Exness-Real6","Exness-Trial"] },
+
+  // ── HFM / HotForex ───────────────────────────────────────────────────────
+  { name:"HFM (HotForex)",             servers:["HFMarketsGlobal-Live1 Server","HFMarketsGlobal-Live2 Server","HFMarketsGlobal-Live3 Server","HFMarketsGlobal-Demo Server"] },
+  { name:"HFM (EU / Cyprus)",          servers:["HFMarketsEurope-Live1 Server","HFMarketsEurope-Demo Server"] },
+
+  // ── FxPro ─────────────────────────────────────────────────────────────────
+  { name:"FxPro",                      servers:["FxPro.com-Real","FxPro.com-Real2","FxPro.com-Real3","FxPro.com-Real4","FxPro.com-Demo"] },
+
+  // ── FXTM ─────────────────────────────────────────────────────────────────
+  { name:"FXTM (ForexTime)",           servers:["FXTM-Real","FXTM-Real2","FXTM-Real3","FXTM-Real4","FXTM-Demo"] },
+
+  // ── AvaTrade ─────────────────────────────────────────────────────────────
+  { name:"AvaTrade",                   servers:["AvaTrade-Live","AvaTrade-Live 2","AvaTrade-Live 3","AvaTrade-Demo"] },
+
+  // ── OANDA ─────────────────────────────────────────────────────────────────
+  { name:"OANDA",                      servers:["OANDA-v20 Live-1","OANDA-v20 Live-2","OANDA-v20 Live-3","OANDA-v20 Demo-1","OANDA-v20 Demo-2"] },
+
+  // ── Tickmill ─────────────────────────────────────────────────────────────
+  { name:"Tickmill",                   servers:["Tickmill-Live","Tickmill-Live2","Tickmill-Live3","Tickmill-Demo"] },
+  { name:"Tickmill (EU)",              servers:["TickmillEurope-Live","TickmillEurope-Live2","TickmillEurope-Demo"] },
+
+  // ── Admirals ─────────────────────────────────────────────────────────────
+  { name:"Admirals",                   servers:["Admirals-Live","Admirals-Live2","Admirals-Live3","Admirals-Demo"] },
+  { name:"Admirals (EU)",              servers:["AdmiralsEU-Live","AdmiralsEU-Live2","AdmiralsEU-Demo"] },
+
+  // ── BlackBull Markets ────────────────────────────────────────────────────
+  { name:"BlackBull Markets",          servers:["BlackBullMarkets-Live","BlackBullMarkets-Live 2","BlackBullMarkets-Live 3","BlackBullMarkets-Demo"] },
+
+  // ── Eightcap ─────────────────────────────────────────────────────────────
+  { name:"Eightcap",                   servers:["Eightcap-Live","Eightcap-Live02","Eightcap-Live03","Eightcap-Demo"] },
+
+  // ── Axi ──────────────────────────────────────────────────────────────────
+  { name:"Axi",                        servers:["Axi-Live","Axi-Live 2","Axi-Live 3","Axi-Demo"] },
+
+  // ── Fusion Markets ───────────────────────────────────────────────────────
+  { name:"Fusion Markets",             servers:["FusionMarkets-Live","FusionMarkets-Live2","FusionMarkets-Demo"] },
+
+  // ── Global Prime ─────────────────────────────────────────────────────────
+  { name:"Global Prime",               servers:["GlobalPrime-Live","GlobalPrime-Live2","GlobalPrime-Demo"] },
+
+  // ── ThinkMarkets ─────────────────────────────────────────────────────────
+  { name:"ThinkMarkets",               servers:["ThinkMarkets-Live","ThinkMarkets-Live 2","ThinkMarkets-Demo"] },
+  { name:"ThinkMarkets (EU)",          servers:["ThinkMarketsEU-Live","ThinkMarketsEU-Demo"] },
+
+  // ── GO Markets ───────────────────────────────────────────────────────────
+  { name:"GO Markets",                 servers:["GOMarkets-Live","GOMarkets-Live 2","GOMarkets-Live 3","GOMarkets-Demo"] },
+
+  // ── Blueberry Markets ────────────────────────────────────────────────────
+  { name:"Blueberry Markets",          servers:["Blueberry-Live","Blueberry-Live2","Blueberry-Demo"] },
+
+  // ── Moneta Markets ───────────────────────────────────────────────────────
+  { name:"Moneta Markets",             servers:["MonetaMarkets-Live","MonetaMarkets-Live2","MonetaMarkets-Demo"] },
+
+  // ── VT Markets ───────────────────────────────────────────────────────────
+  { name:"VT Markets",                 servers:["VTMarkets-Live","VTMarkets-Live 2","VTMarkets-Live 3","VTMarkets-Demo"] },
+
+  // ── PU Prime ─────────────────────────────────────────────────────────────
+  { name:"PU Prime",                   servers:["PUPrime-Live","PUPrime-Live 2","PUPrime-Demo"] },
+
+  // ── ACY Securities ───────────────────────────────────────────────────────
+  { name:"ACY Securities",             servers:["ACY-Live","ACY-Live2","ACY-Demo"] },
+
+  // ── TMGM ─────────────────────────────────────────────────────────────────
+  { name:"TMGM",                       servers:["TMGM-Live","TMGM-Live 2","TMGM-Demo"] },
+
+  // ── ATFX ─────────────────────────────────────────────────────────────────
+  { name:"ATFX",                       servers:["ATFX-Live","ATFX-Live 2","ATFX-Live 3","ATFX-Demo"] },
+
+  // ── Equiti ───────────────────────────────────────────────────────────────
+  { name:"Equiti",                     servers:["Equiti-Live","Equiti-Live 2","Equiti-Demo"] },
+
+  // ── BDSwiss ──────────────────────────────────────────────────────────────
+  { name:"BDSwiss",                    servers:["BDSwiss-Live","BDSwiss-Live 2","BDSwiss-Demo"] },
+
+  // ── RoboForex ────────────────────────────────────────────────────────────
+  { name:"RoboForex",                  servers:["RoboForex-Pro","RoboForex-ECN","RoboForex-Pro-Demo","RoboForex-ECN-Demo"] },
+
+  // ── Alpari ───────────────────────────────────────────────────────────────
+  { name:"Alpari",                     servers:["Alpari-ECN-Live","Alpari-Standard-Live","Alpari-Pro-Demo","Alpari-Demo"] },
+
+  // ── LiteFinance ──────────────────────────────────────────────────────────
+  { name:"LiteFinance",                servers:["LiteFinance-Live","LiteFinance-ECN-Live","LiteFinance-Demo"] },
+
+  // ── FBS ──────────────────────────────────────────────────────────────────
+  { name:"FBS",                        servers:["FBS-Real","FBS-Real 2","FBS-Real 3","FBS-Demo"] },
+
+  // ── OctaFX ───────────────────────────────────────────────────────────────
+  { name:"OctaFX",                     servers:["OctaFX-Real","OctaFX-Real2","OctaFX-Demo"] },
+
+  // ── AMarkets ─────────────────────────────────────────────────────────────
+  { name:"AMarkets",                   servers:["AMarkets-Real","AMarkets-Real2","AMarkets-Demo"] },
+
+  // ── InstaForex ───────────────────────────────────────────────────────────
+  { name:"InstaForex",                 servers:["InstaForexCom-Live","InstaForexCom-Live2","InstaForexCom-Demo"] },
+
+  // ── NordFX ───────────────────────────────────────────────────────────────
+  { name:"NordFX",                     servers:["NordFX-Real","NordFX-Real 2","NordFX-Demo"] },
+
+  // ── MultiBank Group ──────────────────────────────────────────────────────
+  { name:"MultiBank Group",            servers:["MultiBank-Live","MultiBank-Live 2","MultiBank-Live 3","MultiBank-Demo"] },
+
+  // ── HYCM ─────────────────────────────────────────────────────────────────
+  { name:"HYCM",                       servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
+
+  // ── Axiory ───────────────────────────────────────────────────────────────
+  { name:"Axiory",                     servers:["Axiory-Live","Axiory-Live2","Axiory-Demo"] },
+
+  // ── Windsor Brokers ──────────────────────────────────────────────────────
+  { name:"Windsor Brokers",            servers:["WindsorBrokers-Live","WindsorBrokers-Demo"] },
+
+  // ── FXOpen ───────────────────────────────────────────────────────────────
+  { name:"FXOpen",                     servers:["FXOpen-ECN Live","FXOpen-STP Live","FXOpen-Demo"] },
+
+  // ── EasyMarkets ──────────────────────────────────────────────────────────
+  { name:"EasyMarkets",                servers:["easyMarkets-Live","easyMarkets-Live2","easyMarkets-Demo"] },
+
+  // ── Tradeview ────────────────────────────────────────────────────────────
+  { name:"Tradeview",                  servers:["Tradeview-Live","Tradeview-Demo"] },
+
+  // ── ActivTrades ──────────────────────────────────────────────────────────
+  { name:"ActivTrades",                servers:["ActivTrades-Live","ActivTrades-Live2","ActivTrades-Demo"] },
+
+  // ── Scope Markets ────────────────────────────────────────────────────────
+  { name:"Scope Markets",              servers:["ScopeMarkets-Live","ScopeMarkets-Demo"] },
+
+  // ── Valutrades ───────────────────────────────────────────────────────────
+  { name:"Valutrades",                 servers:["Valutrades-Live","Valutrades-Demo"] },
+
+  // ── Just2Trade ───────────────────────────────────────────────────────────
+  { name:"Just2Trade",                 servers:["Just2Trade-Live","Just2Trade-Demo"] },
+
+  // ── CFI Financial ────────────────────────────────────────────────────────
+  { name:"CFI Financial",              servers:["CFI-Live","CFI-Live 2","CFI-Live 3","CFI-Demo"] },
+
+  // ── Amana Capital ────────────────────────────────────────────────────────
+  { name:"Amana Capital",              servers:["AmanaCapital-Live","AmanaCapital-Demo"] },
+
+  // ── GODO Capital Markets ─────────────────────────────────────────────────
+  { name:"GODO Capital Markets",       servers:["GodoCM-Live","GodoCM-Demo"] },
+
+  // ── Swissquote ───────────────────────────────────────────────────────────
+  { name:"Swissquote",                 servers:["Swissquote-Live","Swissquote-Live2","Swissquote-Demo"] },
+
+  // ── Dukascopy ────────────────────────────────────────────────────────────
+  { name:"Dukascopy",                  servers:["Dukascopy-Live","Dukascopy-Demo"] },
+
+  // ── Saxo Bank ────────────────────────────────────────────────────────────
+  { name:"Saxo Bank",                  servers:["SaxoBank-Live","SaxoBank-Demo"] },
+
+  // ── Interactive Brokers ──────────────────────────────────────────────────
+  { name:"Interactive Brokers",        servers:["InteractiveBrokers-Live","InteractiveBrokers-Demo"] },
+
+  // ── FXCM ─────────────────────────────────────────────────────────────────
+  { name:"FXCM",                       servers:["FXCM-USDReal","FXCM-USDReal02","FXCM-GBPReal01","FXCM-USDDemo01"] },
+
+  // ── IG Markets ───────────────────────────────────────────────────────────
+  { name:"IG Markets",                 servers:["IG-LIVE","IG-LIVE2","IG-LIVE3","IG-DEMO"] },
+
+  // ── City Index ───────────────────────────────────────────────────────────
+  { name:"City Index",                 servers:["CityIndex-Live","CityIndex-Live2","CityIndex-Demo"] },
+
+  // ── CMC Markets ──────────────────────────────────────────────────────────
+  { name:"CMC Markets",                servers:["CMCMarkets-Live","CMCMarkets-Demo"] },
+
+  // ── Capital.com ──────────────────────────────────────────────────────────
+  { name:"Capital.com",                servers:["CapitalCom-Live","CapitalCom-Live2","CapitalCom-Demo"] },
+
+  // ── Libertex ─────────────────────────────────────────────────────────────
+  { name:"Libertex",                   servers:["Libertex-Real","Libertex-Real2","Libertex-Demo"] },
+
+  // ── Deriv ────────────────────────────────────────────────────────────────
+  { name:"Deriv",                      servers:["Deriv-Server","Deriv-Server 2","Deriv-Demo"] },
+
+  // ── XTB ──────────────────────────────────────────────────────────────────
+  { name:"XTB",                        servers:["XTB-Real","XTB-Real2","XTB-Demo"] },
+
+  // ── Grand Capital ────────────────────────────────────────────────────────
+  { name:"Grand Capital",              servers:["GrandCapital-Live","GrandCapital-Demo"] },
+
+  // ── NAGA Markets ─────────────────────────────────────────────────────────
+  { name:"NAGA Markets",               servers:["NAGA-Live","NAGA-Live2","NAGA-Demo"] },
+
+  // ── GBE Brokers ──────────────────────────────────────────────────────────
+  { name:"GBE Brokers",                servers:["GBEBrokers-Live","GBEBrokers-Demo"] },
+
+  // ── Orbex ────────────────────────────────────────────────────────────────
+  { name:"Orbex",                      servers:["Orbex-Live","Orbex-Demo"] },
+
+  // ── Conotoxia ────────────────────────────────────────────────────────────
+  { name:"Conotoxia",                  servers:["Conotoxia-Live","Conotoxia-Demo"] },
+
+  // ── ForexMart ────────────────────────────────────────────────────────────
+  { name:"ForexMart",                  servers:["ForexMart-Live","ForexMart-Demo"] },
+
+  // ── Forex4you ────────────────────────────────────────────────────────────
+  { name:"Forex4you",                  servers:["Forex4you-Pro","Forex4you-Demo"] },
+
+  // ── Forex.com ────────────────────────────────────────────────────────────
+  { name:"Forex.com",                  servers:["FOREX.com-1","FOREX.com-2","FOREX.com-3","FOREX.com-Demo"] },
+
+  // ── Markets.com ──────────────────────────────────────────────────────────
+  { name:"Markets.com",                servers:["Markets.com-Live","Markets.com-Demo"] },
+
+  // ── eToro ────────────────────────────────────────────────────────────────
+  { name:"eToro",                      servers:["eToro-Live","eToro-Demo"] },
+
+  // ── Weltrade ─────────────────────────────────────────────────────────────
+  { name:"Weltrade",                   servers:["Weltrade-Live","Weltrade-Demo"] },
+
+  // ── INFINOX ──────────────────────────────────────────────────────────────
+  { name:"INFINOX",                    servers:["INFINOX-Live","INFINOX-Demo"] },
+
+  // ── Baxia Markets ────────────────────────────────────────────────────────
+  { name:"Baxia Markets",              servers:["BaxiaMarkets-Live","BaxiaMarkets-Demo"] },
+
+  // ── Hantec Markets ───────────────────────────────────────────────────────
+  { name:"Hantec Markets",             servers:["HantecMarkets-Live","HantecMarkets-Demo"] },
+
+  // ── ForexChief ───────────────────────────────────────────────────────────
+  { name:"ForexChief",                 servers:["ForexChief-MT5Live","ForexChief-MT5Live2","ForexChief-MT5Demo"] },
+
+  // ── TeleTrade ────────────────────────────────────────────────────────────
+  { name:"TeleTrade",                  servers:["TeleTrade-Live","TeleTrade-Demo"] },
+
+  // ── Gerchik and Co ───────────────────────────────────────────────────────
+  { name:"Gerchik and Co",              servers:["GerchikCo-Live","GerchikCo-Demo"] },
+
+  // ── FX Choice ────────────────────────────────────────────────────────────
+  { name:"FX Choice",                  servers:["FXChoice-Live","FXChoice-Demo"] },
+
+  // ── Darwinex ─────────────────────────────────────────────────────────────
+  { name:"Darwinex",                   servers:["Darwinex-Live","Darwinex-Demo"] },
+
+  // ── Pepperstone (Bahamas) ────────────────────────────────────────────────
+  { name:"Pepperstone (Bahamas)",      servers:["Pepperstone-Group-Live","Pepperstone-Group-Demo"] },
+
+  // ── Spreadex ─────────────────────────────────────────────────────────────
+  { name:"Spreadex",                   servers:["Spreadex-Live","Spreadex-Demo"] },
+
+  // ── Trade Nation ─────────────────────────────────────────────────────────
+  { name:"Trade Nation",               servers:["TradeNation-Live","TradeNation-Demo"] },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ── PROP FIRMS ────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Note: many prop firms run on a broker's MT5 infrastructure.
+  // The server name shown is what you type into MT5 login screen.
+
+  // ── FTMO ─────────────────────────────────────────────────────────────────
+  // Prague, est. 2015. Own MT5 infra. US clients use OANDA Corporation server.
+  { name:"FTMO",                         servers:["FTMO-Server","FTMO-Server 2","FTMO-Server 3","FTMO-Server 4","FTMO-Demo","FTMO-Evaluation"] },
+  { name:"FTMO (US via OANDA)",          servers:["OANDA Corporation-Live","OANDA Corporation-Demo"] },
+
+  // ── FundedNext ───────────────────────────────────────────────────────────
+  // UAE/Bangladesh, est. 2022. Own broker FNmarkets launched May 2025.
+  { name:"FundedNext",                   servers:["FundedNext-Live","FundedNext-Live 2","FundedNext-Stellar","FundedNext-Demo","FundedNext-Evaluation","FNmarkets-Live","FNmarkets-Demo"] },
+
+  // ── The Funded Trader ────────────────────────────────────────────────────
+  { name:"The Funded Trader",            servers:["TheFundedTrader-Live","TheFundedTrader-Live 2","TheFundedTrader-Standard","TheFundedTrader-Royal","TheFundedTrader-Demo"] },
+
+  // ── E8 Funding ───────────────────────────────────────────────────────────
+  { name:"E8 Funding",                   servers:["E8Funding-Live","E8Funding-Live 2","E8Funding-Evaluation","E8Funding-Demo"] },
+
+  // ── Seacrest Funded (formerly MyFundedFX) ────────────────────────────────
+  { name:"Seacrest Funded (MyFundedFX)", servers:["SeacrestFunded-Live","SeacrestFunded-Live 2","SeacrestFunded-Demo","MyFundedFX-Live","MyFundedFX-Demo"] },
+
+  // ── True Forex Funds ─────────────────────────────────────────────────────
+  { name:"True Forex Funds",             servers:["TrueForexFunds-Live","TrueForexFunds-Live 2","TrueForexFunds-Demo"] },
+
+  // ── Alpha Capital Group ───────────────────────────────────────────────────
+  { name:"Alpha Capital Group",          servers:["AlphaCapital-Live","AlphaCapital-Live 2","AlphaCapital-Demo"] },
+
+  // ── Blue Guardian ────────────────────────────────────────────────────────
+  { name:"Blue Guardian",                servers:["BlueGuardian-Live","BlueGuardian-Live 2","BlueGuardian-Demo"] },
+
+  // ── Funding Pips ─────────────────────────────────────────────────────────
+  // Dubai, $200M+ paid out. Own MT5 infrastructure.
+  { name:"Funding Pips",                 servers:["FundingPips-Live","FundingPips-Live 2","FundingPips-Live 3","FundingPips-Demo"] },
+
+  // ── The 5%ers ────────────────────────────────────────────────────────────
+  // Israel, est. 2016. Scale to $4M. Bootcamp, Hyper, Low-Risk tracks.
+  { name:"The 5%ers",                    servers:["The5ers-Live","The5ers-Live 2","The5ers-Hyper","The5ers-Bootcamp","The5ers-Low-Risk","The5ers-Demo"] },
+
+  // ── Fidelcrest ───────────────────────────────────────────────────────────
+  { name:"Fidelcrest",                   servers:["Fidelcrest-Live","Fidelcrest-Live 2","Fidelcrest-Micro","Fidelcrest-Demo"] },
+
+  // ── Lux Trading Firm ─────────────────────────────────────────────────────
+  // UK, career traders, up to $2.5M funding.
+  { name:"Lux Trading Firm",             servers:["LuxTradingFirm-Live","LuxTradingFirm-Demo"] },
+
+  // ── City Traders Imperium ────────────────────────────────────────────────
+  // Dubai, up to $4M funding. Monthly salary payout option.
+  { name:"City Traders Imperium",        servers:["CTI-Live","CTI-Live 2","CTI-Instant","CTI-Demo"] },
+
+  // ── Apex Trader Funding ───────────────────────────────────────────────────
+  // Futures-focused.
+  { name:"Apex Trader Funding",          servers:["ApexTraderFunding-Live","ApexTraderFunding-Evaluation","ApexTraderFunding-Demo"] },
+
+  // ── TopStep ──────────────────────────────────────────────────────────────
+  // Futures-focused, Chicago-based.
+  { name:"TopStep",                      servers:["TopStep-Live","TopStep-Live 2","TopStep-Combine","TopStep-Demo"] },
+
+  // ── Earn2Trade ───────────────────────────────────────────────────────────
+  { name:"Earn2Trade",                   servers:["Earn2Trade-Live","Earn2Trade-Gauntlet","Earn2Trade-Demo"] },
+
+  // ── Smart Prop Trader ────────────────────────────────────────────────────
+  { name:"Smart Prop Trader",            servers:["SmartPropTrader-Live","SmartPropTrader-Live 2","SmartPropTrader-Demo"] },
+
+  // ── Maven Trading ────────────────────────────────────────────────────────
+  { name:"Maven Trading",                servers:["MavenTrading-Live","MavenTrading-Demo"] },
+
+  // ── Audacity Capital ─────────────────────────────────────────────────────
+  // London-based flexible funding.
+  { name:"Audacity Capital",             servers:["AudacityCapital-Live","AudacityCapital-Demo"] },
+
+  // ── The Trading Pit ──────────────────────────────────────────────────────
+  { name:"The Trading Pit",              servers:["TheTradingPit-Live","TheTradingPit-Live 2","TheTradingPit-Demo"] },
+
+  // ── Finotive Funding ─────────────────────────────────────────────────────
+  { name:"Finotive Funding",             servers:["FinotiveFunding-Live","FinotiveFunding-Demo"] },
+
+  // ── Traders With Edge ────────────────────────────────────────────────────
+  { name:"Traders With Edge",            servers:["TradersWithEdge-Live","TradersWithEdge-Demo"] },
+
+  // ── Glow Node ────────────────────────────────────────────────────────────
+  { name:"Glow Node",                    servers:["GlowNode-Live","GlowNode-Demo"] },
+
+  // ── Hola Prime ───────────────────────────────────────────────────────────
+  // Est. Aug 2024. DXTrade + MT5. Up to $4M scaling.
+  { name:"Hola Prime",                   servers:["HolaPrime-Live","HolaPrime-Live 2","HolaPrime-Demo"] },
+
+  // ── Goat Funded Trader ───────────────────────────────────────────────────
+  { name:"Goat Funded Trader",           servers:["GoatFundedTrader-Live","GoatFundedTrader-Demo"] },
+
+  // ── Forex Prop Firm ──────────────────────────────────────────────────────
+  { name:"Forex Prop Firm",              servers:["ForexPropFirm-Live","ForexPropFirm-Live 2","ForexPropFirm-Demo"] },
+
+  // ── For Traders ──────────────────────────────────────────────────────────
+  // UK-based, up to $200K scaling to $2.5M.
+  { name:"For Traders",                  servers:["ForTraders-Live","ForTraders-Demo"] },
+
+  // ── Instant Funding ──────────────────────────────────────────────────────
+  // Live-from-day-one model since 2021.
+  { name:"Instant Funding",              servers:["InstantFunding-Live","InstantFunding-Demo"] },
+
+  // ── Surge Trader ─────────────────────────────────────────────────────────
+  { name:"Surge Trader",                 servers:["SurgeTrader-Live","SurgeTrader-Demo"] },
+
+  // ── FunderPro ────────────────────────────────────────────────────────────
+  { name:"FunderPro",                    servers:["FunderPro-Live","FunderPro-Demo"] },
+
+  // ── Bespoke Funding Program ──────────────────────────────────────────────
+  { name:"Bespoke Funding Program",      servers:["BespokeFunding-Live","BespokeFunding-Demo"] },
+
+  // ── TopTier Trader ───────────────────────────────────────────────────────
+  { name:"TopTier Trader",               servers:["TopTierTrader-Live","TopTierTrader-Demo"] },
+
+  // ── DNA Funded ───────────────────────────────────────────────────────────
+  // Backed by DNA Markets broker. Rated #1 by bestpropfirms.com.
+  { name:"DNA Funded",                   servers:["DNAFunded-Live","DNAFunded-Live 2","DNAFunded-Demo","DNAMarkets-Live","DNAMarkets-Demo"] },
+
+  // ── Wall Street Funded ───────────────────────────────────────────────────
+  // Rebranded to WSFMarkets server Oct 2025.
+  { name:"Wall Street Funded",           servers:["WSFMarkets-Server","WSFMarkets-Server 2","WSFMarkets-Demo"] },
+
+  // ── Funded Trading Plus ──────────────────────────────────────────────────
+  // UK-based, 3-day payout cycle, scale to $5M.
+  { name:"Funded Trading Plus",          servers:["FundedTradingPlus-Live","FundedTradingPlus-Demo"] },
+
+  // ── BrightFunded ─────────────────────────────────────────────────────────
+  // European firm. MT5 + cTrader + DXTrade. Trade2Earn loyalty tokens.
+  { name:"BrightFunded",                 servers:["BrightFunded-Live","BrightFunded-Live 2","BrightFunded-Demo"] },
+
+  // ── FXIFY ────────────────────────────────────────────────────────────────
+  // London, est. 2022. Broker-backed via FXPIG. MT4+MT5 on FXPIG infra.
+  { name:"FXIFY",                        servers:["FXPIG-Live","FXPIG-Live 2","FXPIG-Live 3","FXPIG-Demo"] },
+
+  // ── Blueberry Funded ─────────────────────────────────────────────────────
+  // Backed by ASIC-regulated Blueberry Markets. Est. 2024.
+  { name:"Blueberry Funded",             servers:["Blueberry-Live","Blueberry-Live 2","Blueberry-Live 3","Blueberry-Demo"] },
+
+  // ── Bullwaves Prime ──────────────────────────────────────────────────────
+  { name:"Bullwaves Prime",              servers:["BullwavesPrime-Live","BullwavesPrime-Demo"] },
+
+  // ── Ment Funding ─────────────────────────────────────────────────────────
+  { name:"Ment Funding",                 servers:["MentFunding-Live","MentFunding-Demo"] },
+
+  // ── Omega Fintech ────────────────────────────────────────────────────────
+  { name:"Omega Fintech",                servers:["OmegaFintech-Live","OmegaFintech-Demo"] },
+
+  // ── My Flash Funding ─────────────────────────────────────────────────────
+  { name:"My Flash Funding",             servers:["MyFlashFunding-Live","MyFlashFunding-Demo"] },
+
+  // ── Breakout Prop ────────────────────────────────────────────────────────
+  { name:"Breakout Prop",                servers:["BreakoutProp-Live","BreakoutProp-Demo"] },
+
+  // ── Funding Traders ──────────────────────────────────────────────────────
+  // MT5 + TradeLocker. Accounts $10K-$400K scale to $2M.
+  { name:"Funding Traders",              servers:["FundingTraders-Live","FundingTraders-Demo"] },
+
+  // ── FundedX ──────────────────────────────────────────────────────────────
+  // UAE-based, est. 2024. 1-step and 2-step models.
+  { name:"FundedX",                      servers:["FundedX-Live","FundedX-Demo"] },
+
+  // ── OneFunded ────────────────────────────────────────────────────────────
+  { name:"OneFunded",                    servers:["OneFunded-Live","OneFunded-Demo"] },
+
+  // ── Hantec Trader ────────────────────────────────────────────────────────
+  // Backed by Hantec Markets broker.
+  { name:"Hantec Trader",                servers:["HantecMarkets-Live","HantecMarkets-Live 2","HantecMarkets-Demo"] },
+
+  // ── IC Funded ────────────────────────────────────────────────────────────
+  // Backed by IC Markets broker.
+  { name:"IC Funded",                    servers:["ICMarkets-Live","ICMarkets-Live02","ICMarketsSC-Live","ICMarketsSC-Demo"] },
+
+  // ── The Forex Funder ─────────────────────────────────────────────────────
+  { name:"The Forex Funder",             servers:["TheForexFunder-Live","TheForexFunder-Demo"] },
+
+  // ── FTUK ─────────────────────────────────────────────────────────────────
+  // UK-based. Instant, 1-step, 2-step programs. MT4 + MT5.
+  { name:"FTUK",                         servers:["FTUK-Live","FTUK-Demo"] },
+
+  // ── AquaFutures ──────────────────────────────────────────────────────────
+  { name:"AquaFutures",                  servers:["AquaFutures-Live","AquaFutures-Demo"] },
+
+  // ── Lark Funding ─────────────────────────────────────────────────────────
+  { name:"Lark Funding",                 servers:["LarkFunding-Live","LarkFunding-Demo"] },
+
+  // ── Swift Funded ─────────────────────────────────────────────────────────
+  { name:"Swift Funded",                 servers:["SwiftFunded-Live","SwiftFunded-Demo"] },
+
+  // ── SFT (Skilled Funded Trader) ──────────────────────────────────────────
+  { name:"Skilled Funded Trader",        servers:["SkilledFundedTrader-Live","SkilledFundedTrader-Demo"] },
+
+  // ── Prop Firm Challenge ──────────────────────────────────────────────────
+  { name:"Prop Firm Challenge",          servers:["PropFirmChallenge-Live","PropFirmChallenge-Demo"] }
+];
+
+function populateBrokers(){
+  const sel = document.getElementById('mt5-broker');
+  if(!sel) return;
+  const propStart = BROKERS.findIndex(b=>b.name==='FTMO');
+  const cfdBrokers = BROKERS.slice(0, propStart);
+  const propFirms  = BROKERS.slice(propStart);
+  sel.innerHTML = '<option value="">— Select Broker —</option>' +
+    '<optgroup label="CFD Retail Brokers">' +
+    cfdBrokers.map(b=>'<option value="'+b.name+'">'+b.name+'</option>').join('') +
+    '</optgroup>' +
+    '<optgroup label="Prop Firms">' +
+    propFirms.map(b=>'<option value="'+b.name+'">'+b.name+'</option>').join('') +
+    '</optgroup>';
+}
+
+function onBrokerChange(){
+  const brokerName = document.getElementById('mt5-broker').value;
+  const broker = BROKERS.find(b=>b.name===brokerName);
+  const serverSel = document.getElementById('mt5-server');
+  if(!broker || !serverSel) return;
+  serverSel.innerHTML = '<option value="">— Select Server —</option>' +
+    broker.servers.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
+  serverSel.disabled = false;
+}
+
+
+// ── AI Trade Analysis ─────────────────────────────────────────────────────────
+async function analyseJTrade(id){
+  const trade = jTrades.find(t=>t.id===id);
+  if(!trade){ alert('Trade not found'); return; }
+
+  // Open modal with loading state
+  const bg  = document.getElementById('jtrade-analysis-bg');
+  const body = document.getElementById('jtrade-analysis-body');
+  bg.classList.add('open');
+  body.innerHTML = '<div class="ldet"><div class="lring"></div>' +
+    '<div class="ltitle">Analysing ' + (trade.asset||'trade') + '...</div>' +
+    '<div class="lsub">Applying institutional quant frameworks to your trade</div></div>';
+
+  try{
+    const r = await fetch('/api/journal/analyse', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({trade})
+    });
+    if(!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    renderTradeAnalysis(trade, data, body);
+  }catch(e){
+    body.innerHTML = '<div class="errbox" style="margin:20px">Analysis failed: '+e.message+'<br><br>Make sure the server is running with a valid ANTHROPIC_API_KEY.</div>';
+  }
+}
+
+function renderTradeAnalysis(trade, data, body){
+  const pnlCls = (trade.pnl||0)>=0?'up':'dn';
+  const dirCls = trade.direction==='LONG'?'up':'dn';
+  const fp = p=>p!=null?('$'+parseFloat(p).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:5})):'—';
+
+  body.innerHTML =
+    // Trade summary stats
+    '<div class="ta-header">' +
+      '<div class="ta-stat"><div class="ta-stat-l">Asset</div><div class="ta-stat-v">'+  (trade.asset||'—')+'</div></div>' +
+      '<div class="ta-stat"><div class="ta-stat-l">Direction</div><div class="ta-stat-v '+dirCls+'">'+(trade.direction||'—')+'</div></div>' +
+      '<div class="ta-stat"><div class="ta-stat-l">P&amp;L</div><div class="ta-stat-v '+pnlCls+'">'+(trade.pnl!=null?((trade.pnl>=0?'+':'')+'$'+Math.abs(trade.pnl).toFixed(2)):'—')+'</div></div>' +
+    '</div>' +
+
+    // Entry / Exit stats
+    '<div class="ta-header" style="margin-bottom:16px">' +
+      '<div class="ta-stat"><div class="ta-stat-l">Entry</div><div class="ta-stat-v">'+fp(trade.entry)+'</div></div>' +
+      '<div class="ta-stat"><div class="ta-stat-l">Exit</div><div class="ta-stat-v">'+fp(trade.exit)+'</div></div>' +
+      '<div class="ta-stat"><div class="ta-stat-l">R:R</div><div class="ta-stat-v '+(trade.rr>= 2?'up':trade.rr>=1?'':' dn')+'">'+(trade.rr?'1:'+trade.rr:'—')+'</div></div>' +
+    '</div>' +
+
+    // Verdict
+    (data.verdict?'<div class="ta-section '+(data.verdict_positive?'acc':'neg')+'">' +
+      '<div class="ta-label">Trade Verdict</div>' +
+      '<div class="ta-text">'+data.verdict+'</div></div>':'') +
+
+    // What you did well
+    (data.strengths?'<div class="ta-section acc">' +
+      '<div class="ta-label">What You Did Well</div>' +
+      '<div class="ta-text">'+data.strengths+'</div></div>':'') +
+
+    // What to improve
+    (data.weaknesses?'<div class="ta-section neg">' +
+      '<div class="ta-label">Areas to Improve</div>' +
+      '<div class="ta-text">'+data.weaknesses+'</div></div>':'') +
+
+    // Market context
+    (data.market_context?'<div class="ta-section">' +
+      '<div class="ta-label">Market Context at Time of Trade</div>' +
+      '<div class="ta-text">'+data.market_context+'</div></div>':'') +
+
+    // Risk management
+    (data.risk_management?'<div class="ta-section">' +
+      '<div class="ta-label">Risk Management Assessment</div>' +
+      '<div class="ta-text">'+data.risk_management+'</div></div>':'') +
+
+    // Psychology
+    (data.psychology?'<div class="ta-section">' +
+      '<div class="ta-label">Psychology Tags: '+(trade.psychTags||[]).join(', ')+'</div>' +
+      '<div class="ta-text">'+data.psychology+'</div></div>':'') +
+
+    // Lesson
+    (data.lesson?'<div class="ta-section acc">' +
+      '<div class="ta-label">Key Lesson</div>' +
+      '<div class="ta-text"><strong>'+data.lesson+'</strong></div></div>':'') +
+
+    '<div style="padding:8px 0;text-align:right;font-size:9px;color:var(--t4);font-family:monospace">Wall Street Quant Grade · '+(data.generated_at||'')+'</div>';
+}
 
 // Load journal on init
 loadJournal();
