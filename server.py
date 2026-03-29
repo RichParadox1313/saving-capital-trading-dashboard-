@@ -1062,6 +1062,118 @@ async def update_trade(trade_id: str, trade: TradeEntry):
             return JSONResponse({"ok": True})
     raise HTTPException(404, "Trade not found")
 
+class TradeAnalysisRequest(BaseModel):
+    trade: dict
+
+@app.post("/api/journal/analyse")
+async def analyse_trade(req: TradeAnalysisRequest):
+    """Analyse a single trade using the same quant frameworks as market intelligence."""
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
+
+    trade = req.trade
+    asset   = trade.get("asset", "Unknown")
+    direction = trade.get("direction", "LONG")
+    entry   = trade.get("entry")
+    exit_p  = trade.get("exit")
+    sl      = trade.get("sl")
+    tp      = trade.get("tp")
+    size    = trade.get("size")
+    pnl     = trade.get("pnl")
+    rr      = trade.get("rr")
+    strategy = trade.get("strategy", "")
+    notes   = trade.get("notes", "")
+    psych_tags = trade.get("psychTags", [])
+    date    = trade.get("date", "")
+    status  = trade.get("status", "CLOSED")
+
+    # Get current live prices for context
+    if not price_cache["data"] or time.time() - price_cache["ts"] > PRICE_TTL:
+        data = await load_all_prices()
+        price_cache.update({"data": data, "ts": time.time()})
+
+    prices = price_cache["data"]
+    ph = detect_phase(prices)
+
+    # Format price context
+    price_lines = ["CURRENT LIVE MARKET PRICES:"]
+    for pid, pdata in list(prices.items())[:12]:
+        if pdata.get("price"):
+            price_lines.append(f"  {pdata.get('name', pid)}: ${pdata['price']:,.4g}  {pdata.get('change', 0):+.2f}%")
+    price_ctx = "\n".join(price_lines)
+
+    # Build detailed trade context
+    pnl_str = f"${pnl:+.2f}" if pnl is not None else "Open"
+    rr_str  = f"1:{rr:.2f}" if rr else ("N/A (no SL/TP set)" if not sl else "N/A")
+    sl_str  = f"${float(sl):,.4g}" if sl else "Not set"
+    tp_str  = f"${float(tp):,.4g}" if tp else "Not set"
+    entry_str = f"${float(entry):,.4g}" if entry else "N/A"
+    exit_str  = f"${float(exit_p):,.4g}" if exit_p else "Still open"
+    size_str  = f"${float(size):,.0f}" if size else "N/A"
+    psych_str = ", ".join(psych_tags) if psych_tags else "None tagged"
+
+    prompt = f"""You are a senior quantitative analyst and trading coach at Saving Capital, a professional trading academy.
+Analyse this trade using the same institutional frameworks (Bridgewater macro, RenTech momentum, Citadel risk management, Two Sigma factor models) used in our market intelligence system.
+
+{price_ctx}
+
+GLOBAL MARKET REGIME: {ph['phase']} | {ph['regime']} | {ph['risk']} risk
+{ph['bullPct']}% of tracked assets positive | Average move: {ph['avg']}%
+
+TRADE TO ANALYSE:
+Asset: {asset}
+Direction: {direction}
+Date: {date}
+Status: {status}
+Entry: {entry_str}
+Exit: {exit_str}
+Stop Loss: {sl_str}
+Take Profit: {tp_str}
+Position Size: {size_str}
+P&L: {pnl_str}
+Risk:Reward Ratio: {rr_str}
+Strategy/Setup: {strategy or 'Not specified'}
+Notes: {notes or 'None'}
+Psychology Tags: {psych_str}
+
+Return ONLY valid JSON (no markdown, no backticks):
+{{
+  "verdict": "2-3 sentence overall assessment of this trade — was it a good trade regardless of outcome? Reference the specific price levels.",
+  "verdict_positive": true or false (true if trade was well-executed even if it lost, false if it was a bad trade even if it won),
+  "strengths": "What the trader did well — specific to this trade (entry timing, risk management, setup selection, discipline). Be specific, mention actual prices.",
+  "weaknesses": "What could be improved — concrete and actionable. If SL/TP not set, flag it. If psychology tags suggest emotional trading, address it directly.",
+  "market_context": "What the market was doing at {date} for {asset} based on the regime data and current price context. How did macro conditions affect this trade?",
+  "risk_management": "Assessment of the risk management: position sizing relative to account, SL placement, RR ratio quality. Be direct — good RR or not?",
+  "psychology": "{f'The trader tagged: {psych_str}. ' if psych_tags else ''}Assess the psychological state during this trade and how it likely affected decision-making.",
+  "lesson": "Single most important lesson from this trade — one punchy sentence that the trader should remember.",
+  "generated_at": "{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"
+}}"""
+
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                await asyncio.sleep(10 * attempt)
+            msg = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1200,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text = msg.content[0].text.strip()
+            text = text.replace("```json", "").replace("```", "").strip()
+            result = json.loads(text)
+            return JSONResponse(result)
+        except anthropic.APIStatusError as e:
+            if e.status_code == 529 and attempt < 2:
+                continue
+            raise HTTPException(500, f"AI error: {e}")
+        except json.JSONDecodeError as e:
+            raise HTTPException(500, f"JSON parse error: {e}")
+        except Exception as e:
+            raise HTTPException(500, f"Analysis error: {e}")
+    raise HTTPException(503, "Service overloaded, try again")
+
+
 @app.delete("/api/journal/{trade_id}")
 async def delete_trade(trade_id: str):
     trades = load_journal()
