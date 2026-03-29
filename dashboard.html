@@ -940,6 +940,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 
 <div id="page-markets" class="page" style="display:none">
+<canvas id="matrix-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.045"></canvas>
 <section class="hero z">
   <div class="htag"><div class="htag-dot"></div><span data-i18n="heroTag">AI-Powered · Institutional Grade · Real-Time</span></div>
   <h1>Market<i>Intelligence</i></h1>
@@ -1192,6 +1193,8 @@ function goPage(page){
     loadJournal();
   }
   window.scrollTo(0,0);
+  // Start/stop background animations
+  startBgAnim(page);
 }
 
 // ── MT5 Account Connection ─────────────────────────────────────────────────
@@ -2590,6 +2593,127 @@ async function loadNewsTicker(){
 
 // Init market intelligence
 renderTab('crypto');
+
+// ── Background Animations ─────────────────────────────────────────────────────
+let _matrixRaf = null, _journalRaf = null;
+
+function startBgAnim(page){
+  // Stop all first
+  if(_matrixRaf){ cancelAnimationFrame(_matrixRaf); _matrixRaf=null; }
+  if(_journalRaf){ cancelAnimationFrame(_journalRaf); _journalRaf=null; }
+  const mc = document.getElementById('matrix-canvas');
+  const jc = document.getElementById('journal-canvas');
+  if(mc) mc.style.display = 'none';
+  if(jc) jc.style.display = 'none';
+
+  if(page==='markets' && mc){ mc.style.display='block'; runMatrix(mc); }
+  if(page==='journal-page' && jc){ jc.style.display='block'; runJournalBg(jc); }
+}
+
+// ── Matrix Rain ───────────────────────────────────────────────────────────────
+function runMatrix(canvas){
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+
+  const cols   = Math.floor(canvas.width / 18);
+  const drops  = Array.from({length:cols}, ()=>Math.random()*-100);
+  const chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ₿$€¥£ΔΣΠΩ∞≈±×÷<>{}[]|/\\';
+
+  function draw(){
+    if(!_matrixRaf && document.getElementById('page-markets')?.style.display==='none') return;
+    ctx.fillStyle = 'rgba(3,7,3,0.18)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font = '13px "DM Mono",monospace';
+
+    for(let i=0;i<drops.length;i++){
+      const char = chars[Math.floor(Math.random()*chars.length)];
+      const bright = Math.random() > 0.93;
+      ctx.fillStyle = bright ? '#86efac' : '#22c55e';
+      ctx.globalAlpha = bright ? 0.9 : 0.45 + Math.random()*0.3;
+      ctx.fillText(char, i*18, drops[i]*18);
+      ctx.globalAlpha = 1;
+      if(drops[i]*18 > canvas.height && Math.random()>0.97) drops[i]=0;
+      drops[i] += 0.4 + Math.random()*0.3;
+    }
+    _matrixRaf = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Journal Knowledge Background ─────────────────────────────────────────────
+function runJournalBg(canvas){
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+
+  // Floating "trade log" lines — mimic a journal/ledger
+  const lines = [
+    'BUY  XAUUSD  @2,345.20  SL:2,310  TP:2,390  +2.4R',
+    'SELL EURUSD  @1.0842    SL:1.0870 TP:1.0780  WIN',
+    'BUY  BTCUSDT @84,200    SL:82,000 TP:88,000  OPEN',
+    'SELL GBPUSD  @1.2650    SL:1.2700 TP:1.2550  LOSS',
+    'BUY  WTI     @71.40     SL:69.80  TP:74.50   +1.8R',
+    'SELL USDJPY  @151.20    SL:152.00 TP:149.50  WIN',
+    'BUY  SOLUSDT @145.80    SL:138.00 TP:158.00  OPEN',
+    'SELL XAUUSD  @2,410.00  SL:2,430  TP:2,365   WIN',
+    'BUY  NVDA    @875.00    SL:840.00 TP:920.00  +2.1R',
+    'SELL AAPL    @189.40    SL:192.00 TP:184.00  LOSS',
+    'P&L: +$4,280 | W:7 L:3 | WR:70% | Avg R:R 1:2.1',
+    'RISK: 1% per trade | MAX DD: 5% | DAILY LIMIT: 2%',
+    'DISCIPLINE: Followed rules | EMOTION: Neutral',
+    '--- SESSION LOG: London Open ---',
+    'EMA21 > EMA50 | RSI:58 | Vol: High | Phase: Bullish',
+    'POSITION SIZE: 0.5% equity | STOP: ATR×1.5',
+    'SETUP: Break & Retest | TF: H4 | Confirmation: H1',
+    '--- WEEKLY REVIEW ---',
+    'Best trade: XAUUSD +$820 | Worst: GBPUSD -$210',
+    'Avg hold time: 4.2h | Most traded: XAUUSD,BTCUSDT',
+  ];
+
+  // Each "stream" is a column of these lines scrolling upward
+  const streamCount = Math.floor(canvas.width / 380);
+  const streams = Array.from({length: streamCount}, (_, i)=>({
+    x:      80 + i*(canvas.width/streamCount) + (Math.random()-0.5)*40,
+    y:      Math.random() * canvas.height,
+    speed:  0.25 + Math.random()*0.2,
+    lineIdx:Math.floor(Math.random()*lines.length),
+    gap:    28 + Math.floor(Math.random()*8),
+  }));
+
+  function draw(){
+    if(!_journalRaf && document.getElementById('page-journal-page')?.style.display==='none') return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.font = '11px "DM Mono",monospace';
+
+    streams.forEach(s=>{
+      // Draw a stack of lines from this stream's position upward
+      for(let i=0;i<30;i++){
+        const lineY = s.y - i*s.gap;
+        if(lineY < -30 || lineY > canvas.height+30) continue;
+        const idx = ((s.lineIdx + i) % lines.length + lines.length) % lines.length;
+        const line = lines[idx];
+        // Fade: brightest near top of stream, fades out going up
+        const fade = 1 - (i/30);
+        const isHeader = line.startsWith('---') || line.startsWith('P&L');
+        ctx.globalAlpha = fade * (isHeader ? 0.7 : 0.35);
+        ctx.fillStyle = isHeader ? '#4ade80' : '#22c55e';
+        ctx.fillText(line, s.x, lineY);
+      }
+      ctx.globalAlpha = 1;
+      s.y -= s.speed;
+      if(s.y < -s.gap*30){
+        s.y = canvas.height + s.gap*5;
+        s.lineIdx = Math.floor(Math.random()*lines.length);
+      }
+    });
+    _journalRaf = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 loadPrices().then(()=>initLivePrices());
 setInterval(loadPrices, 5*60*1000);
 loadNewsTicker();
@@ -2605,6 +2729,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
+<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.055"></canvas>
   <!-- Journal Hero Intro -->
   <div class="jrnl-hero z">
     <div class="jrnl-hero-inner">
