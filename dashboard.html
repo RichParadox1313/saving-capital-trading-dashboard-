@@ -2494,18 +2494,22 @@ async function loadPrices(){
     const [pr,ph] = await Promise.all([fetch('/api/prices'), fetch('/api/phase')]);
     prices = await pr.json();
     phaseData = await ph.json();
-    // Inject Polygon sparkline from server-side Binance proxy
+    // Polygon sparkline — fetch directly from Binance REST (same as live WebSocket, CORS open)
     try{
-      const polR = await fetch('/api/polygon/sparkline');
-      if(polR.ok){
-        const pol = await polR.json();
-        const key = 'pol-polygon-ecosystem-token';
-        if(!prices[key]) prices[key]={id:key,name:'Polygon',sym:'POL',tab:'crypto'};
-        prices[key].closes   = pol.closes;
-        prices[key].change5d = pol.change5d;
-        if(!prices[key].price) prices[key].price = pol.price;
+      const r = await fetch('https://api.binance.com/api/v3/klines?symbol=POLUSDT&interval=8h&limit=42');
+      if(r.ok){
+        const klines = await r.json();
+        const closes = klines.map(k=>parseFloat(k[4])).filter(v=>v>0);
+        if(closes.length>1){
+          const key='pol-polygon-ecosystem-token';
+          if(!prices[key]) prices[key]={id:key,name:'Polygon',sym:'POL',tab:'crypto'};
+          prices[key].closes=closes.slice(-20);
+          const w5=closes.length>=30?closes[closes.length-30]:closes[0];
+          prices[key].change5d=+((( closes[closes.length-1]-w5)/w5)*100).toFixed(3);
+          console.log('POL sparkline OK:',closes.length,'pts');
+        }
       }
-    }catch(e){ console.warn('Polygon proxy failed:',e); }
+    }catch(e){console.warn('POL klines:',e);}
     updatePhaseBar();
     updateStats();
     renderAll();
