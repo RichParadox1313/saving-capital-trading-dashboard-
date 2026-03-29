@@ -204,7 +204,12 @@ YAHOO_ASSETS = [
 
 async def fetch_coingecko() -> dict:
     """Use /coins/markets — always returns 7d change reliably."""
-    ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
+    _ids = [a["id"] for a in CRYPTO_ASSETS]
+    # Always request both Polygon IDs — CoinGecko switches between them
+    for pol_id in ("pol-polygon-ecosystem-token", "matic-network"):
+        if pol_id not in _ids:
+            _ids.append(pol_id)
+    ids = ",".join(_ids)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
     for attempt in range(3):
@@ -340,10 +345,11 @@ async def load_all_prices() -> dict:
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
-        # Polygon: CoinGecko may return data under either old or new ID — try both
-        d = cg.get(a["id"]) or cg.get("matic-network") if a["id"] == "pol-polygon-ecosystem-token" else cg.get(a["id"], {})
-        if not d:
-            d = {}
+        # Look up by asset ID; for Polygon try both IDs since CoinGecko switches between them
+        if a["id"] == "pol-polygon-ecosystem-token":
+            d = cg.get("pol-polygon-ecosystem-token") or cg.get("matic-network") or {}
+        else:
+            d = cg.get(a["id"]) or {}
         if d.get("usd"):
             result[a["id"]] = {
                 **a,
