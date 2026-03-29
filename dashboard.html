@@ -17,7 +17,7 @@
   --r:#ef4444;--rdim:rgba(239,68,68,0.09);--gold:#f59e0b;--golddim:rgba(245,158,11,0.1);
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:46px}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:52px}
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--br3);border-radius:2px}
 #bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07}
 .z{position:relative;z-index:1}
@@ -174,7 +174,7 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 @keyframes hpf4{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-9px) rotate(.5deg)}}
 
 /* STRIP */
-.hp-strip{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;background:rgba(2,5,2,.95);backdrop-filter:blur(28px);border-top:1px solid rgba(34,197,94,.07);padding:22px 56px;gap:0}
+.hp-strip{position:fixed;bottom:0;left:0;width:100%;z-index:200;display:flex;align-items:center;flex-wrap:nowrap;background:rgba(2,5,2,.97);backdrop-filter:blur(28px);border-top:1px solid rgba(34,197,94,.12);padding:12px 40px;gap:0}
 .hp-sf{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;padding:4px 0}
 .hp-sf b{display:block;font-size:12px;font-weight:600;color:var(--t1);font-family:'Syne',sans-serif;margin-bottom:2px}
 .hp-sf span{font-size:10px;color:rgba(167,243,208,.26);font-family:'DM Mono',monospace}
@@ -398,7 +398,7 @@ h1 i{color:var(--g);font-style:normal;display:block}
 
 
 /* NEWS TICKER */
-.news-ticker{position:fixed;bottom:0;left:0;width:100%;z-index:999;height:46px;display:flex;align-items:center;background:rgba(3,6,3,0.98);border-top:1px solid var(--br);border-bottom:none;backdrop-filter:blur(12px)}
+.news-ticker{position:fixed;top:56px;left:0;width:100%;z-index:99;height:46px;display:flex;align-items:center;background:rgba(3,6,3,0.98);border-bottom:1px solid var(--br);backdrop-filter:blur(12px)}
 .nt-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;padding:0 16px;white-space:nowrap;border-right:1px solid var(--br);height:100%;display:flex;align-items:center;background:rgba(34,197,94,0.05);flex-shrink:0}
 .nt-track{overflow:hidden;flex:1;height:100%;position:relative}
 .nt-scroll{display:flex;align-items:center;white-space:nowrap;animation:ntscroll 20s linear infinite;position:absolute;inset:0;height:100%}
@@ -577,7 +577,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .clk{font-size:9px}
 
   /* News ticker */
-  .news-ticker{bottom:0;height:38px}
+  .news-ticker{top:50px;height:38px}
   .nt-label{font-size:8px;padding:0 10px}
   .nt-item{font-size:11px;padding:0 14px}
 
@@ -775,7 +775,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 
 <!-- LIVE NEWS TICKER -->
-<div class="news-ticker" id="news-ticker" style="position:fixed!important;bottom:0!important;top:auto!important;left:0!important;width:100%!important;z-index:9999!important">
+<div class="news-ticker" id="news-ticker">
   <div class="nt-label" data-i18n="liveNews">Live News</div>
   <div class="nt-track">
     <div class="nt-scroll" id="nt-scroll">
@@ -896,6 +896,17 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
 </div>
 
+</div>
+<!-- END HOME PAGE -->
+<!-- GLOBAL BOTTOM STRIP (fixed, shows on all pages) -->
+<div class="hp-strip" id="global-strip">
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Real-Time Prices</b><span data-i18n="feat1Sub">Binance WebSocket · Sub-second crypto</span></div></div>
+  <div class="hp-sdiv"></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.5v6l-5.5 3-5.5-3v-6z" stroke="#22c55e" stroke-width="1.1"/></svg><div><b data-i18n="feat2Title">Quant AI Analysis</b><span data-i18n="feat2Sub">5 Wall Street frameworks</span></div></div>
+  <div class="hp-sdiv"></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live News Feed</b><span data-i18n="feat3Sub">Reuters · ForexLive · CoinTelegraph</span></div></div>
+  <div class="hp-sdiv"></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
 </div>
 <!-- MARKETS PAGE -->
 
