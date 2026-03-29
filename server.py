@@ -81,7 +81,6 @@ CRYPTO_ASSETS = [
     {"id":"shiba-inu",          "name":"Shiba Inu",     "sym":"SHIB",   "tab":"crypto"},
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
-    {"id":"pol-polygon-ecosystem-token", "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
@@ -206,9 +205,6 @@ async def fetch_coingecko() -> dict:
     """Use /coins/markets — always returns 7d change reliably."""
     _ids = [a["id"] for a in CRYPTO_ASSETS]
     # Always request both Polygon IDs — CoinGecko switches between them
-    for pol_id in ("pol-polygon-ecosystem-token", "matic-network"):
-        if pol_id not in _ids:
-            _ids.append(pol_id)
     ids = ",".join(_ids)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
@@ -252,11 +248,7 @@ async def fetch_coingecko() -> dict:
                             }
 
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
-                        # Polygon: always store under pol-polygon-ecosystem-token
-                        if "matic-network" in result and "pol-polygon-ecosystem-token" not in result:
-                            result["pol-polygon-ecosystem-token"] = result.pop("matic-network")
-                        elif "matic-network" in result:
-                            result.pop("matic-network")  # remove dupe, pol-polygon takes priority
+
                         pol = result.get("pol-polygon-ecosystem-token")
                         if pol:
                             print(f"  Polygon: price={pol.get('usd')} sparkline_pts={len(pol.get('sparkline',[]))}")
@@ -349,10 +341,7 @@ async def load_all_prices() -> dict:
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
-        if a["id"] == "pol-polygon-ecosystem-token":
-            d = cg.get("pol-polygon-ecosystem-token") or cg.get("matic-network") or {}
-        else:
-            d = cg.get(a["id"]) or {}
+        d = cg.get(a["id"]) or {}
         if d.get("usd"):
             result[a["id"]] = {
                 **a,
@@ -367,51 +356,61 @@ async def load_all_prices() -> dict:
             result[a["id"]] = {**a, "price": None, "change": None, "change5d": None, "closes": []}
     print(f"  Crypto prices: {crypto_ok}/{len(CRYPTO_ASSETS)} loaded")
 
-    # 2. Polygon sparkline — fetch from Binance klines (POLUSDT, public API, no key needed)
-    #    CoinGecko free tier never returns sparkline for POL. Binance always works.
-    BINANCE_SYM = {
-        "bitcoin":"BTCUSDT","ethereum":"ETHUSDT","ripple":"XRPUSDT",
-        "solana":"SOLUSDT","binancecoin":"BNBUSDT","dogecoin":"DOGEUSDT",
-        "cardano":"ADAUSDT","avalanche-2":"AVAXUSDT","chainlink":"LINKUSDT",
-        "polkadot":"DOTUSDT","the-open-network":"TONUSDT","shiba-inu":"SHIBUSDT",
-        "litecoin":"LTCUSDT","tron":"TRXUSDT","pol-polygon-ecosystem-token":"POLUSDT",
-        "uniswap":"UNIUSDT","stellar":"XLMUSDT","near":"NEARUSDT",
-        "arbitrum":"ARBUSDT","aptos":"APTUSDT","internet-computer":"ICPUSDT",
-        "filecoin":"FILUSDT","render-token":"RENDERUSDT","injective-protocol":"INJUSDT",
-        "monero":"XMRUSDT","sui":"SUIUSDT","pepe":"PEPEUSDT",
-        "fetch-ai":"FETUSDT","sei-network":"SEIUSDT","bittensor":"TAOUSDT",
-    }
-    # Fill missing sparklines from Binance for any crypto asset that has no closes
-    missing_spark = [a["id"] for a in CRYPTO_ASSETS
-                     if a["id"] in result and not result[a["id"]].get("closes")
-                     and a["id"] in BINANCE_SYM]
-    if missing_spark:
-        print(f"  Fetching Binance klines for {len(missing_spark)} assets with missing sparklines: {missing_spark}")
-        try:
-            async with aiohttp.ClientSession() as _s:
-                for cid in missing_spark:
-                    sym = BINANCE_SYM[cid]
-                    try:
-                        async with _s.get(
-                            "https://api.binance.com/api/v3/klines",
-                            params={"symbol": sym, "interval": "4h", "limit": "42"},
-                            timeout=aiohttp.ClientTimeout(total=10),
-                        ) as r:
-                            if r.status == 200:
-                                klines = await r.json()
-                                closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
-                                if len(closes) >= 2:
-                                    result[cid]["closes"] = closes[-20:]
-                                    w5 = closes[-30] if len(closes) >= 30 else closes[0]
-                                    result[cid]["change5d"] = round(((closes[-1] - w5) / w5) * 100, 3)
-                                    print(f"    {sym}: {len(closes)} pts OK")
-                            else:
-                                print(f"    {sym}: HTTP {r.status}")
-                        await asyncio.sleep(0.05)
-                    except Exception as e:
-                        print(f"    {sym} error: {e}")
-        except Exception as e:
-            print(f"  Binance klines session error: {e}")
+    # 2. Polygon — fetched 100% from Binance (price + sparkline + 5d change)
+    #    Completely bypasses CoinGecko for Polygon. Binance POLUSDT is public, no key needed.
+    try:
+        async with aiohttp.ClientSession() as _bs:
+            # Get current price from ticker
+            async with _bs.get(
+                "https://api.binance.com/api/v3/ticker/24hr",
+                params={"symbol": "POLUSDT"},
+                timeout=aiohttp.ClientTimeout(total=8),
+            ) as r:
+                if r.status == 200:
+                    t = await r.json()
+                    pol_price = float(t.get("lastPrice", 0))
+                    pol_change = float(t.get("priceChangePercent", 0))
+                else:
+                    pol_price, pol_change = 0, 0
+
+            # Get sparkline from klines (42 x 4h candles = ~7 days)
+            async with _bs.get(
+                "https://api.binance.com/api/v3/klines",
+                params={"symbol": "POLUSDT", "interval": "8h", "limit": "42"},
+                timeout=aiohttp.ClientTimeout(total=8),
+            ) as r:
+                if r.status == 200:
+                    klines = await r.json()
+                    closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
+                    w5 = closes[-15] if len(closes) >= 15 else closes[0] if closes else pol_price
+                    pol_change5d = round(((closes[-1] - w5) / w5) * 100, 3) if closes else 0
+                    pol_closes = closes[-20:]
+                else:
+                    pol_closes, pol_change5d = [], 0
+
+        if pol_price:
+            result["pol-polygon-ecosystem-token"] = {
+                "id": "pol-polygon-ecosystem-token",
+                "name": "Polygon", "sym": "POL", "tab": "crypto",
+                "price":    round(pol_price, 8),
+                "change":   round(pol_change, 3),
+                "change5d": pol_change5d,
+                "mcap":     None,
+                "closes":   pol_closes,
+            }
+            print(f"  Polygon Binance: ${pol_price} {pol_change:+.2f}% 5d={pol_change5d}% closes={len(pol_closes)}")
+        else:
+            result["pol-polygon-ecosystem-token"] = {
+                "id":"pol-polygon-ecosystem-token","name":"Polygon","sym":"POL","tab":"crypto",
+                "price":None,"change":None,"change5d":None,"closes":[]
+            }
+            print("  Polygon Binance: failed to get price")
+    except Exception as e:
+        print(f"  Polygon Binance error: {e}")
+        result["pol-polygon-ecosystem-token"] = {
+            "id":"pol-polygon-ecosystem-token","name":"Polygon","sym":"POL","tab":"crypto",
+            "price":None,"change":None,"change5d":None,"closes":[]
+        }
 
     # 3. Forex + Commodities — Yahoo Finance
     print("  Fetching Yahoo Finance (forex + commodities)...")
@@ -685,9 +684,6 @@ async def api_forex_live():
 async def api_crypto_live():
     """Fast endpoint for real-time crypto. Uses /coins/markets for reliable 7d data."""
     _ids = [a["id"] for a in CRYPTO_ASSETS]
-    for pol_id in ("pol-polygon-ecosystem-token", "matic-network"):
-        if pol_id not in _ids:
-            _ids.append(pol_id)
     ids = ",".join(_ids)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
     result = {}
@@ -723,11 +719,7 @@ async def api_crypto_live():
                             "change5d": round(float(chg7d), 3),
                             "mcap":     coin.get("market_cap"),
                         }
-                    # Polygon remap: store under pol-polygon-ecosystem-token regardless of which ID CoinGecko returned
-                    if "matic-network" in result and "pol-polygon-ecosystem-token" not in result:
-                        result["pol-polygon-ecosystem-token"] = result.pop("matic-network")
-                    elif "matic-network" in result:
-                        result.pop("matic-network")
+
                 else:
                     print(f"  /coins/markets HTTP {r.status}")
     except Exception as e:
