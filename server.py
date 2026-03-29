@@ -82,7 +82,6 @@ CRYPTO_ASSETS = [
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
     {"id":"matic-network",               "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
-    {"id":"pol-polygon-ecosystem-token", "name":"Polygon-POL",    "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
@@ -205,11 +204,10 @@ YAHOO_ASSETS = [
 
 async def fetch_coingecko() -> dict:
     """Use /coins/markets — always returns 7d change reliably."""
-    # Include both Polygon IDs to ensure CoinGecko returns data regardless of which alias it uses
+    # Request both Polygon IDs — CoinGecko uses the new one, we remap to matic-network
     _cg_ids = [a["id"] for a in CRYPTO_ASSETS]
-    if "matic-network" in _cg_ids and "pol-polygon-ecosystem-token" not in _cg_ids:
-        _cg_ids.append("pol-polygon-ecosystem-token")
-    ids = ",".join(_cg_ids)
+    _cg_ids.append("pol-polygon-ecosystem-token")  # always include new Polygon ID
+    ids = ",".join(dict.fromkeys(_cg_ids))  # deduplicate
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
     for attempt in range(3):
@@ -250,11 +248,10 @@ async def fetch_coingecko() -> dict:
                                 "usd_market_cap": coin.get("market_cap"),
                                 "sparkline":      [float(f"{p:.8g}") for p in spark_prices if p is not None],
                             }
-                        # Polygon remap: CoinGecko uses the new ID, dashboard uses the old one
-                        if "pol-polygon-ecosystem-token" in result and "matic-network" not in result:
+                        # Polygon remap: CoinGecko now uses pol-polygon-ecosystem-token
+                        # Always overwrite matic-network with pol-polygon data (pol has live price + sparkline)
+                        if "pol-polygon-ecosystem-token" in result:
                             result["matic-network"] = result.pop("pol-polygon-ecosystem-token")
-                        elif "pol-polygon-ecosystem-token" in result:
-                            result.pop("pol-polygon-ecosystem-token")  # avoid dupe
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
                         return result
                     elif r.status == 429:
@@ -343,7 +340,6 @@ async def load_all_prices() -> dict:
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
-        if a["id"] == "pol-polygon-ecosystem-token": continue  # handled via remap
         d = cg.get(a["id"], {})
         if d.get("usd"):
             result[a["id"]] = {
