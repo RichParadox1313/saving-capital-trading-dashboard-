@@ -252,12 +252,16 @@ async def fetch_coingecko() -> dict:
                             }
 
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
-                        # Debug Polygon specifically
-                        pol = result.get("pol-polygon-ecosystem-token") or result.get("matic-network")
+                        # Polygon: always store under pol-polygon-ecosystem-token
+                        if "matic-network" in result and "pol-polygon-ecosystem-token" not in result:
+                            result["pol-polygon-ecosystem-token"] = result.pop("matic-network")
+                        elif "matic-network" in result:
+                            result.pop("matic-network")  # remove dupe, pol-polygon takes priority
+                        pol = result.get("pol-polygon-ecosystem-token")
                         if pol:
-                            print(f"  Polygon found: price={pol.get('usd')} sparkline_pts={len(pol.get('sparkline',[]))}")
+                            print(f"  Polygon: price={pol.get('usd')} sparkline_pts={len(pol.get('sparkline',[]))}")
                         else:
-                            print(f"  Polygon NOT found. Keys in result: {[k for k in result if 'matic' in k or 'pol' in k.lower()]}")
+                            print(f"  Polygon NOT in result")
                         return result
                     elif r.status == 429:
                         print(f"  CoinGecko rate limited, waiting 15s...")
@@ -639,7 +643,11 @@ async def api_forex_live():
 @app.get("/api/crypto/live")
 async def api_crypto_live():
     """Fast endpoint for real-time crypto. Uses /coins/markets for reliable 7d data."""
-    ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
+    _ids = [a["id"] for a in CRYPTO_ASSETS]
+    for pol_id in ("pol-polygon-ecosystem-token", "matic-network"):
+        if pol_id not in _ids:
+            _ids.append(pol_id)
+    ids = ",".join(_ids)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
     result = {}
     try:
@@ -666,13 +674,19 @@ async def api_crypto_live():
                         if not cid or not price:
                             continue
                         chg24  = coin.get("price_change_percentage_24h") or 0
-                        chg7d  = coin.get("price_change_percentage_7d_in_currency") or                                  coin.get("price_change_percentage_7d") or 0
+                        chg7d  = coin.get("price_change_percentage_7d_in_currency") or \
+                                 coin.get("price_change_percentage_7d") or 0
                         result[cid] = {
                             "price":    round(float(price), 8),
                             "change":   round(float(chg24), 3),
                             "change5d": round(float(chg7d), 3),
                             "mcap":     coin.get("market_cap"),
                         }
+                    # Polygon remap: store under pol-polygon-ecosystem-token regardless of which ID CoinGecko returned
+                    if "matic-network" in result and "pol-polygon-ecosystem-token" not in result:
+                        result["pol-polygon-ecosystem-token"] = result.pop("matic-network")
+                    elif "matic-network" in result:
+                        result.pop("matic-network")
                 else:
                     print(f"  /coins/markets HTTP {r.status}")
     except Exception as e:
