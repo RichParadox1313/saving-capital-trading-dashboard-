@@ -2485,26 +2485,42 @@ async function loadPrices(){
     const [pr,ph] = await Promise.all([fetch('/api/prices'), fetch('/api/phase')]);
     prices = await pr.json();
     phaseData = await ph.json();
-    // Polygon sparkline — fetch directly from Binance REST (same as live WebSocket, CORS open)
-    try{
-      const r = await fetch('https://api.binance.com/api/v3/klines?symbol=POLUSDT&interval=8h&limit=42');
-      if(r.ok){
-        const klines = await r.json();
-        const closes = klines.map(k=>parseFloat(k[4])).filter(v=>v>0);
-        if(closes.length>1){
-          const key='pol-polygon-ecosystem-token';
-          if(!prices[key]) prices[key]={id:key,name:'Polygon',sym:'POL',tab:'crypto'};
-          prices[key].closes=closes.slice(-20);
-          const w5=closes.length>=30?closes[closes.length-30]:closes[0];
-          prices[key].change5d=+((( closes[closes.length-1]-w5)/w5)*100).toFixed(3);
-          console.log('POL sparkline OK:',closes.length,'pts');
-        }
-      }
-    }catch(e){console.warn('POL klines:',e);}
+
+    // Fetch sparklines from Binance for ALL crypto assets that have empty closes
+    // Binance REST is CORS-open for public endpoints
+    const BSYMS = {
+      'bitcoin':'BTCUSDT','ethereum':'ETHUSDT','ripple':'XRPUSDT','solana':'SOLUSDT',
+      'binancecoin':'BNBUSDT','dogecoin':'DOGEUSDT','cardano':'ADAUSDT','avalanche-2':'AVAXUSDT',
+      'chainlink':'LINKUSDT','polkadot':'DOTUSDT','the-open-network':'TONUSDT','shiba-inu':'SHIBUSDT',
+      'litecoin':'LTCUSDT','tron':'TRXUSDT','pol-polygon-ecosystem-token':'POLUSDT',
+      'uniswap':'UNIUSDT','stellar':'XLMUSDT','near':'NEARUSDT','arbitrum':'ARBUSDT',
+      'aptos':'APTUSDT','internet-computer':'ICPUSDT','filecoin':'FILUSDT',
+      'render-token':'RENDERUSDT','injective-protocol':'INJUSDT','monero':'XMRUSDT',
+      'sui':'SUIUSDT','pepe':'PEPEUSDT','fetch-ai':'FETUSDT','sei-network':'SEIUSDT','bittensor':'TAOUSDT'
+    };
+    // Find all assets with missing or empty closes
+    const missing = Object.entries(BSYMS).filter(([id])=> !prices[id]?.closes?.length);
+    if(missing.length > 0){
+      await Promise.allSettled(missing.map(async ([id, sym])=>{
+        try{
+          const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=8h&limit=42`);
+          if(!r.ok) return;
+          const klines = await r.json();
+          const closes = klines.map(k=>parseFloat(k[4])).filter(v=>v>0);
+          if(closes.length<2) return;
+          if(!prices[id]) prices[id]={id,tab:'crypto'};
+          prices[id].closes = closes.slice(-20);
+          const w5 = closes.length>=30 ? closes[closes.length-30] : closes[0];
+          prices[id].change5d = +((( closes[closes.length-1]-w5)/w5)*100).toFixed(3);
+        }catch(e){}
+      }));
+    }
+
     updatePhaseBar();
     updateStats();
     renderAll();
-    setTimeout(redrawAllSparks, 100);
+    // Wait for DOM to fully render then draw sparks
+    setTimeout(()=>requestAnimationFrame(redrawAllSparks), 200);
   }catch(e){console.error('loadPrices failed:', e)}
 }
 
