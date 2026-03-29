@@ -385,15 +385,21 @@ async def load_all_prices() -> dict:
             print(f"  Yahoo warmup failed: {e}")
 
         # Polygon sparkline — CoinGecko free tier does NOT return sparkline for POL
-        # Fetch from Yahoo Finance POL-USD which always works
+        # Try multiple Yahoo Finance tickers until one works
         pol_key = "pol-polygon-ecosystem-token"
-        pol_yahoo = await fetch_yahoo_chart(session, "POL-USD")
+        pol_yahoo = {}
+        for pol_ticker in ("POL-USD", "MATIC-USD", "POL1-USD"):
+            pol_yahoo = await fetch_yahoo_chart(session, pol_ticker)
+            if pol_yahoo.get("closes"):
+                print(f"  Polygon sparkline via Yahoo {pol_ticker}: {len(pol_yahoo['closes'])} pts, 5d={pol_yahoo['change5d']}%")
+                break
+            else:
+                print(f"  Polygon Yahoo {pol_ticker} failed: {pol_yahoo}")
         if pol_yahoo.get("closes") and pol_key in result:
             result[pol_key]["closes"]   = pol_yahoo["closes"]
             result[pol_key]["change5d"] = pol_yahoo["change5d"]
-            print(f"  Polygon sparkline via Yahoo: {len(pol_yahoo['closes'])} pts, 5d={pol_yahoo['change5d']}%")
         else:
-            print(f"  Polygon Yahoo fetch failed: {pol_yahoo}")
+            print(f"  WARNING: All Polygon Yahoo tickers failed")
 
         # Now fetch all other assets
         yahoo_ok = 0
@@ -748,6 +754,26 @@ async def health():
     return {"status":"ok", "assets_with_price": loaded,
             "cache_age_seconds": round(time.time() - price_cache["ts"]),
             "news_items": len(news_cache["data"])}
+
+@app.get("/api/debug/polygon")
+async def debug_polygon():
+    """Debug endpoint — shows exactly what data Polygon has in cache."""
+    pol = price_cache["data"].get("pol-polygon-ecosystem-token", {})
+    jar = aiohttp.CookieJar(unsafe=True)
+    async with aiohttp.ClientSession(cookie_jar=jar) as session:
+        results = {}
+        for ticker in ("POL-USD", "MATIC-USD"):
+            d = await fetch_yahoo_chart(session, ticker)
+            results[ticker] = {"closes_count": len(d.get("closes",[])), "price": d.get("price"), "change5d": d.get("change5d")}
+    return {
+        "cached_polygon": {
+            "price": pol.get("price"),
+            "change5d": pol.get("change5d"),
+            "closes_count": len(pol.get("closes", [])),
+            "closes_sample": pol.get("closes", [])[:3],
+        },
+        "yahoo_test": results,
+    }
 
 class AnalysisRequest(BaseModel):
     asset_id: str
