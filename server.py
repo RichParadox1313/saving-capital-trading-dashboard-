@@ -247,6 +247,12 @@ async def fetch_coingecko() -> dict:
                             }
 
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
+                        # Debug Polygon specifically
+                        pol = result.get("pol-polygon-ecosystem-token") or result.get("matic-network")
+                        if pol:
+                            print(f"  Polygon found: price={pol.get('usd')} sparkline_pts={len(pol.get('sparkline',[]))}")
+                        else:
+                            print(f"  Polygon NOT found. Keys in result: {[k for k in result if 'matic' in k or 'pol' in k.lower()]}")
                         return result
                     elif r.status == 429:
                         print(f"  CoinGecko rate limited, waiting 15s...")
@@ -334,7 +340,10 @@ async def load_all_prices() -> dict:
     cg = await fetch_coingecko()
     crypto_ok = 0
     for a in CRYPTO_ASSETS:
-        d = cg.get(a["id"], {})
+        # Polygon: CoinGecko may return data under either old or new ID — try both
+        d = cg.get(a["id"]) or cg.get("matic-network") if a["id"] == "pol-polygon-ecosystem-token" else cg.get(a["id"], {})
+        if not d:
+            d = {}
         if d.get("usd"):
             result[a["id"]] = {
                 **a,
