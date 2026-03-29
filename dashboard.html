@@ -564,8 +564,6 @@ h1 i{color:var(--g);font-style:normal;display:block}
 /* Modal */
 .jmodal-bg{display:none;position:fixed;inset:0;background:rgba(3,6,3,0.92);z-index:300;backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:16px}
 .jmodal-bg.open{display:flex}
-.jmodal{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
-.jmodal-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;margin-bottom:20px;color:var(--t1)}
 .jform-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .jform-full{grid-column:1/-1}
 .jlabel{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:5px;display:block}
@@ -981,178 +979,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 </div>
 
 
-<!-- Trading Journal Modal -->
-<!-- Quick-pick popup -->
-<div class="jmodal-bg" id="jquick-bg" onclick="if(event.target===this)closeQuickPick()" style="display:none;position:fixed;inset:0;z-index:299"></div>
-
-<!-- Trade Modal -->
-<div class="jmodal-bg" id="jmodal-bg">
-  <div class="jmodal">
-    <!-- Header -->
-    <div class="jmodal-header">
-      <div class="jmodal-title" id="jmodal-title">New Trade</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="jmodal-type-badge" id="jmodal-type-badge">Manual</div>
-        <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="closeJModal()">✕</button>
-      </div>
-    </div>
-
-    <div class="jmodal-body">
-
-      <!-- SECTION: Trade Details -->
-      <div class="jform-section">
-        <div class="jform-section-title">Trade Details</div>
-        <div class="jform-grid">
-          <div>
-            <label class="jlabel">Asset</label>
-            <input class="jinput" id="j-asset" placeholder="BTC, EURUSD, XAUUSD..." />
-          </div>
-          <div>
-            <label class="jlabel">Date</label>
-            <input class="jinput" type="date" id="j-date" />
-          </div>
-          <div>
-            <label class="jlabel">Direction</label>
-            <select class="jselect" id="j-direction" onchange="calcAll()">
-              <option value="LONG">LONG</option>
-              <option value="SHORT">SHORT</option>
-            </select>
-          </div>
-          <div>
-            <label class="jlabel">Status</label>
-            <select class="jselect" id="j-status">
-              <option value="OPEN">OPEN</option>
-              <option value="CLOSED">CLOSED</option>
-            </select>
-          </div>
-          <div>
-            <label class="jlabel">Entry Price</label>
-            <input class="jinput" type="number" step="any" id="j-entry" placeholder="0.00" oninput="calcAll()" />
-          </div>
-          <div>
-            <label class="jlabel">Exit Price</label>
-            <input class="jinput" type="number" step="any" id="j-exit" placeholder="0.00" oninput="calcAll()" />
-          </div>
-          <div>
-            <label class="jlabel">Stop Loss</label>
-            <input class="jinput" type="number" step="any" id="j-sl" placeholder="0.00" oninput="calcAll()" />
-          </div>
-          <div>
-            <label class="jlabel">Take Profit</label>
-            <input class="jinput" type="number" step="any" id="j-tp" placeholder="0.00" oninput="calcAll()" />
-          </div>
-          <div>
-            <label class="jlabel">Position Size ($)</label>
-            <input class="jinput" type="number" step="any" id="j-size" placeholder="1000" oninput="calcAll()" />
-          </div>
-          <div>
-            <label class="jlabel">P&amp;L ($)</label>
-            <input class="jinput" type="number" step="any" id="j-pnl" placeholder="Auto-calculated" />
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION: R:R Calculator -->
-      <div class="jform-section">
-        <div class="jform-section-title">Risk : Reward Calculator</div>
-        <div class="rr-display" id="rr-display">
-          <div class="rr-box"><div class="rr-label">Risk $</div><div class="rr-val" id="rr-risk">—</div></div>
-          <div class="rr-box"><div class="rr-label">Reward $</div><div class="rr-val" id="rr-reward">—</div></div>
-          <div class="rr-box"><div class="rr-label">R:R Ratio</div><div class="rr-val" id="rr-ratio">—</div></div>
-        </div>
-      </div>
-
-      <!-- SECTION: Strategy -->
-      <div class="jform-section">
-        <div class="jform-section-title">Strategy & Notes</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div>
-            <label class="jlabel">Strategy / Setup</label>
-            <input class="jinput" id="j-strategy" placeholder="e.g. Breakout, Mean Reversion, Trend Follow..." />
-          </div>
-          <div>
-            <label class="jlabel">Notes</label>
-            <textarea class="jinput" id="j-notes" rows="2" placeholder="Trade rationale, market conditions, lessons learned..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION: Psychology -->
-      <div class="jform-section">
-        <div class="jform-section-title">Trading Psychology</div>
-        <label class="jlabel">Emotional State</label>
-        <div class="psych-tags" id="psych-tags">
-          <button class="ptag-btn" onclick="togglePsych(this,'Disciplined')">Disciplined</button>
-          <button class="ptag-btn" onclick="togglePsych(this,'Patient')">Patient</button>
-          <button class="ptag-btn" onclick="togglePsych(this,'Confident')">Confident</button>
-          <button class="ptag-btn" onclick="togglePsych(this,'Rule-Based')">Rule-Based</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'FOMO')">FOMO</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'Revenge')">Revenge Trade</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'Overtrading')">Overtrading</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'Anxious')">Anxious</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'Greedy')">Greedy</button>
-          <button class="ptag-btn negative" onclick="togglePsych(this,'Impulsive')">Impulsive</button>
-        </div>
-      </div>
-
-      <!-- SECTION: Chart Screenshot -->
-      <div class="jform-section">
-        <div class="jform-section-title">Chart Screenshots</div>
-        <div class="img-upload-area" onclick="document.getElementById('j-imgs').click()">
-          <input type="file" id="j-imgs" accept="image/*" multiple style="display:none" onchange="handleImgUpload(this)" />
-          <div class="img-upload-label">
-            
-            Click to attach chart screenshots — PNG, JPG
-          </div>
-        </div>
-        <div class="img-preview" id="img-preview"></div>
-      </div>
-
-    </div><!-- end modal-body -->
-
-    <div class="jmodal-btns" style="padding:14px 24px;border-top:1px solid var(--br);margin:0">
-      <button class="jbtn jbtn-outline" onclick="closeJModal()">Cancel</button>
-      <button class="jbtn jbtn-primary" onclick="saveJTrade()">Save Trade</button>
-    </div>
-  </div>
-</div>
-<!-- Trade Analysis Modal -->
-<div class="jmodal-bg" id="jtrade-analysis-bg">
-  <div class="jmodal" style="max-width:640px">
-    <div class="jmodal-header">
-      <div class="jmodal-title">AI Trade Analysis</div>
-      <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="document.getElementById('jtrade-analysis-bg').classList.remove('open')">✕</button>
-    </div>
-    <div class="jmodal-body" id="jtrade-analysis-body">
-      <div class="ldet"><div class="lring"></div><div class="ltitle">Generating analysis...</div></div>
-    </div>
-  </div>
-</div>
-
-</div><!-- end markets page -->
-
-<!-- JOURNAL PAGE -->
-<div id="page-journal-page" class="page" style="display:none">
-  <!-- Journal Hero Intro -->
-  <div class="jrnl-hero z">
-    <div class="jrnl-hero-inner">
-      <div class="jrnl-hero-badge">PROFESSIONAL TRADING JOURNAL</div>
-      <h1 class="jrnl-hero-title">Track. Analyse. <span class="jrnl-hero-accent">Improve.</span></h1>
-      <p class="jrnl-hero-sub">Your personal trading command center — powered by institutional-grade AI. Log every trade, analyse performance with Wall Street quant frameworks, and sync directly from your MT5 account in real time.</p>
-      <div class="jrnl-hero-feats">
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">MT5</div><div><div class="jrnl-hf-t">Auto-Sync</div><div class="jrnl-hf-s">Live trade import from MetaTrader 5</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">AI</div><div><div class="jrnl-hf-t">Trade Analysis</div><div class="jrnl-hf-s">Quant-grade feedback on every trade</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">R:R</div><div><div class="jrnl-hf-t">Risk Management</div><div class="jrnl-hf-s">SL/TP · Risk:Reward · P&amp;L tracking</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">PSY</div><div><div class="jrnl-hf-t">Psychology Tags</div><div class="jrnl-hf-s">Track discipline, FOMO, and patterns</div></div></div>
-      </div>
-    </div>
-  </div>
-  <!-- Journal Panel -->
-  <div class="main z" style="padding-top:32px;padding-bottom:80px">
-    <div id="journal-standalone"></div>
-  </div>
-</div>
-
 <footer>All analysis is AI-generated for educational and informational purposes only. Saving Capital does not provide financial advice. Past performance is not indicative of future results. Always conduct independent research before making trading decisions.</footer>
 </div>
 
@@ -1546,18 +1372,16 @@ function renderJournal(){
 function openQuickPick(wrapId){
   const menu = document.getElementById(wrapId).querySelector('.qpick-menu');
   const isOpen = menu.classList.contains('open');
-  // Close all menus first
   document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
   if(!isOpen){
     menu.classList.add('open');
-    // One-time outside click to close
     const handler = function(e){
       if(!e.target.closest('#'+wrapId)){
         menu.classList.remove('open');
-        document.removeEventListener('click', handler, true);
+        document.removeEventListener('mousedown', handler, true);
       }
     };
-    setTimeout(()=>document.addEventListener('click', handler, true), 50);
+    setTimeout(()=>document.addEventListener('mousedown', handler, true), 100);
   }
 }
 function closeQuickPick(){
@@ -1659,40 +1483,51 @@ function calcPnl(){ calcAll(); }
 
 // ── Open/close modal ──────────────────────────────────────────────────────────
 function openJModal(editId=null, tradeType='Manual'){
+  // Close any open menus
   document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
+
   jEditId = editId;
   const tr = editId ? jTrades.find(x=>x.id===editId) : null;
 
-  document.getElementById('jmodal-title').textContent = editId ? 'Edit Trade' : 'New Trade';
-  document.getElementById('jmodal-type-badge').textContent = tr?.tradeType || tradeType;
-  document.getElementById('j-asset').value     = tr?.asset||'';
-  document.getElementById('j-date').value      = tr?.date||new Date().toISOString().slice(0,10);
-  document.getElementById('j-direction').value = tr?.direction||'LONG';
-  document.getElementById('j-status').value    = tr?.status||'OPEN';
-  document.getElementById('j-entry').value     = tr?.entry||'';
-  document.getElementById('j-exit').value      = tr?.exit||'';
-  document.getElementById('j-sl').value        = tr?.sl||'';
-  document.getElementById('j-tp').value        = tr?.tp||'';
-  document.getElementById('j-size').value      = tr?.size||'';
-  document.getElementById('j-pnl').value       = tr?.pnl!=null?tr.pnl:'';
-  document.getElementById('j-strategy').value  = tr?.strategy||'';
-  document.getElementById('j-notes').value     = tr?.notes||'';
+  const get = id => document.getElementById(id);
+  const set = (id, val) => { const el=get(id); if(el) el.value=val; };
+
+  // Set header
+  if(get('jmodal-title'))      get('jmodal-title').textContent      = editId ? 'Edit Trade' : 'New Trade';
+  if(get('jmodal-type-badge')) get('jmodal-type-badge').textContent = tr?.tradeType || tradeType;
+
+  // Set form fields
+  set('j-asset',    tr?.asset    || '');
+  set('j-date',     tr?.date     || new Date().toISOString().slice(0,10));
+  set('j-direction',tr?.direction|| 'LONG');
+  set('j-status',   tr?.status   || 'OPEN');
+  set('j-entry',    tr?.entry    || '');
+  set('j-exit',     tr?.exit     || '');
+  set('j-sl',       tr?.sl       || '');
+  set('j-tp',       tr?.tp       || '');
+  set('j-size',     tr?.size     || '');
+  set('j-pnl',      tr?.pnl != null ? tr.pnl : '');
+  set('j-strategy', tr?.strategy || '');
+  set('j-notes',    tr?.notes    || '');
 
   // Reset psychology tags
-  resetPsychTags(tr?.psychTags||[]);
+  if(typeof resetPsychTags === 'function') resetPsychTags(tr?.psychTags || []);
 
   // Reset images
   tradeImages = tr?.images ? [...tr.images] : [];
-  renderImgPreviews();
+  if(typeof renderImgPreviews === 'function') renderImgPreviews();
 
-  // Recalc
-  calcAll();
+  // Recalculate R:R
+  if(typeof calcAll === 'function') calcAll();
 
-  document.getElementById('jmodal-bg').classList.add('open');
+  // Open modal
+  const bg = get('jmodal-bg');
+  if(bg){ bg.style.display='flex'; bg.classList.add('open'); }
 }
 
 function closeJModal(){
-  document.getElementById('jmodal-bg').classList.remove('open');
+  const bg = document.getElementById('jmodal-bg');
+  if(bg){ bg.classList.remove('open'); bg.style.display=''; }
   jEditId = null;
   tradeImages = [];
   selectedPsychTags = [];
@@ -2764,5 +2599,179 @@ setInterval(loadNewsTicker, 10*60*1000);
 setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
+
+<!-- Trading Journal Modal -->
+<!-- Quick-pick popup -->
+<div class="jmodal-bg" id="jquick-bg" onclick="if(event.target===this)closeQuickPick()" style="display:none;position:fixed;inset:0;z-index:299"></div>
+
+<!-- Trade Modal -->
+<div class="jmodal-bg" id="jmodal-bg">
+  <div class="jmodal">
+    <!-- Header -->
+    <div class="jmodal-header">
+      <div class="jmodal-title" id="jmodal-title">New Trade</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="jmodal-type-badge" id="jmodal-type-badge">Manual</div>
+        <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="closeJModal()">✕</button>
+      </div>
+    </div>
+
+    <div class="jmodal-body">
+
+      <!-- SECTION: Trade Details -->
+      <div class="jform-section">
+        <div class="jform-section-title">Trade Details</div>
+        <div class="jform-grid">
+          <div>
+            <label class="jlabel">Asset</label>
+            <input class="jinput" id="j-asset" placeholder="BTC, EURUSD, XAUUSD..." />
+          </div>
+          <div>
+            <label class="jlabel">Date</label>
+            <input class="jinput" type="date" id="j-date" />
+          </div>
+          <div>
+            <label class="jlabel">Direction</label>
+            <select class="jselect" id="j-direction" onchange="calcAll()">
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div>
+            <label class="jlabel">Status</label>
+            <select class="jselect" id="j-status">
+              <option value="OPEN">OPEN</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+          </div>
+          <div>
+            <label class="jlabel">Entry Price</label>
+            <input class="jinput" type="number" step="any" id="j-entry" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Exit Price</label>
+            <input class="jinput" type="number" step="any" id="j-exit" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Stop Loss</label>
+            <input class="jinput" type="number" step="any" id="j-sl" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Take Profit</label>
+            <input class="jinput" type="number" step="any" id="j-tp" placeholder="0.00" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">Position Size ($)</label>
+            <input class="jinput" type="number" step="any" id="j-size" placeholder="1000" oninput="calcAll()" />
+          </div>
+          <div>
+            <label class="jlabel">P&amp;L ($)</label>
+            <input class="jinput" type="number" step="any" id="j-pnl" placeholder="Auto-calculated" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: R:R Calculator -->
+      <div class="jform-section">
+        <div class="jform-section-title">Risk : Reward Calculator</div>
+        <div class="rr-display" id="rr-display">
+          <div class="rr-box"><div class="rr-label">Risk $</div><div class="rr-val" id="rr-risk">—</div></div>
+          <div class="rr-box"><div class="rr-label">Reward $</div><div class="rr-val" id="rr-reward">—</div></div>
+          <div class="rr-box"><div class="rr-label">R:R Ratio</div><div class="rr-val" id="rr-ratio">—</div></div>
+        </div>
+      </div>
+
+      <!-- SECTION: Strategy -->
+      <div class="jform-section">
+        <div class="jform-section-title">Strategy & Notes</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label class="jlabel">Strategy / Setup</label>
+            <input class="jinput" id="j-strategy" placeholder="e.g. Breakout, Mean Reversion, Trend Follow..." />
+          </div>
+          <div>
+            <label class="jlabel">Notes</label>
+            <textarea class="jinput" id="j-notes" rows="2" placeholder="Trade rationale, market conditions, lessons learned..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Psychology -->
+      <div class="jform-section">
+        <div class="jform-section-title">Trading Psychology</div>
+        <label class="jlabel">Emotional State</label>
+        <div class="psych-tags" id="psych-tags">
+          <button class="ptag-btn" onclick="togglePsych(this,'Disciplined')">Disciplined</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Patient')">Patient</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Confident')">Confident</button>
+          <button class="ptag-btn" onclick="togglePsych(this,'Rule-Based')">Rule-Based</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'FOMO')">FOMO</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Revenge')">Revenge Trade</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Overtrading')">Overtrading</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Anxious')">Anxious</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Greedy')">Greedy</button>
+          <button class="ptag-btn negative" onclick="togglePsych(this,'Impulsive')">Impulsive</button>
+        </div>
+      </div>
+
+      <!-- SECTION: Chart Screenshot -->
+      <div class="jform-section">
+        <div class="jform-section-title">Chart Screenshots</div>
+        <div class="img-upload-area" onclick="document.getElementById('j-imgs').click()">
+          <input type="file" id="j-imgs" accept="image/*" multiple style="display:none" onchange="handleImgUpload(this)" />
+          <div class="img-upload-label">
+            
+            Click to attach chart screenshots — PNG, JPG
+          </div>
+        </div>
+        <div class="img-preview" id="img-preview"></div>
+      </div>
+
+    </div><!-- end modal-body -->
+
+    <div class="jmodal-btns" style="padding:14px 24px;border-top:1px solid var(--br);margin:0">
+      <button class="jbtn jbtn-outline" onclick="closeJModal()">Cancel</button>
+      <button class="jbtn jbtn-primary" onclick="saveJTrade()">Save Trade</button>
+    </div>
+  </div>
+</div>
+<!-- Trade Analysis Modal -->
+<div class="jmodal-bg" id="jtrade-analysis-bg">
+  <div class="jmodal" style="max-width:640px">
+    <div class="jmodal-header">
+      <div class="jmodal-title">AI Trade Analysis</div>
+      <button class="jbtn jbtn-outline" style="padding:4px 12px;font-size:10px" onclick="document.getElementById('jtrade-analysis-bg').classList.remove('open')">✕</button>
+    </div>
+    <div class="jmodal-body" id="jtrade-analysis-body">
+      <div class="ldet"><div class="lring"></div><div class="ltitle">Generating analysis...</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end markets page -->
+
+<!-- JOURNAL PAGE -->
+<div id="page-journal-page" class="page" style="display:none">
+  <!-- Journal Hero Intro -->
+  <div class="jrnl-hero z">
+    <div class="jrnl-hero-inner">
+      <div class="jrnl-hero-badge">PROFESSIONAL TRADING JOURNAL</div>
+      <h1 class="jrnl-hero-title">Track. Analyse. <span class="jrnl-hero-accent">Improve.</span></h1>
+      <p class="jrnl-hero-sub">Your personal trading command center — powered by institutional-grade AI. Log every trade, analyse performance with Wall Street quant frameworks, and sync directly from your MT5 account in real time.</p>
+      <div class="jrnl-hero-feats">
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">MT5</div><div><div class="jrnl-hf-t">Auto-Sync</div><div class="jrnl-hf-s">Live trade import from MetaTrader 5</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">AI</div><div><div class="jrnl-hf-t">Trade Analysis</div><div class="jrnl-hf-s">Quant-grade feedback on every trade</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">R:R</div><div><div class="jrnl-hf-t">Risk Management</div><div class="jrnl-hf-s">SL/TP · Risk:Reward · P&amp;L tracking</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">PSY</div><div><div class="jrnl-hf-t">Psychology Tags</div><div class="jrnl-hf-s">Track discipline, FOMO, and patterns</div></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Journal Panel -->
+  <div class="main z" style="padding-top:32px;padding-bottom:80px">
+    <div id="journal-standalone"></div>
+  </div>
+</div>
+
+
 </body>
 </html>
