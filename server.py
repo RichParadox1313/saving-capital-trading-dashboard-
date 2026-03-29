@@ -81,7 +81,7 @@ CRYPTO_ASSETS = [
     {"id":"shiba-inu",          "name":"Shiba Inu",     "sym":"SHIB",   "tab":"crypto"},
     {"id":"litecoin",           "name":"Litecoin",      "sym":"LTC",    "tab":"crypto"},
     {"id":"tron",               "name":"TRON",          "sym":"TRX",    "tab":"crypto"},
-    {"id":"matic-network",               "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
+    {"id":"pol-polygon-ecosystem-token", "name":"Polygon",       "sym":"POL",    "tab":"crypto"},
     {"id":"uniswap",            "name":"Uniswap",       "sym":"UNI",    "tab":"crypto"},
     {"id":"stellar",            "name":"Stellar",       "sym":"XLM",    "tab":"crypto"},
     {"id":"near",               "name":"Near Protocol", "sym":"NEAR",   "tab":"crypto"},
@@ -204,10 +204,7 @@ YAHOO_ASSETS = [
 
 async def fetch_coingecko() -> dict:
     """Use /coins/markets — always returns 7d change reliably."""
-    # Request both Polygon IDs — CoinGecko uses the new one, we remap to matic-network
-    _cg_ids = [a["id"] for a in CRYPTO_ASSETS]
-    _cg_ids.append("pol-polygon-ecosystem-token")  # always include new Polygon ID
-    ids = ",".join(dict.fromkeys(_cg_ids))  # deduplicate
+    ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
     for attempt in range(3):
@@ -248,10 +245,7 @@ async def fetch_coingecko() -> dict:
                                 "usd_market_cap": coin.get("market_cap"),
                                 "sparkline":      [float(f"{p:.8g}") for p in spark_prices if p is not None],
                             }
-                        # Polygon remap: CoinGecko now uses pol-polygon-ecosystem-token
-                        # Always overwrite matic-network with pol-polygon data (pol has live price + sparkline)
-                        if "pol-polygon-ecosystem-token" in result:
-                            result["matic-network"] = result.pop("pol-polygon-ecosystem-token")
+
                         print(f"  CoinGecko /markets OK: {len(result)} assets (attempt {attempt+1})")
                         return result
                     elif r.status == 429:
