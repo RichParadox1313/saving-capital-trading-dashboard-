@@ -356,61 +356,67 @@ async def load_all_prices() -> dict:
             result[a["id"]] = {**a, "price": None, "change": None, "change5d": None, "closes": []}
     print(f"  Crypto prices: {crypto_ok}/{len(CRYPTO_ASSETS)} loaded")
 
-    # 2. Polygon — fetched 100% from Binance (price + sparkline + 5d change)
-    #    Completely bypasses CoinGecko for Polygon. Binance POLUSDT is public, no key needed.
-    try:
-        async with aiohttp.ClientSession() as _bs:
-            # Get current price from ticker
-            async with _bs.get(
-                "https://api.binance.com/api/v3/ticker/24hr",
-                params={"symbol": "POLUSDT"},
-                timeout=aiohttp.ClientTimeout(total=8),
-            ) as r:
-                if r.status == 200:
-                    t = await r.json()
-                    pol_price = float(t.get("lastPrice", 0))
-                    pol_change = float(t.get("priceChangePercent", 0))
-                else:
-                    pol_price, pol_change = 0, 0
+    # 2. Polygon — Binance klines (multiple endpoints) with CoinGecko market_chart fallback
+    pol_price, pol_change, pol_closes, pol_change5d = 0, 0, [], 0
+    async with aiohttp.ClientSession() as _bs:
+        # Try multiple Binance API endpoints (Railway may block some)
+        for binance_base in ["https://api.binance.com", "https://api1.binance.com", "https://api2.binance.com", "https://api3.binance.com"]:
+            try:
+                async with _bs.get(f"{binance_base}/api/v3/ticker/24hr", params={"symbol":"POLUSDT"}, timeout=aiohttp.ClientTimeout(total=6)) as r:
+                    if r.status == 200:
+                        t = await r.json()
+                        pol_price = float(t.get("lastPrice", 0))
+                        pol_change = float(t.get("priceChangePercent", 0))
+                async with _bs.get(f"{binance_base}/api/v3/klines", params={"symbol":"POLUSDT","interval":"8h","limit":"42"}, timeout=aiohttp.ClientTimeout(total=6)) as r:
+                    if r.status == 200:
+                        klines = await r.json()
+                        closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
+                        if closes:
+                            pol_closes = closes[-20:]
+                            w5 = closes[-30] if len(closes) >= 30 else closes[0]
+                            pol_change5d = round(((closes[-1] - w5) / w5) * 100, 3)
+                if pol_closes:
+                    print(f"  Polygon via {binance_base}: ${pol_price} closes={len(pol_closes)}")
+                    break
+            except Exception as e:
+                print(f"  Polygon {binance_base} failed: {e}")
 
-            # Get sparkline from klines (42 x 4h candles = ~7 days)
-            async with _bs.get(
-                "https://api.binance.com/api/v3/klines",
-                params={"symbol": "POLUSDT", "interval": "8h", "limit": "42"},
-                timeout=aiohttp.ClientTimeout(total=8),
-            ) as r:
-                if r.status == 200:
-                    klines = await r.json()
-                    closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
-                    w5 = closes[-15] if len(closes) >= 15 else closes[0] if closes else pol_price
-                    pol_change5d = round(((closes[-1] - w5) / w5) * 100, 3) if closes else 0
-                    pol_closes = closes[-20:]
-                else:
-                    pol_closes, pol_change5d = [], 0
+        # Fallback: CoinGecko market_chart (dedicated endpoint, not bulk — works on free tier)
+        if not pol_closes:
+            print("  Polygon Binance all failed — trying CoinGecko market_chart...")
+            cg_headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
+            for cg_id in ("matic-network", "pol-polygon-ecosystem-token"):
+                try:
+                    async with _bs.get(
+                        f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart",
+                        params={"vs_currency":"usd","days":"7"},
+                        headers=cg_headers,
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as r:
+                        if r.status == 200:
+                            mc = await r.json()
+                            raw = mc.get("prices", [])
+                            if raw:
+                                step = max(1, len(raw) // 20)
+                                pol_closes = [float(f"{p[1]:.8g}") for p in raw[::step][:20] if p[1]]
+                                if pol_closes:
+                                    if not pol_price: pol_price = pol_closes[-1]
+                                    w5 = pol_closes[0]
+                                    pol_change5d = round(((pol_closes[-1]-w5)/w5)*100, 3)
+                                    print(f"  Polygon CoinGecko market_chart ({cg_id}): {len(pol_closes)} pts")
+                                    break
+                except Exception as e:
+                    print(f"  Polygon CoinGecko {cg_id}: {e}")
 
-        if pol_price:
-            result["pol-polygon-ecosystem-token"] = {
-                "id": "pol-polygon-ecosystem-token",
-                "name": "Polygon", "sym": "POL", "tab": "crypto",
-                "price":    round(pol_price, 8),
-                "change":   round(pol_change, 3),
-                "change5d": pol_change5d,
-                "mcap":     None,
-                "closes":   pol_closes,
-            }
-            print(f"  Polygon Binance: ${pol_price} {pol_change:+.2f}% 5d={pol_change5d}% closes={len(pol_closes)}")
-        else:
-            result["pol-polygon-ecosystem-token"] = {
-                "id":"pol-polygon-ecosystem-token","name":"Polygon","sym":"POL","tab":"crypto",
-                "price":None,"change":None,"change5d":None,"closes":[]
-            }
-            print("  Polygon Binance: failed to get price")
-    except Exception as e:
-        print(f"  Polygon Binance error: {e}")
-        result["pol-polygon-ecosystem-token"] = {
-            "id":"pol-polygon-ecosystem-token","name":"Polygon","sym":"POL","tab":"crypto",
-            "price":None,"change":None,"change5d":None,"closes":[]
-        }
+    result["pol-polygon-ecosystem-token"] = {
+        "id":"pol-polygon-ecosystem-token","name":"Polygon","sym":"POL","tab":"crypto",
+        "price":    round(pol_price, 8) if pol_price else None,
+        "change":   round(pol_change, 3),
+        "change5d": pol_change5d,
+        "mcap":     None,
+        "closes":   pol_closes,
+    }
+    print(f"  Polygon final: price={pol_price} closes={len(pol_closes)} change5d={pol_change5d}")
 
     # 3. Forex + Commodities — Yahoo Finance
     print("  Fetching Yahoo Finance (forex + commodities)...")
@@ -777,27 +783,44 @@ async def health():
 
 @app.get("/api/polygon/sparkline")
 async def polygon_sparkline():
-    """Server-side Binance proxy for Polygon sparkline — avoids browser CORS."""
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.get(
-                "https://api.binance.com/api/v3/klines",
-                params={"symbol": "POLUSDT", "interval": "8h", "limit": "42"},
-                timeout=aiohttp.ClientTimeout(total=8),
-            ) as r:
-                if r.status != 200:
-                    raise HTTPException(502, f"Binance HTTP {r.status}")
-                klines = await r.json()
-                closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
-                if not closes:
-                    raise HTTPException(502, "No closes returned")
-                w5 = closes[-30] if len(closes) >= 30 else closes[0]
-                chg5d = round(((closes[-1] - w5) / w5) * 100, 3)
-                return JSONResponse({"closes": closes[-20:], "change5d": chg5d, "price": closes[-1]})
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
+    """Server-side proxy for Polygon sparkline — tries Binance then CoinGecko."""
+    async with aiohttp.ClientSession() as s:
+        # Try multiple Binance endpoints
+        for base in ["https://api.binance.com", "https://api1.binance.com", "https://api2.binance.com", "https://api3.binance.com"]:
+            try:
+                async with s.get(f"{base}/api/v3/klines", params={"symbol":"POLUSDT","interval":"8h","limit":"42"}, timeout=aiohttp.ClientTimeout(total=6)) as r:
+                    if r.status == 200:
+                        klines = await r.json()
+                        closes = [float(f"{float(k[4]):.8g}") for k in klines if k[4]]
+                        if closes:
+                            w5 = closes[-30] if len(closes) >= 30 else closes[0]
+                            chg5d = round(((closes[-1]-w5)/w5)*100, 3)
+                            return JSONResponse({"closes":closes[-20:],"change5d":chg5d,"price":closes[-1]})
+            except Exception:
+                pass
+        # CoinGecko market_chart fallback
+        cg_headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
+        for cg_id in ("matic-network", "pol-polygon-ecosystem-token"):
+            try:
+                async with s.get(
+                    f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart",
+                    params={"vs_currency":"usd","days":"7"},
+                    headers=cg_headers,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status == 200:
+                        mc = await r.json()
+                        raw = mc.get("prices", [])
+                        if raw:
+                            step = max(1, len(raw)//20)
+                            closes = [float(f"{p[1]:.8g}") for p in raw[::step][:20] if p[1]]
+                            if closes:
+                                w5 = closes[0]
+                                chg5d = round(((closes[-1]-w5)/w5)*100, 3)
+                                return JSONResponse({"closes":closes,"change5d":chg5d,"price":closes[-1]})
+            except Exception:
+                pass
+    raise HTTPException(502, "All Polygon data sources failed")
 
 class AnalysisRequest(BaseModel):
     asset_id: str
