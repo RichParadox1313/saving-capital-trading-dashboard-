@@ -2494,39 +2494,23 @@ async function loadPrices(){
     const [pr,ph] = await Promise.all([fetch('/api/prices'), fetch('/api/phase')]);
     prices = await pr.json();
     phaseData = await ph.json();
-    // Fix Polygon sparkline directly from Binance if server didn't provide it
-    await fixPolygonSparkline();
+    // Inject Polygon sparkline from server-side Binance proxy
+    try{
+      const polR = await fetch('/api/polygon/sparkline');
+      if(polR.ok){
+        const pol = await polR.json();
+        const key = 'pol-polygon-ecosystem-token';
+        if(!prices[key]) prices[key]={id:key,name:'Polygon',sym:'POL',tab:'crypto'};
+        prices[key].closes   = pol.closes;
+        prices[key].change5d = pol.change5d;
+        if(!prices[key].price) prices[key].price = pol.price;
+      }
+    }catch(e){ console.warn('Polygon proxy failed:',e); }
     updatePhaseBar();
     updateStats();
     renderAll();
     setTimeout(redrawAllSparks, 100);
   }catch(e){console.error('loadPrices failed:', e)}
-}
-
-async function fixPolygonSparkline(){
-  const POL_KEY = 'pol-polygon-ecosystem-token';
-  try{
-    // Always fetch from Binance regardless — guaranteed source
-    const [tickerRes, klinesRes] = await Promise.all([
-      fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=POLUSDT'),
-      fetch('https://api.binance.com/api/v3/klines?symbol=POLUSDT&interval=8h&limit=42')
-    ]);
-    const ticker = await tickerRes.json();
-    const klines = await klinesRes.json();
-    const closes = klines.map(k=>parseFloat(k[4])).filter(v=>v>0);
-    const price  = parseFloat(ticker.lastPrice);
-    const chg24  = parseFloat(ticker.priceChangePercent);
-    const w5     = closes.length>=30 ? closes[closes.length-30] : closes[0];
-    const chg5d  = w5 ? +((( closes[closes.length-1]-w5)/w5)*100).toFixed(3) : 0;
-    if(!prices[POL_KEY]) prices[POL_KEY]={id:POL_KEY,name:'Polygon',sym:'POL',tab:'crypto'};
-    prices[POL_KEY].price    = price;
-    prices[POL_KEY].change   = chg24;
-    prices[POL_KEY].change5d = chg5d;
-    prices[POL_KEY].closes   = closes.slice(-20);
-    console.log('Polygon Binance OK: price='+price+' closes='+closes.length+' 5d='+chg5d+'%');
-  }catch(e){
-    console.error('fixPolygonSparkline failed:',e);
-  }
 }
 
 function redrawAllSparks(){
