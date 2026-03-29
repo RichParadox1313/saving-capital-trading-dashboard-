@@ -1363,8 +1363,6 @@ function goPage(page){
     else renderAll();
   }
   if(page==='journal-page'){
-    const con = document.getElementById('journal-standalone');
-    if(con){ con.innerHTML=''; selId=null; renderJournalInto(con); }
     loadJournal();
   }
   window.scrollTo(0,0);
