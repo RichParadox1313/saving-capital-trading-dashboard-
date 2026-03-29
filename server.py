@@ -205,7 +205,11 @@ YAHOO_ASSETS = [
 
 async def fetch_coingecko() -> dict:
     """Use /coins/markets — always returns 7d change reliably."""
-    ids = ",".join(a["id"] for a in CRYPTO_ASSETS)
+    # Include both Polygon IDs to ensure CoinGecko returns data regardless of which alias it uses
+    _cg_ids = [a["id"] for a in CRYPTO_ASSETS]
+    if "matic-network" in _cg_ids and "pol-polygon-ecosystem-token" not in _cg_ids:
+        _cg_ids.append("pol-polygon-ecosystem-token")
+    ids = ",".join(_cg_ids)
     headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
 
     for attempt in range(3):
@@ -244,7 +248,7 @@ async def fetch_coingecko() -> dict:
                                 "usd_7d_change":  coin.get("price_change_percentage_7d_in_currency") or
                                                   coin.get("price_change_percentage_7d") or 0,
                                 "usd_market_cap": coin.get("market_cap"),
-                                "sparkline":      [round(p, 6) for p in spark_prices if p],
+                                "sparkline":      [float(f"{p:.8g}") for p in spark_prices if p is not None],
                             }
                         # Polygon remap: CoinGecko uses the new ID, dashboard uses the old one
                         if "pol-polygon-ecosystem-token" in result and "matic-network" not in result:
@@ -323,7 +327,7 @@ async def fetch_yahoo_chart(session: aiohttp.ClientSession, symbol: str) -> dict
                     "price":    round(cur, 6),
                     "change":   round(((cur - prev) / prev) * 100, 3),
                     "change5d": round(((cur - w5) / w5) * 100, 3),
-                    "closes":   [round(c, 6) for c in closes[-20:]],
+                    "closes":   [float(f"{c:.8g}") for c in closes[-20:] if c is not None],
                 }
         except Exception as e:
             print(f"    Yahoo {symbol} error: {e}")
