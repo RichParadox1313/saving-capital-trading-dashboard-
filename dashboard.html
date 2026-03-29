@@ -37,6 +37,11 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--g)}50%{opacity:.4;box-shadow:none}}
 .clk{font-size:10px;font-family:'DM Mono',monospace;color:var(--t4)}
+.tz-wrap{display:flex;align-items:center;gap:6px}
+.tz-sel{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;outline:none;padding:2px 4px;border-radius:4px;max-width:110px;appearance:none;-webkit-appearance:none;letter-spacing:.5px}
+.tz-sel:hover{color:var(--g)}
+.tz-sel option{background:#070d07;color:var(--t1)}
+
 
 
 /* ── Home Page ─────────────────────────────────────────────────────────────── */
@@ -122,11 +127,12 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 .hp-cta:hover{transform:translateY(-2px);box-shadow:0 14px 48px rgba(34,197,94,.38),0 0 0 1px rgba(34,197,94,.44)}
 .hp-cta2{padding:13px 24px;border:1px solid rgba(34,197,94,.18);border-radius:10px;background:rgba(34,197,94,.04);color:rgba(167,243,208,.58);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
 .hp-cta2:hover{border-color:rgba(34,197,94,.4);color:var(--g);background:rgba(34,197,94,.08);transform:translateY(-1px)}
-.hp-nums{display:flex;align-items:center;gap:0;margin-bottom:26px}
-.hp-num{display:flex;flex-direction:column;gap:3px;padding:0 22px 0 0}
-.hp-num strong{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--g);letter-spacing:-1px;line-height:1}
-.hp-num span{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(167,243,208,.24);font-family:'DM Mono',monospace}
-.hp-ndiv{width:1px;height:30px;background:rgba(34,197,94,.1);margin:0 22px 0 0;flex-shrink:0}
+.hp-nums{display:flex;align-items:stretch;gap:10px;margin-bottom:28px}
+.hp-num{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 18px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.1);border-radius:10px;flex:1;min-width:90px;transition:border-color .2s}
+.hp-num:hover{border-color:rgba(34,197,94,0.25)}
+.hp-num strong{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--g);letter-spacing:1px;line-height:1}
+.hp-num span{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,243,208,.35);font-family:'DM Mono',monospace;line-height:1.4}
+.hp-ndiv{display:none}
 .hp-firms{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .hp-fl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,243,208,.18);font-family:'DM Mono',monospace;margin-right:4px}
 .hp-firms span:not(.hp-fl):not(.hp-fd){font-size:10px;color:rgba(167,243,208,.22);font-family:'DM Mono',monospace}
@@ -182,7 +188,7 @@ nav{position:fixed;top:0;width:100%;z-index:200;height:56px;display:flex;align-i
 
 /* Responsive */
 @media(max-width:980px){.hp-hero{grid-template-columns:1fr;padding:80px 24px 40px;min-height:auto}.hp-right{display:none}.hp-h1{font-size:clamp(3rem,12vw,5.5rem)}.hp-strip{padding:16px 24px;gap:14px}.hp-sdiv{display:none}}
-@media(max-width:560px){.hp-nav{padding:0 16px}.hp-np{font-size:8px;padding:5px 9px}.hp-clk,.hp-live{display:none}.hp-nums{flex-wrap:wrap;gap:12px}.hp-ndiv{display:none}}
+@media(max-width:560px){.hp-nav{padding:0 16px}.hp-np{font-size:8px;padding:5px 9px}.hp-clk,.hp-live{display:none}.hp-nums{flex-wrap:wrap;gap:8px}}
 
 
 /* ── Market Intelligence Styles ────────────────────────── */
@@ -415,6 +421,23 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .nt-loading{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;padding:0 16px;font-style:italic}
 
 
+
+/* ── Journal Page Hero ──────────────────────────────────────────────── */
+.jrnl-hero{background:linear-gradient(180deg,rgba(34,197,94,0.04) 0%,transparent 100%);border-bottom:1px solid var(--br);padding:100px 48px 48px;position:relative;overflow:hidden}
+.jrnl-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 70%);pointer-events:none}
+.jrnl-hero-inner{max-width:900px;margin:0 auto;position:relative;z-index:1}
+.jrnl-hero-badge{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:16px;display:inline-flex;align-items:center;gap:8px}
+.jrnl-hero-badge::before{content:'';width:24px;height:1px;background:var(--g)}
+.jrnl-hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,6vw,4.5rem);letter-spacing:2px;line-height:1;margin-bottom:18px;color:var(--t1)}
+.jrnl-hero-accent{color:var(--g)}
+.jrnl-hero-sub{font-size:15px;color:var(--t3);line-height:1.8;font-weight:300;max-width:620px;margin-bottom:36px}
+.jrnl-hero-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.jrnl-hero-feat{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:14px 16px}
+.jrnl-hf-icon{font-family:'DM Mono',monospace;font-size:9px;font-weight:600;color:var(--g);background:var(--gdim);border:1px solid rgba(34,197,94,0.25);border-radius:6px;padding:6px 8px;flex-shrink:0;letter-spacing:1px}
+.jrnl-hf-t{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:2px}
+.jrnl-hf-s{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace}
+@media(max-width:768px){.jrnl-hero{padding:90px 20px 32px}.jrnl-hero-feats{grid-template-columns:1fr 1fr;gap:10px}.jrnl-hero-title{font-size:2.8rem}}
+@media(max-width:480px){.jrnl-hero-feats{grid-template-columns:1fr}}
 
 /* ── Trade Analysis Modal ───────────────────────────────── */
 .ta-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--br);border-radius:8px;overflow:hidden;margin-bottom:16px}
@@ -769,7 +792,17 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <button class="lang-btn" onclick="setLang('he')">HE</button>
     </div>
     <div class="live"><div class="ldot"></div><span data-i18n="live">Live</span></div>
-    <div class="clk" id="clk">—</div>
+    <div class="tz-wrap">
+      <select class="tz-sel" id="tz-sel" onchange="setTz(this.value)" title="Select timezone">
+        <option value="Asia/Dubai">UAE · Dubai</option>
+        <option value="America/New_York">US · New York</option>
+        <option value="Europe/London">UK · London</option>
+        <option value="Europe/Berlin">Germany · Berlin</option>
+        <option value="Europe/Sofia">Bulgaria · Sofia</option>
+        <option value="Asia/Tokyo">Asia · Tokyo</option>
+      </select>
+      <div class="clk" id="clk">—</div>
+    </div>
   </div>
 </nav>
 
@@ -833,13 +866,10 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     </div>
 
     <div class="hp-nums">
-      <div class="hp-num"><strong>120+</strong><span>Assets</span></div>
-      <div class="hp-ndiv"></div>
-      <div class="hp-num"><strong>5</strong><span>WS Frameworks</span></div>
-      <div class="hp-ndiv"></div>
-      <div class="hp-num"><strong>&lt;1s</strong><span>Price Update</span></div>
-      <div class="hp-ndiv"></div>
-      <div class="hp-num"><strong>24/7</strong><span>Coverage</span></div>
+      <div class="hp-num"><strong>120+</strong><span>Assets<br>Tracked</span></div>
+      <div class="hp-num"><strong>5</strong><span>Wall Street<br>Frameworks</span></div>
+      <div class="hp-num"><strong>&lt;1s</strong><span>Price<br>Update</span></div>
+      <div class="hp-num"><strong>24/7</strong><span>Live<br>Coverage</span></div>
     </div>
 
     <div class="hp-firms">
@@ -1103,7 +1133,22 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
-  <div class="main z" style="padding-top:80px">
+  <!-- Journal Hero Intro -->
+  <div class="jrnl-hero z">
+    <div class="jrnl-hero-inner">
+      <div class="jrnl-hero-badge">PROFESSIONAL TRADING JOURNAL</div>
+      <h1 class="jrnl-hero-title">Track. Analyse. <span class="jrnl-hero-accent">Improve.</span></h1>
+      <p class="jrnl-hero-sub">Your personal trading command center — powered by institutional-grade AI. Log every trade, analyse performance with Wall Street quant frameworks, and sync directly from your MT5 account in real time.</p>
+      <div class="jrnl-hero-feats">
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">MT5</div><div><div class="jrnl-hf-t">Auto-Sync</div><div class="jrnl-hf-s">Live trade import from MetaTrader 5</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">AI</div><div><div class="jrnl-hf-t">Trade Analysis</div><div class="jrnl-hf-s">Quant-grade feedback on every trade</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">R:R</div><div><div class="jrnl-hf-t">Risk Management</div><div class="jrnl-hf-s">SL/TP · Risk:Reward · P&amp;L tracking</div></div></div>
+        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">PSY</div><div><div class="jrnl-hf-t">Psychology Tags</div><div class="jrnl-hf-s">Track discipline, FOMO, and patterns</div></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Journal Panel -->
+  <div class="main z" style="padding-top:32px;padding-bottom:80px">
     <div id="journal-standalone"></div>
   </div>
 </div>
@@ -1253,12 +1298,20 @@ function setLang(lang){
   raf();
 
   // Clock
+  let _tz = localStorage.getItem('sc_tz') || 'Asia/Dubai';
+  const _tzLabels = {'Asia/Dubai':'UAE','America/New_York':'NY','Europe/London':'LON','Europe/Berlin':'BER','Europe/Sofia':'SOF','Asia/Tokyo':'TKY'};
+  function setTz(tz){ _tz=tz; localStorage.setItem('sc_tz',tz); tick(); const sel=document.getElementById('tz-sel'); if(sel) sel.value=tz; }
   function tick(){
     try{
-      const t = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dubai',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
-      const el = document.getElementById('clk2'); if(el) el.textContent = t+' UAE';
+      const t = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+      const lbl = _tzLabels[_tz] || 'UTC';
+      const el = document.getElementById('clk'); if(el) el.textContent = t+' '+lbl;
+      const el2 = document.getElementById('clk2'); if(el2) el2.textContent = t+' '+lbl;
     }catch(e){}
   }
+  // Set saved timezone on load
+  const tzSel = document.getElementById('tz-sel');
+  if(tzSel) tzSel.value = _tz;
   tick(); setInterval(tick, 1000);
 
   // Live prices
@@ -1306,90 +1359,6 @@ function goPage(page){
     loadJournal();
   }
   window.scrollTo(0,0);
-}
-
-function renderJournalInto(con){
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
-  const mt5Block = mt5Info ? `
-    <div class="mt5-connected">
-      <div class="mt5-conn-dot"></div>
-      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
-    </div>` : `
-    <div class="mt5-connect" id="mt5-connect-box">
-      <div class="mt5-connect-title">Connect Your MT5 Account</div>
-      <div class="mt5-connect-sub">Enter your MetaTrader 5 credentials below to automatically sync your trades. Credentials are sent securely and never stored on our servers.</div>
-      <div class="mt5-form">
-        <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number"/></div>
-        <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password"/></div>
-        <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
-        <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
-      </div>
-      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
-        <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
-      </div>
-      <div class="mt5-status" id="mt5-status"></div>
-    </div>`;
-
-  const closed = jTrades.filter(t=>t.status==='CLOSED');
-  const wins = closed.filter(t=>(t.pnl||0)>0);
-  const totalPnl = closed.reduce((s,t)=>s+(t.pnl||0),0);
-  const winRate = closed.length?Math.round((wins.length/closed.length)*100):0;
-  const avgWin = wins.length?wins.reduce((s,t)=>s+(t.pnl||0),0)/wins.length:0;
-  const losses = closed.filter(t=>(t.pnl||0)<0);
-  const avgLoss = losses.length?Math.abs(losses.reduce((s,t)=>s+(t.pnl||0),0)/losses.length):0;
-  const rr = avgLoss>0?(avgWin/avgLoss).toFixed(2):'—';
-  const pnlCls = totalPnl>=0?'up':'dn';
-
-  con.innerHTML = `
-  <div class="jnl">
-    ${mt5Block}
-    <div class="jnl-header">
-      <div class="jnl-title">Trading Journal</div>
-      <div class="jnl-actions"><div class="qpick-wrap" id="qpick-wrap1">
-        <button class="jbtn jbtn-primary" onclick="openQuickPick('qpick-wrap1')">+ Manual Trade ▾</button>
-        <div class="qpick-menu" id="qpick-menu1">
-          <button class="qpick-item" onclick="openJModal(null,'Forex')"><div><div class="qpick-label">Forex</div><div class="qpick-sub">EUR/USD · GBP/USD · USD/JPY</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Crypto')"><div><div class="qpick-label">Crypto</div><div class="qpick-sub">BTC · ETH · SOL</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Gold')"><div><div class="qpick-label">Gold / Commodities</div><div class="qpick-sub">XAUUSD · XAGUSD · Oil</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Stocks')"><div><div class="qpick-label">Stocks</div><div class="qpick-sub">AAPL · NVDA · TSLA</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Indices')"><div><div class="qpick-label">Indices</div><div class="qpick-sub">SPX · DAX · NASDAQ</div></div></button>
-          <div class="qpick-divider"></div>
-          <button class="qpick-item" onclick="openJModal(null,'Other')"><div><div class="qpick-label">Other / Custom</div><div class="qpick-sub">Any other asset</div></div></button>
-        </div>
-      </div></div>
-    </div>
-    <div class="jstats">
-      <div class="jstat"><div class="jstat-n">${jTrades.length}</div><div class="jstat-l">Total Trades</div></div>
-      <div class="jstat"><div class="jstat-n ${pnlCls}">${totalPnl>=0?'+':''}$${Math.abs(totalPnl).toFixed(0)}</div><div class="jstat-l">Total P&L</div></div>
-      <div class="jstat"><div class="jstat-n ${winRate>=50?'up':'dn'}">${winRate}%</div><div class="jstat-l">Win Rate</div></div>
-      <div class="jstat"><div class="jstat-n">${rr}</div><div class="jstat-l">Avg R:R</div></div>
-      <div class="jstat"><div class="jstat-n up">$${avgWin.toFixed(0)}</div><div class="jstat-l">Avg Win</div></div>
-      <div class="jstat"><div class="jstat-n dn">$${avgLoss.toFixed(0)}</div><div class="jstat-l">Avg Loss</div></div>
-    </div>
-    <div class="jtable-wrap">
-      ${jTrades.length===0?`<div class="jempty"><span>NO TRADES YET</span>Connect your MT5 account above or click "+ Manual Trade" to log your first trade</div>`:`
-      <table class="jtable">
-        <thead><tr><th>Date</th><th>Asset</th><th>Direction</th><th>Entry</th><th>Exit</th><th>Size</th><th>P&L</th><th>Status</th><th>Strategy</th><th>Notes</th><th></th></tr></thead>
-        <tbody>${jTrades.map(t=>`<tr>
-          <td class="jmono">${t.date||'—'}</td>
-          <td><strong>${t.asset||'—'}</strong></td>
-          <td><span class="${t.direction==='LONG'?'jdir-long':'jdir-short'}">${t.direction||'—'}</span></td>
-          <td class="jmono">${t.entry?'$'+parseFloat(t.entry).toLocaleString():'—'}</td>
-          <td class="jmono">${t.exit?'$'+parseFloat(t.exit).toLocaleString():'—'}</td>
-          <td class="jmono">${t.size||'—'}</td>
-          <td class="${t.pnl!=null?(t.pnl>=0?'jpnl-pos':'jpnl-neg'):''}">${t.pnl!=null?(t.pnl>=0?'+':'')+' $'+Math.abs(t.pnl).toFixed(2):'—'}</td>
-          <td><span class="${t.status==='OPEN'?'jstatus-open':'jstatus-closed'}">${t.status||'—'}</span></td>
-          <td style="font-size:11px;color:var(--t3)">${t.strategy||'—'}</td>
-          <td class="jnotes" title="${t.notes||''}">${t.notes||'—'}</td>
-          <td style="white-space:nowrap;display:flex;gap:5px">
-            <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
-            <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
-          </td>
-        </tr>`).join('')}</tbody>
-      </table>`}
-    </div>
-  </div>`;
 }
 
 // ── MT5 Account Connection ─────────────────────────────────────────────────
@@ -1568,19 +1537,21 @@ function renderJournal(){
 
 // ── Quick-pick popup ─────────────────────────────────────────────────────────
 function openQuickPick(wrapId){
-  // Close any other open menus first
-  document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
   const menu = document.getElementById(wrapId).querySelector('.qpick-menu');
-  menu.classList.toggle('open');
-  // Close when clicking outside
-  setTimeout(()=>{
-    document.addEventListener('click', function handler(e){
-      if(!e.target.closest('.qpick-wrap')){ 
-        document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
-        document.removeEventListener('click', handler);
+  const isOpen = menu.classList.contains('open');
+  // Close all menus first
+  document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
+  if(!isOpen){
+    menu.classList.add('open');
+    // One-time outside click to close
+    const handler = function(e){
+      if(!e.target.closest('#'+wrapId)){
+        menu.classList.remove('open');
+        document.removeEventListener('click', handler, true);
       }
-    });
-  }, 10);
+    };
+    setTimeout(()=>document.addEventListener('click', handler, true), 50);
+  }
 }
 function closeQuickPick(){
   document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
@@ -1681,7 +1652,7 @@ function calcPnl(){ calcAll(); }
 
 // ── Open/close modal ──────────────────────────────────────────────────────────
 function openJModal(editId=null, tradeType='Manual'){
-  closeQuickPick();
+  document.querySelectorAll('.qpick-menu').forEach(m=>m.classList.remove('open'));
   jEditId = editId;
   const tr = editId ? jTrades.find(x=>x.id===editId) : null;
 
