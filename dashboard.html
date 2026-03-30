@@ -557,11 +557,13 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .bt-main{display:flex;flex:1;min-height:0;gap:0}
 
 /* Drawing tools sidebar */
-.bt-tools{display:flex;flex-direction:column;gap:4px;padding:8px 6px;background:var(--s1);border-right:1px solid var(--br);width:40px;flex-shrink:0}
-.bt-tool{width:28px;height:28px;border:1px solid var(--br);border-radius:5px;background:transparent;color:var(--t3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.bt-tool:hover{border-color:var(--br2);color:var(--t1)}
+.bt-tools{display:flex;flex-direction:column;gap:3px;padding:8px 5px;background:var(--s1);border-right:1px solid var(--br);width:44px;flex-shrink:0;overflow-y:auto}
+.bt-tool-group-lbl{font-size:6px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;text-align:center;margin-top:2px;padding:0 2px;white-space:nowrap}
+.bt-tool{width:32px;height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--t4);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.bt-tool:hover{border-color:var(--br2);color:var(--t1);background:var(--s2)}
 .bt-tool-on{background:var(--gdim)!important;border-color:var(--g)!important;color:var(--g)!important}
-.bt-tool-div{height:1px;background:var(--br);margin:2px 0}
+.bt-tool-div{height:1px;background:var(--br);margin:3px 0}
+.bt-color-pick{width:28px;height:24px;border:1px solid var(--br);border-radius:4px;padding:0;cursor:pointer;background:transparent}
 
 /* Chart center */
 .bt-center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
@@ -3298,6 +3300,8 @@ let btPlaying = false, btSpeed = 3, btTf = 'H1', btStyle = 'candle';
 let btBalance = 10000, btOpenTrades = [], btClosedTrades = [];
 let btDrawTool = 'cursor', btDrawings = [], btDrawing = false, btDrawStart = null;
 let btDrawCanvas = null, btDrawCtx = null;
+let btDrawColor = '#facc15';
+let btTextPending = null;
 
 function btInit(){
   // Symbol search
@@ -3363,6 +3367,7 @@ async function btLoad(){
     btAllCandles = data.candles;
     if(btAllCandles.length < 2){ throw new Error('Not enough data for selected range'); }
 
+    btDrawings = [];
     btInitChart(sym);
     btReset();
     document.getElementById('bt-replay-bar').style.display='flex';
@@ -3412,140 +3417,30 @@ function btInitChart(sym){
   btChart.subscribeCrosshairMove(param=>{
     const info = document.getElementById('bt-crosshair-info');
     if(!param.point || !param.seriesData){ info.style.display='none'; return; }
-    const d = param.seriesData.get(btCandleSeries);
-    if(!d){ info.style.display='none'; return; }
+    const d2 = param.seriesData.get(btCandleSeries);
+    if(!d2){ info.style.display='none'; return; }
     const fmt = p=>p>1000?p.toLocaleString('en',{maximumFractionDigits:2}):p>1?p.toFixed(4):p.toFixed(6);
-    const col = d.close>=d.open?'#4ade80':'#f87171';
+    const col = d2.close>=d2.open?'#4ade80':'#f87171';
     info.style.display='block';
-    info.innerHTML=`<span style="color:${col}">O:${fmt(d.open)} H:${fmt(d.high)} L:${fmt(d.low)} C:${fmt(d.close)}</span>`;
+    info.innerHTML=`<span style="color:${col}">O:${fmt(d2.open)} H:${fmt(d2.high)} L:${fmt(d2.low)} C:${fmt(d2.close)}</span>`;
   });
+
+  // After chart creation, subscribe to time/price scale changes to redraw
+  btChart.timeScale().subscribeVisibleLogicalRangeChange(()=>btDrawAll());
+  btChart.priceScale('right').applyOptions({});
 }
 
-function btGetCandles(raw){
-  if(btStyle==='ha'){
-    const ha=[]; let prevO=raw[0].open, prevC=raw[0].close;
-    for(const c of raw){
-      const hc=(c.open+c.high+c.low+c.close)/4;
-      const ho=(prevO+prevC)/2;
-      const hh=Math.max(c.high,ho,hc);
-      const hl=Math.min(c.low,ho,hc);
-      ha.push({time:c.time,open:ho,high:hh,low:hl,close:hc,volume:c.volume});
-      prevO=ho; prevC=hc;
-    } return ha;
-  }
-  return raw;
-}
-
-function btReset(){
-  btVisibleIndex = Math.min(100, btAllCandles.length);
-  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
-  btRenderChart();
-  btUpdateUI();
-  document.getElementById('bt-open-trades').innerHTML='';
-  document.getElementById('bt-log').innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
-}
-
-function btRenderChart(){
-  if(!btChart||!btCandleSeries) return;
-  const slice = btGetCandles(btAllCandles.slice(0, btVisibleIndex));
-  btCandleSeries.setData(slice);
-  btVolumeSeries.setData(slice.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'})));
-  btChart.timeScale().scrollToRealTime();
-
-  // Update replay date
-  const last = btAllCandles[btVisibleIndex-1];
-  if(last){
-    document.getElementById('bt-replay-date').textContent = new Date(last.time*1000).toUTCString().slice(0,16);
-    document.getElementById('bt-candle-info').textContent = `${btVisibleIndex}/${btAllCandles.length} candles`;
-  }
-
-  // Check open trades SL/TP
-  btCheckTrades(last);
-  btDrawAll();
-}
-
-function btTogglePlay(){
-  if(btPlaying) btStop();
-  else btPlay();
-}
-
-function btPlay(){
-  if(btVisibleIndex >= btAllCandles.length){ btRestart(); return; }
-  btPlaying=true;
-  document.getElementById('bt-play-btn').textContent='⏸';
-  document.getElementById('bt-play-btn').classList.add('playing');
-  const delay = Math.max(50, 600 / btSpeed);
-  btPlayInterval = setInterval(()=>{
-    if(btVisibleIndex >= btAllCandles.length){ btStop(); return; }
-    btVisibleIndex++;
-    btRenderChart();
-  }, delay);
-}
-
-function btStop(){
-  btPlaying=false;
-  clearInterval(btPlayInterval);
-  const btn = document.getElementById('bt-play-btn');
-  if(btn){ btn.textContent='▶'; btn.classList.remove('playing'); }
-}
-
-function btStepForward(){
-  btStop();
-  if(btVisibleIndex < btAllCandles.length){ btVisibleIndex++; btRenderChart(); }
-}
-
-function btStepBack(){
-  btStop();
-  if(btVisibleIndex > 1){ btVisibleIndex--; btRenderChart(); }
-}
-
-function btRestart(){
-  btStop();
-  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
-  btVisibleIndex=1;
-  btRenderChart();
-  btUpdateUI();
-  document.getElementById('bt-open-trades').innerHTML='';
-  document.getElementById('bt-log').innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
-}
-
-function btSetSpeed(v){
-  btSpeed=parseInt(v);
-  document.getElementById('bt-speed-val').textContent=v+'×';
-  if(btPlaying){ btStop(); btPlay(); }
-}
-
-function btSetStyle(style){
-  btStyle=style;
-  ['candle','line','ha'].forEach(s=>{
-    const el=document.getElementById('bt-style-'+s);
-    if(el) el.classList.toggle('bt-tf-on', s===style);
-  });
-  if(btCandleSeries) btRenderChart();
-}
-
-function btSetTool(tool){
-  btDrawTool=tool;
-  document.querySelectorAll('.bt-tool').forEach(b=>b.classList.remove('bt-tool-on'));
-  const el=document.getElementById('bt-tool-'+tool);
-  if(el) el.classList.add('bt-tool-on');
-  if(btDrawCanvas) btDrawCanvas.style.cursor = tool==='cursor'?'crosshair':'crosshair';
-}
-
-function btClearDrawings(){
-  btDrawings=[];
-  btDrawAll();
-}
-
-// ── Drawing canvas ───────────────────────────────────────────────────────────
+// ── Drawing canvas — price/time anchored ─────────────────────────────────────
 function btInitDrawCanvas(){
   btDrawCanvas = document.getElementById('bt-draw-canvas');
   btDrawCtx    = btDrawCanvas.getContext('2d');
   btResizeDrawCanvas();
 
-  btDrawCanvas.addEventListener('mousedown', btDrawMouseDown);
-  btDrawCanvas.addEventListener('mousemove', btDrawMouseMove);
-  btDrawCanvas.addEventListener('mouseup',   btDrawMouseUp);
+  // Pass through mouse to chart ONLY when cursor tool active
+  btDrawCanvas.addEventListener('mousedown',  btOnMouseDown);
+  btDrawCanvas.addEventListener('mousemove',  btOnMouseMove);
+  btDrawCanvas.addEventListener('mouseup',    btOnMouseUp);
+  btDrawCanvas.addEventListener('dblclick',   btOnDblClick);
 }
 
 function btResizeDrawCanvas(){
@@ -3556,199 +3451,276 @@ function btResizeDrawCanvas(){
   btDrawAll();
 }
 
-function btDrawMouseDown(e){
-  if(btDrawTool==='cursor') return;
-  btDrawing=true;
-  btDrawStart={x:e.offsetX, y:e.offsetY};
+// Convert screen X to time, Y to price
+function btScreenToPrice(x, y){
+  if(!btChart||!btCandleSeries) return null;
+  try{
+    const ts = btChart.timeScale();
+    const ps = btChart.priceScale('right');
+    const time  = ts.coordinateToTime(x);
+    const price = btCandleSeries.coordinateToPrice(y);
+    return {time, price, x, y};
+  }catch(e){ return {time:null, price:null, x, y}; }
 }
 
-function btDrawMouseMove(e){
-  if(!btDrawing || !btDrawStart) return;
+// Convert price/time back to screen coords
+function btPriceToScreen(time, price){
+  if(!btChart||!btCandleSeries) return null;
+  try{
+    const x = btChart.timeScale().timeToCoordinate(time);
+    const y = btCandleSeries.priceToCoordinate(price);
+    if(x===null||y===null) return null;
+    return {x, y};
+  }catch(e){ return null; }
+}
+
+function btOnMouseDown(e){
+  if(btDrawTool==='cursor'){ btDrawCanvas.style.pointerEvents='none'; return; }
+  btDrawing = true;
+  const pt = btScreenToPrice(e.offsetX, e.offsetY);
+  btDrawStart = {x:e.offsetX, y:e.offsetY, time:pt?.time, price:pt?.price};
+  btDrawCanvas.style.cursor = 'crosshair';
+  e.preventDefault();
+}
+
+function btOnMouseMove(e){
+  if(!btDrawing||!btDrawStart) return;
   btDrawAll();
-  const {x:sx,y:sy}=btDrawStart; const ex=e.offsetX,ey=e.offsetY;
-  btDrawCtx.strokeStyle='rgba(250,204,21,0.8)';
-  btDrawCtx.lineWidth=1.5;
-  btDrawCtx.setLineDash([]);
-  if(btDrawTool==='line'){
-    btDrawCtx.beginPath(); btDrawCtx.moveTo(sx,sy); btDrawCtx.lineTo(ex,ey); btDrawCtx.stroke();
-  } else if(btDrawTool==='hline'){
-    btDrawCtx.beginPath(); btDrawCtx.moveTo(0,sy); btDrawCtx.lineTo(btDrawCanvas.width,sy); btDrawCtx.stroke();
-  } else if(btDrawTool==='rect'){
-    btDrawCtx.strokeRect(sx,sy,ex-sx,ey-sy);
-  } else if(btDrawTool==='fib'){
-    btDrawFib(sx,sy,ex,ey);
+  btDrawPreview(btDrawStart.x, btDrawStart.y, e.offsetX, e.offsetY);
+}
+
+function btOnMouseUp(e){
+  if(!btDrawing) return; btDrawing=false;
+  const ex=e.offsetX, ey=e.offsetY;
+  if(Math.abs(ex-btDrawStart.x)<3&&Math.abs(ey-btDrawStart.y)<3){
+    if(btDrawTool==='text') btPromptText(ex,ey);
+    return;
+  }
+  const pt2 = btScreenToPrice(ex, ey);
+
+  // For measure tool show stats, don't save
+  if(btDrawTool==='measure'){
+    btShowMeasure(btDrawStart.x,btDrawStart.y,ex,ey);
+    btDrawing=false;
+    return;
+  }
+
+  btDrawings.push({
+    type:  btDrawTool,
+    x1:btDrawStart.x, y1:btDrawStart.y,
+    x2:ex,            y2:ey,
+    t1:btDrawStart.time, p1:btDrawStart.price,
+    t2:pt2?.time,        p2:pt2?.price,
+    color: btDrawColor,
+  });
+  btDrawAll();
+}
+
+function btOnDblClick(e){
+  // Delete clicked drawing
+  const x=e.offsetX, y=e.offsetY;
+  const hit = btDrawings.findIndex(d=>btHitTest(d,x,y));
+  if(hit>=0){ btDrawings.splice(hit,1); btDrawAll(); }
+}
+
+function btHitTest(d,x,y){
+  const tol=8;
+  if(d.type==='hline'||d.type==='hray') return Math.abs(y-d.y1)<tol;
+  if(d.type==='vline') return Math.abs(x-d.x1)<tol;
+  if(d.type==='rect'||d.type==='circle') return x>Math.min(d.x1,d.x2)-tol&&x<Math.max(d.x1,d.x2)+tol&&y>Math.min(d.y1,d.y2)-tol&&y<Math.max(d.y1,d.y2)+tol;
+  // Line hit test
+  const dx=d.x2-d.x1, dy=d.y2-d.y1;
+  const len=Math.sqrt(dx*dx+dy*dy)||1;
+  const dist=Math.abs((dy*(x-d.x1)-dx*(y-d.y1))/len);
+  return dist<tol && Math.min(d.x1,d.x2)-tol<x&&x<Math.max(d.x1,d.x2)+tol;
+}
+
+function btPromptText(x,y){
+  const txt = prompt('Enter label text:','');
+  if(txt){
+    const pt = btScreenToPrice(x,y);
+    btDrawings.push({type:'text',x1:x,y1:y,t1:pt?.time,p1:pt?.price,text:txt,color:btDrawColor});
+    btDrawAll();
   }
 }
 
-function btDrawMouseUp(e){
-  if(!btDrawing) return; btDrawing=false;
-  const {x:sx,y:sy}=btDrawStart; const ex=e.offsetX,ey=e.offsetY;
-  if(Math.abs(ex-sx)<3 && Math.abs(ey-sy)<3) return;
-  btDrawings.push({type:btDrawTool,x1:sx,y1:sy,x2:ex,y2:ey});
+function btShowMeasure(x1,y1,x2,y2){
+  const p1=btScreenToPrice(x1,y1), p2=btScreenToPrice(x2,y2);
+  if(!p1||!p2) return;
+  const priceDiff = p2.price-p1.price;
+  const pct = p1.price?(priceDiff/p1.price*100).toFixed(2):0;
   btDrawAll();
+  const ctx=btDrawCtx;
+  ctx.fillStyle='rgba(3,7,3,0.85)';
+  ctx.strokeStyle='rgba(250,204,21,0.7)';
+  ctx.lineWidth=1;
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  ctx.fillRect(mx-60,my-16,120,20);
+  ctx.strokeRect(mx-60,my-16,120,20);
+  ctx.fillStyle='#facc15';
+  ctx.font='10px DM Mono,monospace';
+  ctx.textAlign='center';
+  ctx.fillText(`${priceDiff>=0?'+':''}${priceDiff.toFixed(5)} (${pct}%)`,mx,my-2);
+  ctx.textAlign='left';
 }
 
-function btDrawFib(x1,y1,x2,y2){
-  const levels=[0,0.236,0.382,0.5,0.618,0.786,1];
-  const colors=['rgba(250,204,21,.6)','rgba(96,165,250,.6)','rgba(74,222,128,.6)','rgba(167,139,250,.6)','rgba(74,222,128,.6)','rgba(96,165,250,.6)','rgba(250,204,21,.6)'];
+function btDrawPreview(x1,y1,x2,y2){
+  if(!btDrawCtx) return;
+  const ctx=btDrawCtx;
+  ctx.strokeStyle = btDrawColor;
+  ctx.fillStyle   = btDrawColor+'22';
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([]);
+  _btDrawShape(ctx,btDrawTool,x1,y1,x2,y2,true);
+}
+
+function _btDrawShape(ctx,type,x1,y1,x2,y2,preview=false,d=null){
+  const W = btDrawCanvas.width;
+  ctx.strokeStyle = (d?.color||btDrawColor);
+  ctx.fillStyle   = (d?.color||btDrawColor)+'18';
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([]);
+
+  switch(type){
+    case 'trendline':
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      // Arrow at end
+      btArrow(ctx,x1,y1,x2,y2);
+      break;
+    case 'rayline':{
+      // Extend from x1,y1 through x2,y2 to edge of canvas
+      const dx=x2-x1, dy=y2-y1, len=Math.sqrt(dx*dx+dy*dy)||1;
+      const scale=(W*2)/len;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+dx*scale,y1+dy*scale); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x1,y1,3,0,Math.PI*2); ctx.fill();
+      break;
+    }
+    case 'hline':
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(0,y1); ctx.lineTo(W,y1); ctx.stroke();
+      ctx.setLineDash([]);
+      // Price label
+      if(d?.p1){
+        ctx.fillStyle=ctx.strokeStyle;
+        ctx.font='9px DM Mono,monospace';
+        ctx.fillText(d.p1>100?d.p1.toFixed(2):d.p1.toFixed(5), W-70, y1-3);
+      }
+      break;
+    case 'hray':
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(W,y1); ctx.stroke();
+      btArrow(ctx,x1,y1,W,y1);
+      break;
+    case 'vline':
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.moveTo(x1,0); ctx.lineTo(x1,btDrawCanvas.height); ctx.stroke();
+      ctx.setLineDash([]);
+      break;
+    case 'rect':
+      ctx.strokeRect(x1,y1,x2-x1,y2-y1);
+      ctx.fillRect(x1,y1,x2-x1,y2-y1);
+      break;
+    case 'triangle':{
+      const mx=(x1+x2)/2;
+      ctx.beginPath(); ctx.moveTo(mx,y1); ctx.lineTo(x2,y2); ctx.lineTo(x1,y2); ctx.closePath();
+      ctx.stroke(); ctx.fill();
+      break;
+    }
+    case 'circle':{
+      const rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
+      ctx.beginPath(); ctx.ellipse((x1+x2)/2,(y1+y2)/2,rx,ry,0,0,Math.PI*2);
+      ctx.stroke(); ctx.fill();
+      break;
+    }
+    case 'fib':
+      btDrawFibFull(ctx,x1,y1,x2,y2,false,d?.color);
+      break;
+    case 'fibext':
+      btDrawFibFull(ctx,x1,y1,x2,y2,true,d?.color);
+      break;
+    case 'text':
+      if(d?.text){
+        ctx.font='bold 11px DM Mono,monospace';
+        ctx.fillStyle=d.color||btDrawColor;
+        ctx.fillText(d.text,x1,y1);
+      }
+      break;
+    case 'measure':
+      // handled separately
+      break;
+  }
+}
+
+function btArrow(ctx,x1,y1,x2,y2){
+  const angle=Math.atan2(y2-y1,x2-x1);
+  const len=8;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-len*Math.cos(angle-0.4),y2-len*Math.sin(angle-0.4));
+  ctx.lineTo(x2-len*Math.cos(angle+0.4),y2-len*Math.sin(angle+0.4));
+  ctx.closePath();
+  ctx.fillStyle=ctx.strokeStyle;
+  ctx.fill();
+}
+
+function btDrawFibFull(ctx,x1,y1,x2,y2,ext=false,color){
+  const retLevels  = [0,0.236,0.382,0.5,0.618,0.786,1];
+  const extLevels  = [0,0.618,1,1.272,1.414,1.618,2,2.618];
+  const levels = ext ? extLevels : retLevels;
+  const colors = ['#facc15','#60a5fa','#4ade80','#a78bfa','#4ade80','#60a5fa','#facc15','#f87171'];
+  const W = btDrawCanvas.width;
   levels.forEach((l,i)=>{
-    const y = y1 + (y2-y1)*l;
-    btDrawCtx.strokeStyle=colors[i]; btDrawCtx.lineWidth=1; btDrawCtx.setLineDash([4,4]);
-    btDrawCtx.beginPath(); btDrawCtx.moveTo(x1,y); btDrawCtx.lineTo(btDrawCanvas.width,y); btDrawCtx.stroke();
-    btDrawCtx.fillStyle=colors[i]; btDrawCtx.font='9px DM Mono,monospace';
-    btDrawCtx.fillText((l*100).toFixed(1)+'%', x1+4, y-3);
+    const y = y1+(y2-y1)*l;
+    ctx.strokeStyle = colors[i%colors.length];
+    ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.font='9px DM Mono,monospace';
+    ctx.fillText((l*100).toFixed(1)+'%  '+l.toFixed(3), x1+4, y-3);
   });
-  btDrawCtx.setLineDash([]);
+  // Draw connecting line
+  ctx.strokeStyle = color||btDrawColor;
+  ctx.lineWidth=1.5; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
 }
 
 function btDrawAll(){
-  if(!btDrawCtx) return;
+  if(!btDrawCtx||!btDrawCanvas) return;
   btDrawCtx.clearRect(0,0,btDrawCanvas.width,btDrawCanvas.height);
+
   btDrawings.forEach(d=>{
-    btDrawCtx.strokeStyle='rgba(250,204,21,0.7)';
-    btDrawCtx.lineWidth=1.5;
-    btDrawCtx.setLineDash([]);
-    if(d.type==='line'){
-      btDrawCtx.beginPath(); btDrawCtx.moveTo(d.x1,d.y1); btDrawCtx.lineTo(d.x2,d.y2); btDrawCtx.stroke();
-    } else if(d.type==='hline'){
-      btDrawCtx.beginPath(); btDrawCtx.moveTo(0,d.y1); btDrawCtx.lineTo(btDrawCanvas.width,d.y1); btDrawCtx.stroke();
-    } else if(d.type==='rect'){
-      btDrawCtx.strokeStyle='rgba(250,204,21,0.5)';
-      btDrawCtx.fillStyle='rgba(250,204,21,0.04)';
-      btDrawCtx.fillRect(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
-      btDrawCtx.strokeRect(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
-    } else if(d.type==='fib'){
-      btDrawFib(d.x1,d.y1,d.x2,d.y2);
+    let x1=d.x1,y1=d.y1,x2=d.x2||d.x1,y2=d.y2||d.y1;
+    // Re-project from price/time if chart scrolled
+    if(d.t1&&d.p1){
+      const s1=btPriceToScreen(d.t1,d.p1);
+      if(s1){x1=s1.x;y1=s1.y;}
     }
+    if(d.t2&&d.p2){
+      const s2=btPriceToScreen(d.t2,d.p2);
+      if(s2){x2=s2.x;y2=s2.y;}
+    }
+    _btDrawShape(btDrawCtx,d.type,x1,y1,x2,y2,false,d);
   });
 }
 
-// ── Trade simulation ─────────────────────────────────────────────────────────
-function btPlaceTrade(direction){
-  if(!btAllCandles.length||btVisibleIndex<1) return;
-  const current = btAllCandles[btVisibleIndex-1];
-  const size = parseFloat(document.getElementById('bt-trade-size').value)||1000;
-  const sl   = parseFloat(document.getElementById('bt-sl').value)||null;
-  const tp   = parseFloat(document.getElementById('bt-tp').value)||null;
-
-  const trade = {
-    id: Date.now(),
-    direction,
-    entryPrice: current.close,
-    entryTime:  current.time,
-    size, sl, tp,
-    pnl: 0,
-  };
-  btOpenTrades.push(trade);
-  btRenderOpenTrades();
-  document.getElementById('bt-sl').value='';
-  document.getElementById('bt-tp').value='';
+function btClearDrawings(){
+  btDrawings=[];
+  btDrawAll();
 }
 
-function btCheckTrades(candle){
-  if(!candle) return;
-  const toClose=[];
-  btOpenTrades.forEach(t=>{
-    let pnl=0;
-    const priceDiff = candle.close - t.entryPrice;
-    pnl = t.direction==='BUY' ? (priceDiff/t.entryPrice)*t.size : (-priceDiff/t.entryPrice)*t.size;
-
-    // Check SL/TP
-    let closed=false;
-    if(t.sl && t.direction==='BUY'  && candle.low  <= t.sl){ pnl=((t.sl -t.entryPrice)/t.entryPrice)*t.size; closed=true; }
-    if(t.sl && t.direction==='SELL' && candle.high >= t.sl){ pnl=((t.entryPrice-t.sl)/t.entryPrice)*t.size;  closed=true; }
-    if(t.tp && t.direction==='BUY'  && candle.high >= t.tp){ pnl=((t.tp -t.entryPrice)/t.entryPrice)*t.size; closed=true; }
-    if(t.tp && t.direction==='SELL' && candle.low  <= t.tp){ pnl=((t.entryPrice-t.tp)/t.entryPrice)*t.size; closed=true; }
-
-    t.pnl=pnl;
-    if(closed) toClose.push(t);
-  });
-  toClose.forEach(t=>btCloseTrade(t.id, true));
-  btRenderOpenTrades();
-}
-
-function btCloseTrade(id, auto=false){
-  const idx = btOpenTrades.findIndex(t=>t.id===id);
-  if(idx<0) return;
-  const t = btOpenTrades.splice(idx,1)[0];
-  const current = btAllCandles[btVisibleIndex-1];
-  if(!auto){
-    const diff = current.close - t.entryPrice;
-    t.pnl = t.direction==='BUY' ? (diff/t.entryPrice)*t.size : (-diff/t.entryPrice)*t.size;
+function btSetTool(tool){
+  btDrawTool=tool;
+  document.querySelectorAll('.bt-tool[id^="bt-tool-"]').forEach(b=>b.classList.remove('bt-tool-on'));
+  const el=document.getElementById('bt-tool-'+tool);
+  if(el) el.classList.add('bt-tool-on');
+  if(!btDrawCanvas) return;
+  if(tool==='cursor'){
+    btDrawCanvas.style.pointerEvents='none';
+    btDrawCanvas.style.cursor='default';
+  } else {
+    btDrawCanvas.style.pointerEvents='all';
+    btDrawCanvas.style.cursor='crosshair';
   }
-  btBalance += t.pnl;
-  btClosedTrades.push({...t, closePrice: current.close, closeTime: current.time});
-  btUpdateUI();
-  btAddToLog(t);
-  btRenderOpenTrades();
-}
-
-function btRenderOpenTrades(){
-  const el = document.getElementById('bt-open-trades');
-  if(!btOpenTrades.length){ el.innerHTML=''; return; }
-  const current = btAllCandles[btVisibleIndex-1];
-  el.innerHTML = btOpenTrades.map(t=>{
-    const diff = current ? current.close - t.entryPrice : 0;
-    const livePnl = t.direction==='BUY' ? (diff/t.entryPrice)*t.size : (-diff/t.entryPrice)*t.size;
-    const col = livePnl>=0?'#4ade80':'#f87171';
-    return `<div class="bt-open-trade">
-      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} $${t.size}</span>
-      <span style="color:${col}">${livePnl>=0?'+':''}$${livePnl.toFixed(2)}</span>
-      <button class="bt-close-btn" onclick="btCloseTrade(${t.id})">✕</button>
-    </div>`;
-  }).join('');
-}
-
-function btAddToLog(t){
-  const log = document.getElementById('bt-log');
-  const isWin = t.pnl>=0;
-  const col = isWin?'#4ade80':'#f87171';
-  const placeholder = log.querySelector('div[style]');
-  if(placeholder) placeholder.remove();
-  const item = document.createElement('div');
-  item.className = `bt-log-item ${t.direction==='BUY'?'bt-log-buy':'bt-log-sell'}`;
-  item.innerHTML = `
-    <div style="display:flex;justify-content:space-between">
-      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} @ ${t.entryPrice.toFixed(t.entryPrice>100?2:5)}</span>
-      <span class="bt-log-pnl" style="color:${col}">${isWin?'+':''}$${t.pnl.toFixed(2)}</span>
-    </div>
-    <div style="color:var(--t4)">${new Date(t.entryTime*1000).toUTCString().slice(0,16)}</div>`;
-  log.insertBefore(item, log.firstChild);
-}
-
-function btUpdateUI(){
-  // Balance
-  const startBal = 10000;
-  const pnl = btBalance - startBal;
-  const pct = (pnl/startBal)*100;
-  const col = pnl>=0?'#4ade80':'#f87171';
-  document.getElementById('bt-balance').textContent = '$'+btBalance.toFixed(2);
-  document.getElementById('bt-total-pnl').style.color=col;
-  document.getElementById('bt-total-pnl').textContent = (pnl>=0?'+':'')+'$'+pnl.toFixed(2)+' ('+pct.toFixed(2)+'%)';
-
-  // Stats
-  const closed = btClosedTrades;
-  const wins  = closed.filter(t=>t.pnl>0);
-  const losses= closed.filter(t=>t.pnl<0);
-  const totalPnl = closed.reduce((s,t)=>s+t.pnl,0);
-  const winPnl    = wins.reduce((s,t)=>s+t.pnl,0);
-  const lossPnl   = Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
-  const avgWin  = wins.length?  winPnl/wins.length  : 0;
-  const avgLoss = losses.length? lossPnl/losses.length: 0;
-  const pf = lossPnl>0?(winPnl/lossPnl).toFixed(2):'∞';
-  const wr = closed.length?Math.round((wins.length/closed.length)*100):0;
-  const best  = closed.length?Math.max(...closed.map(t=>t.pnl)):0;
-  const worst = closed.length?Math.min(...closed.map(t=>t.pnl)):0;
-
-  document.getElementById('st-trades').textContent = closed.length;
-  document.getElementById('st-wr').textContent     = closed.length? wr+'%':'—';
-  document.getElementById('st-wr').style.color     = wr>=50?'#4ade80':'#f87171';
-  document.getElementById('st-aw').textContent     = avgWin? '+$'+avgWin.toFixed(2):'—';
-  document.getElementById('st-al').textContent     = avgLoss?'-$'+avgLoss.toFixed(2):'—';
-  document.getElementById('st-best').textContent   = best? '+$'+best.toFixed(2):'—';
-  document.getElementById('st-worst').textContent  = worst?'$'+worst.toFixed(2):'—';
-  document.getElementById('st-pf').textContent     = closed.length?pf:'—';
-  document.getElementById('st-pf').style.color     = lossPnl>0&&(winPnl/lossPnl)>=1?'#4ade80':'#f87171';
 }
 
 // Init on page switch
@@ -3818,15 +3790,61 @@ setLang(localStorage.getItem('sc_lang')||'en');
   <!-- Main layout -->
   <div class="bt-main">
 
-    <!-- Left: Drawing tools -->
+    <!-- Left: Drawing tools (TradingView-style) -->
     <div class="bt-tools">
-      <button class="bt-tool bt-tool-on" id="bt-tool-cursor" onclick="btSetTool('cursor')" title="Cursor">↖</button>
-      <button class="bt-tool" id="bt-tool-line" onclick="btSetTool('line')" title="Trendline">╱</button>
-      <button class="bt-tool" id="bt-tool-hline" onclick="btSetTool('hline')" title="Horizontal line">━</button>
-      <button class="bt-tool" id="bt-tool-rect" onclick="btSetTool('rect')" title="Rectangle">▭</button>
-      <button class="bt-tool" id="bt-tool-fib" onclick="btSetTool('fib')" title="Fibonacci">φ</button>
+      <div class="bt-tool-group-lbl">Lines</div>
+      <button class="bt-tool bt-tool-on" id="bt-tool-cursor" onclick="btSetTool('cursor')" title="Cursor / Move">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 1l10 6-5 1-2 5z"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-trendline" onclick="btSetTool('trendline')" title="Trend Line">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="13" x2="14" y2="3"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-rayline" onclick="btSetTool('rayline')" title="Ray Line">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="13" x2="14" y2="3"/><circle cx="14" cy="3" r="1.5" fill="currentColor"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-hline" onclick="btSetTool('hline')" title="Horizontal Line">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="8" x2="15" y2="8"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-vline" onclick="btSetTool('vline')" title="Vertical Line">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-hray" onclick="btSetTool('hray')" title="Horizontal Ray">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="8" x2="13" y2="8"/><polyline points="10,5 13,8 10,11" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      </button>
       <div class="bt-tool-div"></div>
-      <button class="bt-tool" onclick="btClearDrawings()" title="Clear all drawings" style="color:#f87171;font-size:11px">✕</button>
+      <div class="bt-tool-group-lbl">Shapes</div>
+      <button class="bt-tool" id="bt-tool-rect" onclick="btSetTool('rect')" title="Rectangle">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-triangle" onclick="btSetTool('triangle')" title="Triangle">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="8,2 15,14 1,14"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-circle" onclick="btSetTool('circle')" title="Circle">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>
+      </button>
+      <div class="bt-tool-div"></div>
+      <div class="bt-tool-group-lbl">Fibs</div>
+      <button class="bt-tool" id="bt-tool-fib" onclick="btSetTool('fib')" title="Fibonacci Retracement">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1"><line x1="1" y1="13" x2="15" y2="13"/><line x1="1" y1="10" x2="15" y2="10"/><line x1="1" y1="8" x2="15" y2="8"/><line x1="1" y1="6" x2="15" y2="6"/><line x1="1" y1="3" x2="15" y2="3"/><text x="2" y="12.5" font-size="4" fill="currentColor">φ</text></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-fibext" onclick="btSetTool('fibext')" title="Fibonacci Extension">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1"><line x1="1" y1="14" x2="15" y2="14"/><line x1="1" y1="11" x2="15" y2="11"/><line x1="1" y1="8" x2="15" y2="8"/><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="1" x2="15" y2="1"/></svg>
+      </button>
+      <div class="bt-tool-div"></div>
+      <div class="bt-tool-group-lbl">Measure</div>
+      <button class="bt-tool" id="bt-tool-measure" onclick="btSetTool('measure')" title="Measure / Price Range">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="2" x2="8" y2="14"/><line x1="5" y1="2" x2="11" y2="2"/><line x1="5" y1="14" x2="11" y2="14"/></svg>
+      </button>
+      <button class="bt-tool" id="bt-tool-text" onclick="btSetTool('text')" title="Text Label">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><text x="3" y="13" font-size="12" font-family="serif">T</text></svg>
+      </button>
+      <div class="bt-tool-div"></div>
+      <div class="bt-tool-group-lbl">Color</div>
+      <input type="color" id="bt-draw-color" value="#facc15" class="bt-color-pick" title="Line color" onchange="btDrawColor=this.value"/>
+      <div class="bt-tool-div"></div>
+      <button class="bt-tool" onclick="btClearDrawings()" title="Clear all" style="color:#f87171">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 3l10 10M13 3L3 13" stroke="#f87171" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
 
     <!-- Center: Chart + replay controls -->
