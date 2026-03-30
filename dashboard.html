@@ -3432,52 +3432,54 @@ async function btLoad(){
   const to   = document.getElementById('bt-to').value;
 
   btStop();
-  document.getElementById('bt-loading').style.display='flex';
-  document.getElementById('bt-placeholder').style.display='none';
+  // Show loading, hide chart and placeholder
+  const chartEl = document.getElementById('bt-chart');
+  const placeholder = document.getElementById('bt-placeholder');
+  const loading = document.getElementById('bt-loading');
+  loading.style.display='flex';
+  placeholder.style.display='none';
+  chartEl.style.display='none';
 
   try{
     const r = await fetch(`/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`);
-    if(!r.ok){ const e=await r.json(); throw new Error(e.detail||'Failed to load data'); }
+    if(!r.ok){ const err=await r.json(); throw new Error(err.detail||'Server error '+r.status); }
     const data = await r.json();
     btAllCandles = data.candles;
-    if(btAllCandles.length < 2){ throw new Error('Not enough data for this range'); }
+    if(!btAllCandles||btAllCandles.length<2) throw new Error('No data returned for this range');
 
-    btDrawings = [];
-    document.getElementById('bt-chart').style.display='block';
-    document.getElementById('bt-draw-canvas').style.display='block';
-    // Wait for browser to paint and resolve flex heights
-    await new Promise(r=>setTimeout(r,120));
-    btInitChart(sym);
-    btReset();
+    btDrawings=[];
+    loading.style.display='none';
+    chartEl.style.display='block';
     document.getElementById('bt-replay-bar').style.display='flex';
+
+    // Init or re-init chart using autoSize (LightweightCharts handles sizing)
+    btInitChart();
+    btReset();
+
+    // Init draw canvas after chart is up
+    document.getElementById('bt-draw-canvas').style.display='block';
     btInitDrawCanvas();
-    // Second resize pass after replay bar appears
-    await new Promise(r=>setTimeout(r,80));
-    if(btChart){
-      const w=document.getElementById('bt-chart-wrap');
-      btChart.applyOptions({width:w.offsetWidth, height:w.offsetHeight});
-      btChart.timeScale().fitContent();
-    }
+
   }catch(e){
-    document.getElementById('bt-placeholder').style.display='flex';
-    document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg></div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
-  }finally{
-    document.getElementById('bt-loading').style.display='none';
+    loading.style.display='none';
+    chartEl.style.display='none';
+    placeholder.style.display='flex';
+    placeholder.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--t4)">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg>
+      <div style="color:var(--t2);font-size:14px">${e.message||'Failed to load'}</div>
+      <div style="font-size:11px;font-family:monospace">Try a different symbol or date range</div>
+    </div>`;
+    console.error('btLoad error:', e);
   }
 }
 
-function btInitChart(sym){
+function btInitChart(){
   const container = document.getElementById('bt-chart');
-  if(btChart){ try{btChart.remove();}catch(e){} btChart=null; }
+  if(btChart){ try{btChart.remove();}catch(e){} btChart=null; btCandleSeries=null; btVolumeSeries=null; }
 
-  // Always measure from the wrap, not the chart div itself
-  const wrap = document.getElementById('bt-chart-wrap');
-  const W = wrap.offsetWidth  || wrap.clientWidth  || 800;
-  const H = wrap.offsetHeight || wrap.clientHeight || 500;
-
+  // autoSize=true lets LightweightCharts observe the container size itself
   btChart = LightweightCharts.createChart(container, {
-    width: W,
-    height: H,
+    autoSize: true,
     layout:{ background:{type:'Solid',color:'#040a04'}, textColor:'rgba(167,243,208,0.6)', fontSize:10 },
     grid:{ vertLines:{color:'rgba(34,197,94,0.06)'}, horzLines:{color:'rgba(34,197,94,0.06)'} },
     crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
@@ -3485,12 +3487,7 @@ function btInitChart(sym){
     timeScale:{ borderColor:'rgba(34,197,94,0.15)', timeVisible:true, secondsVisible:false },
   });
 
-  window.addEventListener('resize', ()=>{
-    if(!btChart) return;
-    const w2 = document.getElementById('bt-chart-wrap');
-    btChart.applyOptions({width: w2.offsetWidth, height: w2.offsetHeight});
-    btResizeDrawCanvas();
-  });
+  window.addEventListener('resize', ()=>{ btResizeDrawCanvas(); });
 
   btCandleSeries = btChart.addCandlestickSeries({
     upColor:'#22c55e', downColor:'#ef4444',
@@ -3813,9 +3810,10 @@ function btSetTool(tool){
   }
 }
 
-// Init on page switch
+// Init on page switch — guard so listeners only attach once
+let btInitDone = false;
 function btPageInit(){
-  btInit();
+  if(!btInitDone){ btInit(); btInitDone=true; }
 }
 
 loadPrices().then(()=>initLivePrices());
@@ -3959,7 +3957,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
           <div class="bt-ph-title">Select a symbol and load data to start replaying</div>
           <div class="bt-ph-sub">Supports Crypto (Binance) · Forex · Stocks · Commodities · Indexes</div>
         </div>
-        <div id="bt-chart" style="width:100%;height:100%;display:none"></div>
+        <div id="bt-chart" style="width:100%;height:100%;display:none;position:absolute;inset:0"></div>
         <canvas id="bt-draw-canvas" style="position:absolute;top:0;left:0;pointer-events:all;display:none"></canvas>
         <div class="bt-crosshair-info" id="bt-crosshair-info"></div>
         <div class="bt-loading" id="bt-loading" style="display:none">
