@@ -592,7 +592,7 @@ h1 i{color:var(--g);font-style:normal;display:block}
 
 /* Chart center */
 .bt-center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
-.bt-chart-wrap{flex:1;position:relative;background:#040a04;min-height:0}
+.bt-chart-wrap{flex:1;position:relative;background:#040a04;min-height:300px;overflow:hidden}
 .bt-chart-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--t4)}
 .bt-ph-icon{font-size:3rem}
 .bt-ph-title{font-size:15px;color:var(--t2);font-weight:500}
@@ -3432,62 +3432,82 @@ async function btLoad(){
   const to   = document.getElementById('bt-to').value;
 
   btStop();
-  // Show loading, hide chart and placeholder
-  const chartEl = document.getElementById('bt-chart');
+
+  const chartEl   = document.getElementById('bt-chart');
   const placeholder = document.getElementById('bt-placeholder');
-  const loading = document.getElementById('bt-loading');
-  loading.style.display='flex';
-  placeholder.style.display='none';
-  chartEl.style.display='none';
+  const loading   = document.getElementById('bt-loading');
+  const replayBar = document.getElementById('bt-replay-bar');
+  const drawCanvas= document.getElementById('bt-draw-canvas');
 
-  try{
-    const r = await fetch(`/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`);
-    if(!r.ok){ const err=await r.json(); throw new Error(err.detail||'Server error '+r.status); }
-    const data = await r.json();
-    btAllCandles = data.candles;
-    if(!btAllCandles||btAllCandles.length<2) throw new Error('No data returned for this range');
+  // Reset view
+  loading.style.display = 'flex';
+  placeholder.style.display = 'none';
+  chartEl.style.display = 'none';
+  drawCanvas.style.display = 'none';
+  replayBar.style.display = 'none';
 
-    btDrawings=[];
-    loading.style.display='none';
-    chartEl.style.display='block';
-    document.getElementById('bt-replay-bar').style.display='flex';
+  try {
+    const url = `/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`;
+    const resp = await fetch(url);
+    const json = await resp.json();
+    if(!resp.ok) throw new Error(json.detail || 'HTTP '+resp.status);
+    if(!json.candles || json.candles.length < 2) throw new Error('No data for this range');
 
-    // Init or re-init chart using autoSize (LightweightCharts handles sizing)
-    btInitChart();
+    btAllCandles = json.candles;
+    btDrawings   = [];
+
+    // Show chart
+    chartEl.style.display = 'block';
+    loading.style.display = 'none';
+    replayBar.style.display = 'flex';
+    drawCanvas.style.display = 'block';
+
+    // Build chart — measure wrap AFTER it's visible
+    btBuildChart();
     btReset();
-
-    // Init draw canvas after chart is up
-    document.getElementById('bt-draw-canvas').style.display='block';
     btInitDrawCanvas();
 
-  }catch(e){
-    loading.style.display='none';
-    chartEl.style.display='none';
-    placeholder.style.display='flex';
-    placeholder.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--t4)">
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg>
-      <div style="color:var(--t2);font-size:14px">${e.message||'Failed to load'}</div>
-      <div style="font-size:11px;font-family:monospace">Try a different symbol or date range</div>
+  } catch(err) {
+    loading.style.display = 'none';
+    chartEl.style.display = 'none';
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/>
+        <line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="30" r="1.5" fill="#fbbf24"/>
+      </svg>
+      <div style="color:var(--t2);font-size:14px">${err.message}</div>
+      <div style="font-size:11px;font-family:monospace;color:var(--t4)">Try a different symbol or date range</div>
     </div>`;
-    console.error('btLoad error:', e);
+    console.error('[BT] Load failed:', err);
   }
 }
 
-function btInitChart(){
+function btBuildChart(){
   const container = document.getElementById('bt-chart');
-  if(btChart){ try{btChart.remove();}catch(e){} btChart=null; btCandleSeries=null; btVolumeSeries=null; }
+  const wrap      = document.getElementById('bt-chart-wrap');
 
-  // autoSize=true lets LightweightCharts observe the container size itself
+  // Destroy existing chart
+  if(btChart){ try{ btChart.remove(); }catch(e){} btChart=null; btCandleSeries=null; btVolumeSeries=null; }
+
+  // Measure available space explicitly
+  const W = wrap.offsetWidth  || 900;
+  const H = wrap.offsetHeight || window.innerHeight - 260;
+
+  // Set container to explicit pixel size so LW Charts has something to work with
+  container.style.width  = W + 'px';
+  container.style.height = H + 'px';
+
   btChart = LightweightCharts.createChart(container, {
-    autoSize: true,
+    width:  W,
+    height: H,
     layout:{ background:{type:'Solid',color:'#040a04'}, textColor:'rgba(167,243,208,0.6)', fontSize:10 },
-    grid:{ vertLines:{color:'rgba(34,197,94,0.06)'}, horzLines:{color:'rgba(34,197,94,0.06)'} },
+    grid:  { vertLines:{color:'rgba(34,197,94,0.06)'}, horzLines:{color:'rgba(34,197,94,0.06)'} },
     crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale:{ borderColor:'rgba(34,197,94,0.15)' },
     timeScale:{ borderColor:'rgba(34,197,94,0.15)', timeVisible:true, secondsVisible:false },
   });
-
-  window.addEventListener('resize', ()=>{ btResizeDrawCanvas(); });
 
   btCandleSeries = btChart.addCandlestickSeries({
     upColor:'#22c55e', downColor:'#ef4444',
@@ -3500,22 +3520,261 @@ function btInitChart(){
     priceScaleId:'vol', scaleMargins:{top:0.85, bottom:0},
   });
 
-  // Crosshair tooltip
   btChart.subscribeCrosshairMove(param=>{
     const info = document.getElementById('bt-crosshair-info');
+    if(!info) return;
     if(!param.point || !param.seriesData){ info.style.display='none'; return; }
-    const d2 = param.seriesData.get(btCandleSeries);
-    if(!d2){ info.style.display='none'; return; }
-    const fmt = p=>p>1000?p.toLocaleString('en',{maximumFractionDigits:2}):p>1?p.toFixed(4):p.toFixed(6);
-    const col = d2.close>=d2.open?'#4ade80':'#f87171';
-    info.style.display='block';
-    info.innerHTML=`<span style="color:${col}">O:${fmt(d2.open)} H:${fmt(d2.high)} L:${fmt(d2.low)} C:${fmt(d2.close)}</span>`;
+    const cd = param.seriesData.get(btCandleSeries);
+    if(!cd){ info.style.display='none'; return; }
+    const fmt = p => p > 1000 ? p.toLocaleString('en',{maximumFractionDigits:2}) : p > 1 ? p.toFixed(4) : p.toFixed(6);
+    info.style.display = 'block';
+    info.style.color   = cd.close >= cd.open ? '#4ade80' : '#f87171';
+    info.textContent   = `O:${fmt(cd.open)}  H:${fmt(cd.high)}  L:${fmt(cd.low)}  C:${fmt(cd.close)}`;
   });
 
-  // After chart creation, subscribe to time/price scale changes to redraw
   btChart.timeScale().subscribeVisibleLogicalRangeChange(()=>btDrawAll());
-  btChart.priceScale('right').applyOptions({});
+
+  // Resize on window change
+  window.addEventListener('resize', ()=>{
+    if(!btChart) return;
+    const nW = wrap.offsetWidth  || 900;
+    const nH = wrap.offsetHeight || window.innerHeight - 260;
+    container.style.width  = nW + 'px';
+    container.style.height = nH + 'px';
+    btChart.applyOptions({width: nW, height: nH});
+    btResizeDrawCanvas();
+  });
 }
+
+function btInitChart(){ btBuildChart(); }  // alias kept for compatibility
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SIMULATION ENGINE
+// ══════════════════════════════════════════════════════════════════════════════
+
+function btGetCandles(raw){
+  if(btStyle==='ha'){
+    const ha=[]; let prevO=raw[0].open, prevC=raw[0].close;
+    for(const c of raw){
+      const hc=(c.open+c.high+c.low+c.close)/4;
+      const ho=(prevO+prevC)/2;
+      const hh=Math.max(c.high,ho,hc);
+      const hl=Math.min(c.low,ho,hc);
+      ha.push({time:c.time,open:ho,high:hh,low:hl,close:hc,volume:c.volume});
+      prevO=ho; prevC=hc;
+    }
+    return ha;
+  }
+  return raw;
+}
+
+function btReset(){
+  btVisibleIndex = Math.min(80, btAllCandles.length);
+  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
+  btRenderChart();
+  btUpdateUI();
+  const ot=document.getElementById('bt-open-trades');
+  const lg=document.getElementById('bt-log');
+  if(ot) ot.innerHTML='';
+  if(lg) lg.innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
+}
+
+function btRenderChart(){
+  if(!btChart||!btCandleSeries) return;
+  const slice = btGetCandles(btAllCandles.slice(0, btVisibleIndex));
+  btCandleSeries.setData(slice);
+  if(btVolumeSeries) btVolumeSeries.setData(
+    slice.map(c=>({time:c.time,value:c.volume||0,color:c.close>=c.open?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'}))
+  );
+  btChart.timeScale().scrollToRealTime();
+  const last = btAllCandles[btVisibleIndex-1];
+  if(last){
+    const d=document.getElementById('bt-replay-date');
+    const ci=document.getElementById('bt-candle-info');
+    if(d)  d.textContent = new Date(last.time*1000).toUTCString().slice(0,16);
+    if(ci) ci.textContent = `${btVisibleIndex}/${btAllCandles.length}`;
+  }
+  btCheckTrades(last);
+  btDrawAll();
+}
+
+function btTogglePlay(){
+  if(btPlaying) btStop(); else btPlay();
+}
+
+function btPlay(){
+  if(btVisibleIndex>=btAllCandles.length){ btRestart(); return; }
+  btPlaying=true;
+  const pb=document.getElementById('bt-play-btn');
+  if(pb){ pb.textContent='⏸'; pb.classList.add('playing'); }
+  const delay=Math.max(40,500/btSpeed);
+  btPlayInterval=setInterval(()=>{
+    if(btVisibleIndex>=btAllCandles.length){ btStop(); return; }
+    btVisibleIndex++;
+    btRenderChart();
+  },delay);
+}
+
+function btStop(){
+  btPlaying=false;
+  clearInterval(btPlayInterval);
+  const pb=document.getElementById('bt-play-btn');
+  if(pb){ pb.textContent='▶'; pb.classList.remove('playing'); }
+}
+
+function btStepForward(){
+  btStop();
+  if(btVisibleIndex<btAllCandles.length){ btVisibleIndex++; btRenderChart(); }
+}
+
+function btStepBack(){
+  btStop();
+  if(btVisibleIndex>1){ btVisibleIndex--; btRenderChart(); }
+}
+
+function btRestart(){
+  btStop();
+  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
+  btVisibleIndex=1;
+  btRenderChart();
+  btUpdateUI();
+  const ot=document.getElementById('bt-open-trades');
+  const lg=document.getElementById('bt-log');
+  if(ot) ot.innerHTML='';
+  if(lg) lg.innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
+}
+
+function btSetSpeed(v){
+  btSpeed=parseInt(v);
+  const sv=document.getElementById('bt-speed-val');
+  if(sv) sv.textContent=v+'×';
+  if(btPlaying){ btStop(); btPlay(); }
+}
+
+function btSetStyle(style){
+  btStyle=style;
+  ['candle','line','ha'].forEach(s=>{
+    const el=document.getElementById('bt-style-'+s);
+    if(el) el.classList.toggle('bt-tf-on',s===style);
+  });
+  if(btCandleSeries) btRenderChart();
+}
+
+function btPlaceTrade(direction){
+  if(!btAllCandles.length||btVisibleIndex<1) return;
+  const current=btAllCandles[btVisibleIndex-1];
+  const size=parseFloat(document.getElementById('bt-trade-size')?.value)||1000;
+  const sl=parseFloat(document.getElementById('bt-sl')?.value)||null;
+  const tp=parseFloat(document.getElementById('bt-tp')?.value)||null;
+  btOpenTrades.push({id:Date.now(),direction,entryPrice:current.close,entryTime:current.time,size,sl,tp,pnl:0});
+  btRenderOpenTrades();
+  const slEl=document.getElementById('bt-sl');
+  const tpEl=document.getElementById('bt-tp');
+  if(slEl) slEl.value='';
+  if(tpEl) tpEl.value='';
+}
+
+function btCheckTrades(candle){
+  if(!candle) return;
+  const toClose=[];
+  btOpenTrades.forEach(t=>{
+    const diff=candle.close-t.entryPrice;
+    t.pnl=t.direction==='BUY'?(diff/t.entryPrice)*t.size:(-diff/t.entryPrice)*t.size;
+    let closed=false;
+    if(t.sl&&t.direction==='BUY'&&candle.low<=t.sl){t.pnl=((t.sl-t.entryPrice)/t.entryPrice)*t.size;closed=true;}
+    if(t.sl&&t.direction==='SELL'&&candle.high>=t.sl){t.pnl=((t.entryPrice-t.sl)/t.entryPrice)*t.size;closed=true;}
+    if(t.tp&&t.direction==='BUY'&&candle.high>=t.tp){t.pnl=((t.tp-t.entryPrice)/t.entryPrice)*t.size;closed=true;}
+    if(t.tp&&t.direction==='SELL'&&candle.low<=t.tp){t.pnl=((t.entryPrice-t.tp)/t.entryPrice)*t.size;closed=true;}
+    if(closed) toClose.push(t);
+  });
+  toClose.forEach(t=>btCloseTrade(t.id,true));
+  btRenderOpenTrades();
+}
+
+function btCloseTrade(id,auto=false){
+  const idx=btOpenTrades.findIndex(t=>t.id===id);
+  if(idx<0) return;
+  const t=btOpenTrades.splice(idx,1)[0];
+  const current=btAllCandles[btVisibleIndex-1];
+  if(!auto){
+    const diff=current.close-t.entryPrice;
+    t.pnl=t.direction==='BUY'?(diff/t.entryPrice)*t.size:(-diff/t.entryPrice)*t.size;
+  }
+  btBalance+=t.pnl;
+  btClosedTrades.push({...t,closePrice:current.close,closeTime:current.time});
+  btUpdateUI();
+  btAddToLog(t);
+  btRenderOpenTrades();
+}
+
+function btRenderOpenTrades(){
+  const el=document.getElementById('bt-open-trades');
+  if(!el) return;
+  if(!btOpenTrades.length){el.innerHTML='';return;}
+  const current=btAllCandles[btVisibleIndex-1];
+  el.innerHTML=btOpenTrades.map(t=>{
+    const diff=current?current.close-t.entryPrice:0;
+    const live=t.direction==='BUY'?(diff/t.entryPrice)*t.size:(-diff/t.entryPrice)*t.size;
+    const col=live>=0?'#4ade80':'#f87171';
+    return `<div class="bt-open-trade">
+      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} $${t.size}</span>
+      <span style="color:${col}">${live>=0?'+':''}$${live.toFixed(2)}</span>
+      <button class="bt-close-btn" onclick="btCloseTrade(${t.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function btAddToLog(t){
+  const log=document.getElementById('bt-log');
+  if(!log) return;
+  const isWin=t.pnl>=0;
+  const col=isWin?'#4ade80':'#f87171';
+  const ph=log.querySelector('div[style]');
+  if(ph) ph.remove();
+  const item=document.createElement('div');
+  item.className=`bt-log-item ${t.direction==='BUY'?'bt-log-buy':'bt-log-sell'}`;
+  item.innerHTML=`
+    <div style="display:flex;justify-content:space-between">
+      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} @${t.entryPrice>100?t.entryPrice.toFixed(2):t.entryPrice.toFixed(5)}</span>
+      <span class="bt-log-pnl" style="color:${col}">${isWin?'+':''}$${t.pnl.toFixed(2)}</span>
+    </div>
+    <div style="color:var(--t4)">${new Date(t.entryTime*1000).toUTCString().slice(0,16)}</div>`;
+  log.insertBefore(item,log.firstChild);
+}
+
+function btUpdateUI(){
+  const pnl=btBalance-10000;
+  const pct=(pnl/10000)*100;
+  const col=pnl>=0?'#4ade80':'#f87171';
+  const balEl=document.getElementById('bt-balance');
+  const pnlEl=document.getElementById('bt-total-pnl');
+  if(balEl) balEl.textContent='$'+btBalance.toFixed(2);
+  if(pnlEl){ pnlEl.style.color=col; pnlEl.textContent=(pnl>=0?'+':'')+'$'+pnl.toFixed(2)+' ('+pct.toFixed(2)+'%)'; }
+  const closed=btClosedTrades;
+  const wins=closed.filter(t=>t.pnl>0);
+  const losses=closed.filter(t=>t.pnl<0);
+  const winPnl=wins.reduce((s,t)=>s+t.pnl,0);
+  const lossPnl=Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
+  const wr=closed.length?Math.round(wins.length/closed.length*100):0;
+  const pf=lossPnl>0?(winPnl/lossPnl).toFixed(2):'∞';
+  const best=closed.length?Math.max(...closed.map(t=>t.pnl)):0;
+  const worst=closed.length?Math.min(...closed.map(t=>t.pnl)):0;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('st-trades',closed.length);
+  set('st-wr',closed.length?wr+'%':'—');
+  set('st-aw',wins.length?'+$'+(winPnl/wins.length).toFixed(2):'—');
+  set('st-al',losses.length?'-$'+(lossPnl/losses.length).toFixed(2):'—');
+  set('st-best',best?'+$'+best.toFixed(2):'—');
+  set('st-worst',worst?'$'+worst.toFixed(2):'—');
+  set('st-pf',closed.length?pf:'—');
+  const wrEl=document.getElementById('st-wr');
+  const pfEl=document.getElementById('st-pf');
+  if(wrEl) wrEl.style.color=wr>=50?'#4ade80':'#f87171';
+  if(pfEl) pfEl.style.color=lossPnl>0&&winPnl/lossPnl>=1?'#4ade80':'#f87171';
+}
+
+
+
 
 // ── Drawing canvas — price/time anchored ─────────────────────────────────────
 function btInitDrawCanvas(){
@@ -3957,7 +4216,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
           <div class="bt-ph-title">Select a symbol and load data to start replaying</div>
           <div class="bt-ph-sub">Supports Crypto (Binance) · Forex · Stocks · Commodities · Indexes</div>
         </div>
-        <div id="bt-chart" style="width:100%;height:100%;display:none;position:absolute;inset:0"></div>
+        <div id="bt-chart" style="width:100%;height:100%;display:none"></div>
         <canvas id="bt-draw-canvas" style="position:absolute;top:0;left:0;pointer-events:all;display:none"></canvas>
         <div class="bt-crosshair-info" id="bt-crosshair-info"></div>
         <div class="bt-loading" id="bt-loading" style="display:none">
