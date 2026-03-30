@@ -1375,8 +1375,14 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
                     ) as r:
                         if r.status != 200:
                             break
-                        data = await r.json()
-                        if not data:
+                        text = await r.text()
+                        if not text or text.strip().startswith('<'):
+                            break
+                        try:
+                            data = json.loads(text)
+                        except Exception:
+                            break
+                        if not data or not isinstance(data, list):
                             break
                         for k in data:
                             candles.append({
@@ -1467,9 +1473,15 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
                     ) as r2:
                         if r2.status != 200:
                             raise HTTPException(502, f"Yahoo HTTP {r2.status} for {yahoo_sym}")
-                        data = await r2.json(content_type=None)
+                        txt2 = await r2.text()
+                        if not txt2 or txt2.strip().startswith('<'):
+                            raise HTTPException(502, f"Yahoo returned HTML for {yahoo_sym}")
+                        data = json.loads(txt2)
                 else:
-                    data = await r.json(content_type=None)
+                    txt = await r.text()
+                    if not txt or txt.strip().startswith('<'):
+                        raise HTTPException(502, f"Yahoo returned HTML for {yahoo_sym}")
+                    data = json.loads(txt)
 
                 result = data.get("chart",{}).get("result")
                 if not result:
