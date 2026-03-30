@@ -1310,7 +1310,8 @@ YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4
 async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = ""):
     """Fetch OHLCV candle data for backtesting. Returns up to 2000 candles."""
     import time as _time
-    symbol = symbol.upper().strip()
+    symbol_raw = symbol.strip()          # preserve original case (e.g. 'ripple', 'bitcoin')
+    symbol = symbol_raw.upper()          # uppercase for forex/stock/commodity lookups
     interval = interval.upper().strip()
 
     # Determine from/to timestamps
@@ -1332,7 +1333,7 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
         from_ts = to_ts - 90*86400
 
     # ── Try Binance first (crypto) ────────────────────────────────────────
-    binance_sym = BACKTEST_BINANCE_MAP.get(symbol.lower()) or (
+    binance_sym = BACKTEST_BINANCE_MAP.get(symbol_raw.lower()) or BACKTEST_BINANCE_MAP.get(symbol.lower()) or (
         symbol + "USDT" if not symbol.endswith("USDT") and len(symbol) <= 5 else symbol
     )
     b_interval = BINANCE_INTERVAL_MAP.get(interval, "1h")
@@ -1400,9 +1401,11 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
         "GOOGL":"GOOGL","AMZN":"AMZN","META":"META","JPM":"JPM",
     }
     yahoo_sym = (
+        BACKTEST_YAHOO_MAP.get(symbol_raw) or
+        BACKTEST_YAHOO_MAP.get(symbol_raw.lower()) or
         BACKTEST_YAHOO_MAP.get(symbol) or
         BACKTEST_YAHOO_MAP.get(symbol.lower()) or
-        YAHOO_DIRECT.get(symbol.upper())
+        YAHOO_DIRECT.get(symbol)
     )
     # Last resort: if 6-char ending in USD treat as forex
     if not yahoo_sym and len(symbol)==6 and symbol.upper().endswith("USD"):
