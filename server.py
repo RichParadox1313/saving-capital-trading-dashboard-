@@ -1406,6 +1406,16 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
     # ── Fallback: Yahoo Finance (forex, stocks, commodities, indexes) ────
     # Complete symbol resolution
     YAHOO_DIRECT = {
+        # Crypto (Yahoo Finance supports these as fallback)
+        "BTCUSDT":"BTC-USD","ETHUSDT":"ETH-USD","XRPUSDT":"XRP-USD",
+        "SOLUSDT":"SOL-USD","BNBUSDT":"BNB-USD","DOGEUSDT":"DOGE-USD",
+        "ADAUSDT":"ADA-USD","AVAXUSDT":"AVAX-USD","LINKUSDT":"LINK-USD",
+        "DOTUSDT":"DOT-USD","TONUSDT":"TON-USD","SHIBUSDT":"SHIB-USD",
+        "LTCUSDT":"LTC-USD","TRXUSDT":"TRX-USD","POLUSDT":"POL-USD",
+        "UNIUSDT":"UNI-USD","XLMUSDT":"XLM-USD","NEARUSDT":"NEAR-USD",
+        "ARBUSDT":"ARB-USD","APTUSDT":"APT-USD","SUIUSDT":"SUI-USD",
+        "PEPEUSDT":"PEPE-USD","ICPUSDT":"ICP-USD","XMRUSDT":"XMR-USD",
+        "FILUSDT":"FIL-USD","RENDERUSDT":"RENDER-USD","INJUSDT":"INJ-USD",
         # Forex
         "EURUSD":"EURUSD=X","GBPUSD":"GBPUSD=X","USDJPY":"JPY=X",
         "AUDUSD":"AUDUSD=X","USDCAD":"CAD=X","USDCHF":"CHF=X",
