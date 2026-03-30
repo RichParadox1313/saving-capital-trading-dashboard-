@@ -3420,8 +3420,91 @@ function btBuildAssetList(q=''){
   list.innerHTML = html || '<div style="padding:16px;text-align:center;color:var(--t4);font-size:11px;font-family:monospace">No results</div>';
 }
 
+// ── Browser-side data fetching (bypasses Railway IP blocks) ──────────────────
+
+const BT_TF_MAP = {M1:'1m',M5:'5m',M15:'15m',M30:'30m',H1:'1h',H4:'4h',D1:'1d',W1:'1w'};
+const BT_YAHOO_MAP = {
+  // Forex
+  EURUSD:'EURUSD=X',GBPUSD:'GBPUSD=X',USDJPY:'JPY=X',AUDUSD:'AUDUSD=X',
+  USDCAD:'CAD=X',USDCHF:'CHF=X',NZDUSD:'NZDUSD=X',EURGBP:'EURGBP=X',
+  EURJPY:'EURJPY=X',GBPJPY:'GBPJPY=X',AUDJPY:'AUDJPY=X',EURAUD:'EURAUD=X',
+  EURCAD:'EURCAD=X',EURCHF:'EURCHF=X',EURNZD:'EURNZD=X',GBPAUD:'GBPAUD=X',
+  GBPCAD:'GBPCAD=X',GBPCHF:'GBPCHF=X',GBPNZD:'GBPNZD=X',CADJPY:'CADJPY=X',
+  CHFJPY:'CHFJPY=X',NZDJPY:'NZDJPY=X',AUDCAD:'AUDCAD=X',AUDCHF:'AUDCHF=X',
+  AUDNZD:'AUDNZD=X',NZDCAD:'NZDCAD=X',NZDCHF:'NZDCHF=X',CADCHF:'CADCHF=X',
+  USDTRY:'TRY=X',USDZAR:'ZAR=X',USDMXN:'MXN=X',USDSEK:'SEK=X',
+  USDNOK:'NOK=X',USDDKK:'DKK=X',USDSGD:'SGD=X',USDHKD:'HKD=X',
+  USDINR:'INR=X',USDAED:'AED=X',USDSAR:'SAR=X',
+  // Commodities
+  XAUUSD:'GC=F',XAGUSD:'SI=F',WTI:'CL=F',BRENT:'BZ=F',COPPER:'HG=F',NATGAS:'NG=F',
+  // Indexes
+  SPX:'^GSPC',DJI:'^DJI',NASDAQ:'^IXIC',DAX:'^GDAXI',FTSE:'^FTSE',NIKKEI:'^N225',VIX:'^VIX',DXY:'DX-Y.NYB',
+  // Stocks
+  AAPL:'AAPL',NVDA:'NVDA',TSLA:'TSLA',MSFT:'MSFT',GOOGL:'GOOGL',AMZN:'AMZN',META:'META',JPM:'JPM',
+};
+
+// Yahoo interval mapping
+const BT_YTF = {M1:'1m',M5:'5m',M15:'15m',M30:'30m',H1:'1h',H4:'1h',D1:'1d',W1:'1wk'};
+
+async function btFetchBinance(sym, tf, fromTs, toTs){
+  const interval = BT_TF_MAP[tf] || '1h';
+  const candles = [];
+  let fromMs = fromTs * 1000;
+  const toMs = toTs * 1000;
+  while(fromMs < toMs && candles.length < 5000){
+    const params = new URLSearchParams({symbol:sym,interval,startTime:fromMs,endTime:toMs,limit:1000});
+    const r = await fetch(`https://api.binance.com/api/v3/klines?${params}`);
+    if(!r.ok) break;
+    const rows = await r.json();
+    if(!Array.isArray(rows) || !rows.length) break;
+    for(const k of rows) candles.push({time:Math.floor(k[0]/1000),open:+k[1],high:+k[2],low:+k[3],close:+k[4],volume:+k[5]});
+    if(rows.length < 1000) break;
+    fromMs = rows[rows.length-1][0] + 1;
+  }
+  return candles;
+}
+
+async function btFetchCoinGecko(cgid, fromTs, toTs){
+  const days = Math.max(30, Math.ceil((toTs - fromTs) / 86400));
+  const daysParam = days > 365 ? 'max' : days;
+  const r = await fetch(`https://api.coingecko.com/api/v3/coins/${cgid}/ohlc?vs_currency=usd&days=${daysParam}`);
+  if(!r.ok) return [];
+  const rows = await r.json();
+  if(!Array.isArray(rows)) return [];
+  return rows
+    .filter(row => row.length >= 5)
+    .map(row => ({time:Math.floor(row[0]/1000),open:+row[1],high:+row[2],low:+row[3],close:+row[4],volume:0}))
+    .filter(c => c.time >= fromTs && c.time <= toTs);
+}
+
+async function btFetchYahoo(sym, tf, fromTs, toTs){
+  const ySym = BT_YAHOO_MAP[sym] || sym;
+  const yTf  = BT_YTF[tf] || '1d';
+  const r = await fetch(`/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${tf}&from_date=${new Date(fromTs*1000).toISOString().slice(0,10)}&to_date=${new Date(toTs*1000).toISOString().slice(0,10)}&cgid=`);
+  if(!r.ok) return [];
+  const json = await r.json();
+  return json.candles || [];
+}
+
+const BT_CRYPTO_SYMS = new Set([
+  'BTCUSDT','ETHUSDT','XRPUSDT','SOLUSDT','BNBUSDT','DOGEUSDT','ADAUSDT',
+  'AVAXUSDT','LINKUSDT','DOTUSDT','TONUSDT','SHIBUSDT','LTCUSDT','TRXUSDT',
+  'POLUSDT','UNIUSDT','XLMUSDT','NEARUSDT','ARBUSDT','APTUSDT','SUIUSDT',
+  'PEPEUSDT','ICPUSDT','XMRUSDT','FILUSDT','RENDERUSDT','INJUSDT',
+]);
+
+const BT_CGID_MAP = {
+  BTCUSDT:'bitcoin',ETHUSDT:'ethereum',XRPUSDT:'ripple',SOLUSDT:'solana',
+  BNBUSDT:'binancecoin',DOGEUSDT:'dogecoin',ADAUSDT:'cardano',AVAXUSDT:'avalanche-2',
+  LINKUSDT:'chainlink',DOTUSDT:'polkadot',TONUSDT:'the-open-network',SHIBUSDT:'shiba-inu',
+  LTCUSDT:'litecoin',TRXUSDT:'tron',POLUSDT:'pol-polygon-ecosystem-token',UNIUSDT:'uniswap',
+  XLMUSDT:'stellar',NEARUSDT:'near',ARBUSDT:'arbitrum',APTUSDT:'aptos',SUIUSDT:'sui',
+  PEPEUSDT:'pepe',ICPUSDT:'internet-computer',XMRUSDT:'monero',FILUSDT:'filecoin',
+  RENDERUSDT:'render-token',INJUSDT:'injective-protocol',
+};
+
 async function btLoad(){
-  const btn = document.getElementById('bt-asset-btn');
+  const btn  = document.getElementById('bt-asset-btn');
   const sym  = btn?.dataset.sym || '';
   const cgid = btn?.dataset.id  || '';
   if(!sym){
@@ -3429,59 +3512,85 @@ async function btLoad(){
     document.getElementById('bt-asset-btn')?.classList.add('open');
     return;
   }
-  const from = document.getElementById('bt-from').value;
-  const to   = document.getElementById('bt-to').value;
+
+  const fromDate = document.getElementById('bt-from').value;
+  const toDate   = document.getElementById('bt-to').value;
+  const fromTs   = Math.floor(new Date(fromDate).getTime()/1000);
+  const toTs     = Math.floor(new Date(toDate).getTime()/1000);
 
   btStop();
 
-  const chartEl   = document.getElementById('bt-chart');
-  const placeholder = document.getElementById('bt-placeholder');
-  const loading   = document.getElementById('bt-loading');
-  const replayBar = document.getElementById('bt-replay-bar');
-  const drawCanvas= document.getElementById('bt-draw-canvas');
+  const chartEl    = document.getElementById('bt-chart');
+  const placeholder= document.getElementById('bt-placeholder');
+  const loading    = document.getElementById('bt-loading');
+  const replayBar  = document.getElementById('bt-replay-bar');
+  const drawCanvas = document.getElementById('bt-draw-canvas');
 
-  // Reset view
-  loading.style.display = 'flex';
-  placeholder.style.display = 'none';
-  chartEl.style.display = 'none';
+  loading.style.display    = 'flex';
+  placeholder.style.display= 'none';
+  chartEl.style.display    = 'none';
   drawCanvas.style.display = 'none';
-  replayBar.style.display = 'none';
+  replayBar.style.display  = 'none';
 
   try {
-    const url = `/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}&cgid=${encodeURIComponent(cgid)}`;
-    const resp = await fetch(url);
-    const json = await resp.json();
-    if(!resp.ok) throw new Error(json.detail || 'HTTP '+resp.status);
-    if(!json.candles || json.candles.length < 2) throw new Error('No data for this range');
+    let candles = [];
+    const isCrypto = BT_CRYPTO_SYMS.has(sym);
 
-    btAllCandles = json.candles;
+    if(isCrypto){
+      // Try Binance first (browser has no IP restrictions)
+      loading.innerHTML = `<div class="bt-spinner"></div><div>Fetching from Binance...</div>`;
+      candles = await btFetchBinance(sym, btTf, fromTs, toTs);
+
+      // Fallback: CoinGecko OHLCV
+      if(candles.length < 2){
+        const cg = BT_CGID_MAP[sym] || cgid;
+        if(cg){
+          loading.innerHTML = `<div class="bt-spinner"></div><div>Fetching from CoinGecko...</div>`;
+          candles = await btFetchCoinGecko(cg, fromTs, toTs);
+        }
+      }
+    } else {
+      // Forex / Stocks / Commodities / Indexes — use server (Yahoo Finance)
+      loading.innerHTML = `<div class="bt-spinner"></div><div>Fetching market data...</div>`;
+      const url = `/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${fromDate}&to_date=${toDate}&cgid=`;
+      const resp = await fetch(url);
+      const json = await resp.json().catch(()=>({}));
+      candles = json.candles || [];
+    }
+
+    if(!candles || candles.length < 2){
+      throw new Error(`No data returned for ${sym} — try a wider date range or different timeframe`);
+    }
+
+    // Sort by time (CoinGecko sometimes returns unordered)
+    candles.sort((a,b)=>a.time-b.time);
+
+    btAllCandles = candles;
     btDrawings   = [];
 
-    // Show chart
-    chartEl.style.display = 'block';
-    loading.style.display = 'none';
+    chartEl.style.display   = 'block';
+    loading.style.display   = 'none';
     replayBar.style.display = 'flex';
-    drawCanvas.style.display = 'block';
+    drawCanvas.style.display= 'block';
 
-    // Build chart — measure wrap AFTER it's visible
     btBuildChart();
     btReset();
     btInitDrawCanvas();
 
   } catch(err) {
-    loading.style.display = 'none';
-    chartEl.style.display = 'none';
-    placeholder.style.display = 'flex';
-    placeholder.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    loading.style.display    = 'none';
+    chartEl.style.display    = 'none';
+    placeholder.style.display= 'flex';
+    placeholder.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;text-align:center">
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
         <path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/>
         <line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
         <circle cx="20" cy="30" r="1.5" fill="#fbbf24"/>
       </svg>
-      <div style="color:var(--t2);font-size:14px">${err.message}</div>
-      <div style="font-size:11px;font-family:monospace;color:var(--t4)">Try a different symbol or date range</div>
+      <div style="color:var(--t2);font-size:14px;font-weight:500">${err.message}</div>
+      <div style="font-size:10px;font-family:monospace;color:var(--t4)">${sym} · ${btTf} · ${fromDate} → ${toDate}</div>
     </div>`;
-    console.error('[BT] Load failed:', err);
+    console.error('[BT]', err);
   }
 }
 
