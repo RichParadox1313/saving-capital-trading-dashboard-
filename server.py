@@ -1284,6 +1284,165 @@ async def delete_trade(trade_id: str):
     save_journal(trades)
     return JSONResponse({"ok": True})
 
+# ─── Backtesting Data API ─────────────────────────────────────────────────────
+
+# Map dashboard asset IDs to Yahoo Finance symbols
+BACKTEST_YAHOO_MAP = {a["id"]: a["yahoo"] for a in YAHOO_ASSETS}
+
+# Map dashboard crypto IDs to Binance symbols
+BACKTEST_BINANCE_MAP = {
+    "bitcoin":"BTCUSDT","ethereum":"ETHUSDT","ripple":"XRPUSDT",
+    "solana":"SOLUSDT","binancecoin":"BNBUSDT","dogecoin":"DOGEUSDT",
+    "cardano":"ADAUSDT","avalanche-2":"AVAXUSDT","chainlink":"LINKUSDT",
+    "polkadot":"DOTUSDT","the-open-network":"TONUSDT","shiba-inu":"SHIBUSDT",
+    "litecoin":"LTCUSDT","tron":"TRXUSDT","pol-polygon-ecosystem-token":"POLUSDT",
+    "uniswap":"UNIUSDT","stellar":"XLMUSDT","near":"NEARUSDT",
+    "arbitrum":"ARBUSDT","aptos":"APTUSDT","internet-computer":"ICPUSDT",
+    "filecoin":"FILUSDT","render-token":"RENDERUSDT","injective-protocol":"INJUSDT",
+    "monero":"XMRUSDT","sui":"SUIUSDT","pepe":"PEPEUSDT",
+    "fetch-ai":"FETUSDT","sei-network":"SEIUSDT","bittensor":"TAOUSDT",
+}
+
+BINANCE_INTERVAL_MAP = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"4h","D1":"1d","W1":"1w"}
+YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"1h","D1":"1d","W1":"1wk"}
+
+@app.get("/api/backtest/data")
+async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = ""):
+    """Fetch OHLCV candle data for backtesting. Returns up to 2000 candles."""
+    import time as _time
+    symbol = symbol.upper().strip()
+    interval = interval.upper().strip()
+
+    # Determine from/to timestamps
+    now_ts = int(_time.time())
+    if to_date:
+        try:
+            to_ts = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp())
+        except:
+            to_ts = now_ts
+    else:
+        to_ts = now_ts
+
+    if from_date:
+        try:
+            from_ts = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp())
+        except:
+            from_ts = to_ts - 90*86400
+    else:
+        from_ts = to_ts - 90*86400
+
+    # ── Try Binance first (crypto) ────────────────────────────────────────
+    binance_sym = BACKTEST_BINANCE_MAP.get(symbol.lower()) or (
+        symbol + "USDT" if not symbol.endswith("USDT") and len(symbol) <= 5 else symbol
+    )
+    b_interval = BINANCE_INTERVAL_MAP.get(interval, "1h")
+
+    candles = []
+    try:
+        from_ms = from_ts * 1000
+        to_ms   = to_ts   * 1000
+        async with aiohttp.ClientSession() as s:
+            while from_ms < to_ms and len(candles) < 2000:
+                async with s.get(
+                    "https://api.binance.com/api/v3/klines",
+                    params={"symbol": binance_sym, "interval": b_interval,
+                            "startTime": from_ms, "endTime": to_ms, "limit": 1000},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status != 200:
+                        break
+                    data = await r.json()
+                    if not data:
+                        break
+                    for k in data:
+                        candles.append({
+                            "time":  int(k[0]) // 1000,
+                            "open":  float(k[1]),
+                            "high":  float(k[2]),
+                            "low":   float(k[3]),
+                            "close": float(k[4]),
+                            "volume":float(k[5]),
+                        })
+                    if len(data) < 1000:
+                        break
+                    from_ms = int(data[-1][0]) + 1
+        if candles:
+            print(f"  Backtest {symbol}/{interval}: {len(candles)} candles from Binance")
+            return JSONResponse({"source":"binance","symbol":symbol,"interval":interval,"candles":candles[-2000:]})
+    except Exception as e:
+        print(f"  Backtest Binance {symbol}: {e}")
+
+    # ── Fallback: Yahoo Finance (forex, stocks, commodities, indexes) ────
+    yahoo_sym = BACKTEST_YAHOO_MAP.get(symbol) or BACKTEST_YAHOO_MAP.get(symbol.lower())
+    if not yahoo_sym:
+        # Try direct Yahoo symbol patterns
+        if symbol.endswith("USD") and len(symbol) == 6:
+            yahoo_sym = symbol[:3] + symbol[3:] + "=X"  # e.g. EURUSD=X
+        elif "=X" not in symbol and symbol not in ["SPX","DJI","NASDAQ"]:
+            yahoo_sym = symbol  # stocks like AAPL, NVDA
+
+    if not yahoo_sym:
+        raise HTTPException(404, f"Symbol {symbol} not found")
+
+    y_interval = YAHOO_INTERVAL_MAP.get(interval, "1h")
+    # Yahoo range string
+    days = (to_ts - from_ts) // 86400
+    if   days <= 7:   y_range = "7d"
+    elif days <= 30:  y_range = "1mo"
+    elif days <= 90:  y_range = "3mo"
+    elif days <= 180: y_range = "6mo"
+    elif days <= 365: y_range = "1y"
+    elif days <= 730: y_range = "2y"
+    else:             y_range = "5y"
+
+    try:
+        jar = aiohttp.CookieJar(unsafe=True)
+        async with aiohttp.ClientSession(cookie_jar=jar) as s:
+            async with s.get(
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_sym}",
+                params={"interval": y_interval, "range": y_range, "includePrePost":"false"},
+                headers=YAHOO_HEADERS,
+                timeout=TIMEOUT_SLOW,
+            ) as r:
+                if r.status != 200:
+                    raise HTTPException(502, f"Yahoo HTTP {r.status}")
+                data = await r.json(content_type=None)
+                result = data.get("chart",{}).get("result")
+                if not result:
+                    raise HTTPException(502, "No data")
+                ts   = result[0].get("timestamp",[])
+                q    = result[0].get("indicators",{}).get("quote",[{}])[0]
+                opens  = q.get("open",[])
+                highs  = q.get("high",[])
+                lows   = q.get("low",[])
+                closes = q.get("close",[])
+                vols   = q.get("volume",[])
+                for i,t in enumerate(ts):
+                    if t < from_ts or t > to_ts:
+                        continue
+                    o = opens[i]; h = highs[i]; l = lows[i]; c = closes[i]
+                    if None in (o,h,l,c):
+                        continue
+                    candles.append({
+                        "time":  int(t),
+                        "open":  round(float(o),6),
+                        "high":  round(float(h),6),
+                        "low":   round(float(l),6),
+                        "close": round(float(c),6),
+                        "volume":float(vols[i] or 0),
+                    })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+    if not candles:
+        raise HTTPException(404, "No candles returned for this range")
+
+    print(f"  Backtest {symbol}/{interval}: {len(candles)} candles from Yahoo ({yahoo_sym})")
+    return JSONResponse({"source":"yahoo","symbol":symbol,"interval":interval,"candles":candles[-2000:]})
+
+
 @app.get("/img/{filename}")
 async def serve_img(filename: str):
     import re
