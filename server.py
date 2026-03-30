@@ -1373,63 +1373,104 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
         print(f"  Backtest Binance {symbol}: {e}")
 
     # ── Fallback: Yahoo Finance (forex, stocks, commodities, indexes) ────
-    yahoo_sym = BACKTEST_YAHOO_MAP.get(symbol) or BACKTEST_YAHOO_MAP.get(symbol.lower())
-    if not yahoo_sym:
-        # Try direct Yahoo symbol patterns
-        if symbol.endswith("USD") and len(symbol) == 6:
-            yahoo_sym = symbol[:3] + symbol[3:] + "=X"  # e.g. EURUSD=X
-        elif "=X" not in symbol and symbol not in ["SPX","DJI","NASDAQ"]:
-            yahoo_sym = symbol  # stocks like AAPL, NVDA
+    # Complete symbol resolution
+    YAHOO_DIRECT = {
+        # Forex
+        "EURUSD":"EURUSD=X","GBPUSD":"GBPUSD=X","USDJPY":"JPY=X",
+        "AUDUSD":"AUDUSD=X","USDCAD":"CAD=X","USDCHF":"CHF=X",
+        "NZDUSD":"NZDUSD=X","EURGBP":"EURGBP=X","EURJPY":"EURJPY=X",
+        "GBPJPY":"GBPJPY=X","AUDJPY":"AUDJPY=X","EURAUD":"EURAUD=X",
+        "EURCAD":"EURCAD=X","EURCHF":"EURCHF=X","EURNZD":"EURNZD=X",
+        "GBPAUD":"GBPAUD=X","GBPCAD":"GBPCAD=X","GBPCHF":"GBPCHF=X",
+        "GBPNZD":"GBPNZD=X","CADJPY":"CADJPY=X","CHFJPY":"CHFJPY=X",
+        "NZDJPY":"NZDJPY=X","AUDCAD":"AUDCAD=X","AUDCHF":"AUDCHF=X",
+        "AUDNZD":"AUDNZD=X","NZDCAD":"NZDCAD=X","NZDCHF":"NZDCHF=X",
+        "CADCHF":"CADCHF=X","USDTRY":"TRY=X","USDZAR":"ZAR=X",
+        "USDMXN":"MXN=X","USDSEK":"SEK=X","USDNOK":"NOK=X",
+        "USDDKK":"DKK=X","USDSGD":"SGD=X","USDHKD":"HKD=X",
+        "USDINR":"INR=X","USDAED":"AED=X","USDSAR":"SAR=X",
+        # Commodities
+        "XAUUSD":"GC=F","XAGUSD":"SI=F","WTI":"CL=F","BRENT":"BZ=F",
+        "COPPER":"HG=F","NATGAS":"NG=F","XPTUSD":"PL=F",
+        # Indexes
+        "SPX":"^GSPC","DJI":"^DJI","NASDAQ":"^IXIC","DAX":"^GDAXI",
+        "FTSE":"^FTSE","NIKKEI":"^N225","VIX":"^VIX","DXY":"DX-Y.NYB",
+        # Stocks
+        "AAPL":"AAPL","NVDA":"NVDA","TSLA":"TSLA","MSFT":"MSFT",
+        "GOOGL":"GOOGL","AMZN":"AMZN","META":"META","JPM":"JPM",
+    }
+    yahoo_sym = (
+        BACKTEST_YAHOO_MAP.get(symbol) or
+        BACKTEST_YAHOO_MAP.get(symbol.lower()) or
+        YAHOO_DIRECT.get(symbol.upper())
+    )
+    # Last resort: if 6-char ending in USD treat as forex
+    if not yahoo_sym and len(symbol)==6 and symbol.upper().endswith("USD"):
+        yahoo_sym = symbol.upper() + "=X"
+    # Bare stock ticker
+    if not yahoo_sym and symbol.isalpha() and len(symbol) <= 5:
+        yahoo_sym = symbol.upper()
 
     if not yahoo_sym:
-        raise HTTPException(404, f"Symbol {symbol} not found")
+        raise HTTPException(404, f"Symbol '{symbol}' not recognised")
 
-    y_interval = YAHOO_INTERVAL_MAP.get(interval, "1h")
-    # Yahoo range string
-    days = (to_ts - from_ts) // 86400
-    if   days <= 7:   y_range = "7d"
-    elif days <= 30:  y_range = "1mo"
-    elif days <= 90:  y_range = "3mo"
-    elif days <= 180: y_range = "6mo"
-    elif days <= 365: y_range = "1y"
-    elif days <= 730: y_range = "2y"
-    else:             y_range = "5y"
-
+    y_interval = YAHOO_INTERVAL_MAP.get(interval, "1d")
+    # Use period1/period2 (Unix timestamps) instead of range — more precise
     try:
         jar = aiohttp.CookieJar(unsafe=True)
         async with aiohttp.ClientSession(cookie_jar=jar) as s:
+            params = {
+                "interval":      y_interval,
+                "period1":       str(from_ts),
+                "period2":       str(to_ts),
+                "includePrePost":"false",
+                "events":        "history",
+            }
             async with s.get(
                 f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_sym}",
-                params={"interval": y_interval, "range": y_range, "includePrePost":"false"},
+                params=params,
                 headers=YAHOO_HEADERS,
                 timeout=TIMEOUT_SLOW,
             ) as r:
                 if r.status != 200:
-                    raise HTTPException(502, f"Yahoo HTTP {r.status}")
-                data = await r.json(content_type=None)
+                    # Try query2 as backup
+                    async with s.get(
+                        f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_sym}",
+                        params=params,
+                        headers=YAHOO_HEADERS,
+                        timeout=TIMEOUT_SLOW,
+                    ) as r2:
+                        if r2.status != 200:
+                            raise HTTPException(502, f"Yahoo HTTP {r2.status} for {yahoo_sym}")
+                        data = await r2.json(content_type=None)
+                else:
+                    data = await r.json(content_type=None)
+
                 result = data.get("chart",{}).get("result")
                 if not result:
-                    raise HTTPException(502, "No data")
-                ts   = result[0].get("timestamp",[])
+                    err = data.get("chart",{}).get("error",{})
+                    raise HTTPException(502, f"Yahoo: {err.get('description','No data returned')}")
+                ts   = result[0].get("timestamp",[]) or []
                 q    = result[0].get("indicators",{}).get("quote",[{}])[0]
-                opens  = q.get("open",[])
-                highs  = q.get("high",[])
-                lows   = q.get("low",[])
-                closes = q.get("close",[])
-                vols   = q.get("volume",[])
+                opens  = q.get("open",[])  or []
+                highs  = q.get("high",[])  or []
+                lows   = q.get("low",[])   or []
+                closes = q.get("close",[]) or []
+                vols   = q.get("volume",[])or []
                 for i,t in enumerate(ts):
-                    if t < from_ts or t > to_ts:
-                        continue
-                    o = opens[i]; h = highs[i]; l = lows[i]; c = closes[i]
-                    if None in (o,h,l,c):
-                        continue
+                    if i >= len(closes): break
+                    o = opens[i] if i < len(opens) else None
+                    h = highs[i] if i < len(highs) else None
+                    l = lows[i]  if i < len(lows)  else None
+                    c = closes[i]
+                    if None in (o,h,l,c): continue
                     candles.append({
-                        "time":  int(t),
-                        "open":  round(float(o),6),
-                        "high":  round(float(h),6),
-                        "low":   round(float(l),6),
-                        "close": round(float(c),6),
-                        "volume":float(vols[i] or 0),
+                        "time":   int(t),
+                        "open":   round(float(o),6),
+                        "high":   round(float(h),6),
+                        "low":    round(float(l),6),
+                        "close":  round(float(c),6),
+                        "volume": float(vols[i]) if i < len(vols) and vols[i] else 0,
                     })
     except HTTPException:
         raise
