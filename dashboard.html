@@ -3365,7 +3365,7 @@ function btSelectSymbol(id, sym, name, cat){
   if(nameEl) nameEl.textContent = sym;
   if(catEl)  catEl.textContent  = cat||'';
   if(iconEl) iconEl.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="var(--g)" stroke-width="1.2"/></svg>';
-  // Store selection
+  // Store both sym and CoinGecko id
   const btn2 = document.getElementById('bt-asset-btn');
   if(btn2){ btn2.dataset.sym=sym; btn2.dataset.id=id; btn2.dataset.name=name; }
   // Close menu
@@ -3422,7 +3422,8 @@ function btBuildAssetList(q=''){
 
 async function btLoad(){
   const btn = document.getElementById('bt-asset-btn');
-  const sym = btn?.dataset.sym || '';
+  const sym  = btn?.dataset.sym || '';
+  const cgid = btn?.dataset.id  || '';
   if(!sym){
     document.getElementById('bt-asset-menu')?.classList.add('open');
     document.getElementById('bt-asset-btn')?.classList.add('open');
@@ -3447,7 +3448,7 @@ async function btLoad(){
   replayBar.style.display = 'none';
 
   try {
-    const url = `/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`;
+    const url = `/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}&cgid=${encodeURIComponent(cgid)}`;
     const resp = await fetch(url);
     const json = await resp.json();
     if(!resp.ok) throw new Error(json.detail || 'HTTP '+resp.status);
