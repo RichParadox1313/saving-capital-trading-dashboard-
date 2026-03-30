@@ -539,20 +539,44 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .bt-sym-wrap{position:relative}
 .bt-sym-input{background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;outline:none;width:160px;transition:border-color .2s}
 .bt-sym-input:focus{border-color:var(--g)}
-.bt-sym-dropdown{display:none;position:absolute;top:calc(100%+4px);left:0;background:var(--s2);border:1px solid var(--br);border-radius:8px;min-width:200px;max-height:240px;overflow-y:auto;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.bt-sym-dropdown.open{display:block}
-.bt-sym-item{padding:8px 12px;font-size:11px;color:var(--t2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace}
-.bt-sym-item:hover{background:var(--s3)}
-.bt-sym-cat{font-size:8px;color:var(--g);background:var(--gdim);padding:1px 6px;border-radius:4px;letter-spacing:1px}
+
 .bt-tfs{display:flex;gap:3px;background:var(--s2);border:1px solid var(--br);border-radius:6px;padding:2px}
 .bt-tf{font-size:9px;letter-spacing:1px;padding:4px 8px;border:none;border-radius:4px;background:transparent;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
 .bt-tf:hover{color:var(--t2)}
 .bt-tf-on{background:var(--g)!important;color:#030704!important;font-weight:600}
 .bt-date{background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;width:120px}
 .bt-date::-webkit-calendar-picker-indicator{filter:invert(.4)}
-.bt-load-btn{background:var(--g);color:#030704;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:7px 18px;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;transition:opacity .2s}
-.bt-load-btn:hover{opacity:.85}
-.bt-load-btn:disabled{opacity:.4;cursor:not-allowed}
+.bt-header-sep{width:1px;height:24px;background:var(--br);flex-shrink:0}
+.bt-date-sep{color:var(--t4);font-size:10px;font-family:'DM Mono',monospace}
+
+/* Asset selector */
+.bt-asset-btn{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--br);border-radius:7px;color:var(--t1);cursor:pointer;padding:6px 12px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;transition:all .2s;min-width:160px;white-space:nowrap}
+.bt-asset-btn:hover{border-color:var(--br2)}
+.bt-asset-btn.open{border-color:var(--g);background:var(--s1)}
+.bt-asset-icon{color:var(--g);flex-shrink:0;display:flex}
+.bt-asset-name{flex:1;text-align:left}
+.bt-asset-cat{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--g);background:var(--gdim);padding:1px 6px;border-radius:3px;font-weight:600}
+.bt-asset-caret{color:var(--t4);transition:transform .2s;flex-shrink:0}
+.bt-asset-btn.open .bt-asset-caret{transform:rotate(180deg)}
+.bt-asset-menu{display:none;position:absolute;top:calc(100%+6px);left:0;width:300px;background:var(--s1);border:1px solid var(--br);border-radius:10px;z-index:600;box-shadow:0 16px 40px rgba(0,0,0,.5);overflow:hidden}
+.bt-asset-menu.open{display:block}
+.bt-asset-search-wrap{padding:10px 10px 6px;border-bottom:1px solid var(--br)}
+.bt-asset-search{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;padding:7px 10px;outline:none}
+.bt-asset-search:focus{border-color:var(--g)}
+.bt-asset-list{max-height:320px;overflow-y:auto;padding:4px 0}
+.bt-asset-group-hdr{font-size:7px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;padding:8px 12px 4px;background:var(--s1);position:sticky;top:0}
+.bt-asset-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;transition:background .15s}
+.bt-asset-item:hover{background:var(--s2)}
+.bt-asset-item.active{background:var(--gdim)}
+.bt-asset-item-left{display:flex;flex-direction:column;gap:2px}
+.bt-asset-item-sym{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--t1)}
+.bt-asset-item-name{font-size:9px;color:var(--t4)}
+.bt-asset-item-badge{font-size:7px;letter-spacing:1px;padding:2px 6px;border-radius:3px;text-transform:uppercase;font-weight:600;font-family:'DM Mono',monospace}
+.badge-crypto{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.badge-forex{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+.badge-commodity{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.badge-index{background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
+.badge-stock{background:rgba(251,113,133,.1);color:#fb7185;border:1px solid rgba(251,113,133,.2)}
 
 .bt-main{display:flex;flex:1;min-height:0;gap:0}
 
@@ -3304,26 +3328,15 @@ let btDrawColor = '#facc15';
 let btTextPending = null;
 
 function btInit(){
-  // Symbol search
-  const inp = document.getElementById('bt-symbol');
-  const dd  = document.getElementById('bt-sym-dropdown');
-  inp.addEventListener('input', ()=>{
-    const q = inp.value.toLowerCase();
-    const matches = BT_SYMBOLS.filter(s=>
-      s.name.toLowerCase().includes(q)||s.sym.toLowerCase().includes(q)||s.id.toLowerCase().includes(q)
-    ).slice(0,12);
-    if(matches.length && q.length > 0){
-      dd.innerHTML = matches.map(s=>
-        `<div class="bt-sym-item" onclick="btSelectSymbol('${s.id}','${s.sym}','${s.name}')">
-          <span>${s.name} <span style="color:var(--t4)">${s.sym}</span></span>
-          <span class="bt-sym-cat">${s.cat}</span>
-        </div>`
-      ).join('');
-      dd.classList.add('open');
-    } else { dd.classList.remove('open'); }
-  });
+  // Asset menu
+  btBuildAssetList('');
+  const search = document.getElementById('bt-asset-search');
+  if(search) search.addEventListener('input', ()=>btBuildAssetList(search.value));
   document.addEventListener('click', e=>{
-    if(!e.target.closest('.bt-sym-wrap')) dd.classList.remove('open');
+    if(!e.target.closest('.bt-sym-wrap')){
+      document.getElementById('bt-asset-menu')?.classList.remove('open');
+      document.getElementById('bt-asset-btn')?.classList.remove('open');
+    }
   });
 
   // Timeframe buttons
@@ -3342,15 +3355,79 @@ function btInit(){
   document.getElementById('bt-from').value = sixMonthsAgo.toISOString().slice(0,10);
 }
 
-function btSelectSymbol(id, sym, name){
-  document.getElementById('bt-symbol').value = name + ' (' + sym + ')';
-  document.getElementById('bt-symbol').dataset.sym = id;
-  document.getElementById('bt-sym-dropdown').classList.remove('open');
+function btSelectSymbol(id, sym, name, cat){
+  // Update button display
+  const btn = document.getElementById('bt-asset-btn');
+  const nameEl = document.getElementById('bt-asset-name');
+  const catEl  = document.getElementById('bt-asset-cat');
+  const iconEl = document.getElementById('bt-asset-icon');
+  if(nameEl) nameEl.textContent = sym;
+  if(catEl)  catEl.textContent  = cat||'';
+  if(iconEl) iconEl.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="var(--g)" stroke-width="1.2"/></svg>';
+  // Store selection
+  const btn2 = document.getElementById('bt-asset-btn');
+  if(btn2){ btn2.dataset.sym=id; btn2.dataset.name=name; }
+  // Close menu
+  document.getElementById('bt-asset-menu')?.classList.remove('open');
+  document.getElementById('bt-asset-btn')?.classList.remove('open');
+  // Highlight active item
+  document.querySelectorAll('.bt-asset-item').forEach(el=>el.classList.remove('active'));
+  document.querySelector(`.bt-asset-item[data-id="${id}"]`)?.classList.add('active');
+  // Auto load
+  btLoad();
+}
+
+function btToggleAssetMenu(){
+  const menu = document.getElementById('bt-asset-menu');
+  const btn  = document.getElementById('bt-asset-btn');
+  const open = menu.classList.contains('open');
+  menu.classList.toggle('open', !open);
+  btn.classList.toggle('open', !open);
+  if(!open){
+    setTimeout(()=>document.getElementById('bt-asset-search')?.focus(), 50);
+    btBuildAssetList('');
+  }
+}
+
+function btBuildAssetList(q=''){
+  const list = document.getElementById('bt-asset-list');
+  if(!list) return;
+  const query = q.toLowerCase();
+  const filtered = query
+    ? BT_SYMBOLS.filter(s=>s.name.toLowerCase().includes(query)||s.sym.toLowerCase().includes(query))
+    : BT_SYMBOLS;
+
+  const groups = {};
+  filtered.forEach(s=>{ if(!groups[s.cat]) groups[s.cat]=[]; groups[s.cat].push(s); });
+  const catOrder = ['Crypto','Forex','Commodity','Index','Stock'];
+  const badgeClass = {Crypto:'badge-crypto',Forex:'badge-forex',Commodity:'badge-commodity',Index:'badge-index',Stock:'badge-stock'};
+
+  let html = '';
+  catOrder.forEach(cat=>{
+    if(!groups[cat]?.length) return;
+    html += `<div class="bt-asset-group-hdr">${cat}</div>`;
+    groups[cat].forEach(s=>{
+      html += `<div class="bt-asset-item" data-id="${s.id}" onclick="btSelectSymbol('${s.id}','${s.sym}','${s.name}','${s.cat}')">
+        <div class="bt-asset-item-left">
+          <div class="bt-asset-item-sym">${s.sym}</div>
+          <div class="bt-asset-item-name">${s.name}</div>
+        </div>
+        <span class="bt-asset-item-badge ${badgeClass[cat]||''}">${cat}</span>
+      </div>`;
+    });
+  });
+  list.innerHTML = html || '<div style="padding:16px;text-align:center;color:var(--t4);font-size:11px;font-family:monospace">No results</div>';
 }
 
 async function btLoad(){
-  const symInput = document.getElementById('bt-symbol');
-  const sym = symInput.dataset.sym || symInput.value.split('(')[0].trim().toUpperCase();
+  const btn = document.getElementById('bt-asset-btn');
+  const sym = btn?.dataset.sym || '';
+  if(!sym){
+    const menu = document.getElementById('bt-asset-menu');
+    const btnEl = document.getElementById('bt-asset-btn');
+    menu?.classList.add('open'); btnEl?.classList.add('open');
+    return;
+  }
   const from = document.getElementById('bt-from').value;
   const to   = document.getElementById('bt-to').value;
   if(!sym){ return; }
@@ -3376,7 +3453,7 @@ async function btLoad(){
     btInitDrawCanvas();
   }catch(e){
     document.getElementById('bt-placeholder').style.display='flex';
-    document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon">⚠️</div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
+    document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg></div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
   }finally{
     document.getElementById('bt-loading').style.display='none';
     document.getElementById('bt-load-btn').disabled=false;
@@ -3749,18 +3826,33 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
   <!-- Header bar -->
   <div class="bt-header">
-    <div class="bt-title">⚡ Backtesting — FX Replay</div>
+    <div class="bt-title">BACKTESTING</div>
 
-    <!-- Symbol search -->
+    <!-- Asset selector button -->
     <div class="bt-sym-wrap">
-      <input class="bt-sym-input" id="bt-symbol" placeholder="EURUSD, BTCUSDT, AAPL..." value="EURUSD" autocomplete="off"/>
-      <div class="bt-sym-dropdown" id="bt-sym-dropdown"></div>
+      <button class="bt-asset-btn" id="bt-asset-btn" onclick="btToggleAssetMenu()">
+        <span class="bt-asset-icon" id="bt-asset-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="bt-asset-name" id="bt-asset-name">Select Asset</span>
+        <span class="bt-asset-cat" id="bt-asset-cat"></span>
+        <svg class="bt-asset-caret" id="bt-asset-caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <div class="bt-asset-menu" id="bt-asset-menu">
+        <div class="bt-asset-search-wrap">
+          <input class="bt-asset-search" id="bt-asset-search" placeholder="Search symbol..." autocomplete="off"/>
+        </div>
+        <div class="bt-asset-list" id="bt-asset-list"></div>
+      </div>
     </div>
+
+    <!-- Separator -->
+    <div class="bt-header-sep"></div>
 
     <!-- Timeframe -->
     <div class="bt-tfs">
       <button class="bt-tf" data-tf="M1">M1</button>
-      <button class="bt-tf" data--tf="M5">M5</button>
+      <button class="bt-tf" data-tf="M5">M5</button>
       <button class="bt-tf" data-tf="M15">M15</button>
       <button class="bt-tf" data-tf="M30">M30</button>
       <button class="bt-tf bt-tf-on" data-tf="H1">H1</button>
@@ -3772,7 +3864,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <!-- Date range -->
     <div class="bt-dates">
       <input class="bt-date" id="bt-from" type="date" value="2024-01-01"/>
-      <span style="color:var(--t4);font-size:10px">→</span>
+      <span class="bt-date-sep">—</span>
       <input class="bt-date" id="bt-to" type="date" value="2024-06-30"/>
     </div>
 
@@ -3782,9 +3874,6 @@ setLang(localStorage.getItem('sc_lang')||'en');
       <button class="bt-tf" id="bt-style-line" onclick="btSetStyle('line')">Line</button>
       <button class="bt-tf" id="bt-style-ha" onclick="btSetStyle('ha')">Heikin Ashi</button>
     </div>
-
-    <!-- Load button -->
-    <button class="bt-load-btn" id="bt-load-btn" onclick="btLoad()">▶ Load</button>
   </div>
 
   <!-- Main layout -->
@@ -3853,7 +3942,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
       <!-- Chart container -->
       <div class="bt-chart-wrap" id="bt-chart-wrap">
         <div class="bt-chart-placeholder" id="bt-placeholder">
-          <div class="bt-ph-icon">📊</div>
+          <div class="bt-ph-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="4" y="28" width="6" height="16" rx="1" fill="rgba(34,197,94,0.4)"/><rect x="14" y="20" width="6" height="24" rx="1" fill="rgba(34,197,94,0.6)"/><rect x="24" y="12" width="6" height="32" rx="1" fill="var(--g)"/><rect x="34" y="18" width="6" height="26" rx="1" fill="rgba(34,197,94,0.6)"/></svg></div>
           <div class="bt-ph-title">Select a symbol and load data to start replaying</div>
           <div class="bt-ph-sub">Supports Crypto (Binance) · Forex · Stocks · Commodities · Indexes</div>
         </div>
