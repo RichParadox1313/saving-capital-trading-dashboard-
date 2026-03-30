@@ -1307,11 +1307,27 @@ BINANCE_INTERVAL_MAP = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H
 YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"1h","D1":"1d","W1":"1wk"}
 
 @app.get("/api/backtest/data")
-async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = ""):
-    """Fetch OHLCV candle data for backtesting. Returns up to 2000 candles."""
+async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = "", cgid: str = ""):
+    """Fetch OHLCV candle data for backtesting. Returns up to 5000 candles."""
     import time as _time
     sym = symbol.strip().upper()
     interval = interval.strip().upper()
+    cg_id = cgid.strip().lower()  # CoinGecko ID e.g. 'bitcoin', 'ethereum'
+
+    # Map Binance sym back to CoinGecko ID if not provided by frontend
+    BINANCE_TO_CGID = {
+        "BTCUSDT":"bitcoin","ETHUSDT":"ethereum","XRPUSDT":"ripple",
+        "SOLUSDT":"solana","BNBUSDT":"binancecoin","DOGEUSDT":"dogecoin",
+        "ADAUSDT":"cardano","AVAXUSDT":"avalanche-2","LINKUSDT":"chainlink",
+        "DOTUSDT":"polkadot","TONUSDT":"the-open-network","SHIBUSDT":"shiba-inu",
+        "LTCUSDT":"litecoin","TRXUSDT":"tron","POLUSDT":"pol-polygon-ecosystem-token",
+        "UNIUSDT":"uniswap","XLMUSDT":"stellar","NEARUSDT":"near",
+        "ARBUSDT":"arbitrum","APTUSDT":"aptos","SUIUSDT":"sui",
+        "PEPEUSDT":"pepe","ICPUSDT":"internet-computer","XMRUSDT":"monero",
+        "FILUSDT":"filecoin","RENDERUSDT":"render-token","INJUSDT":"injective-protocol",
+    }
+    if not cg_id and sym in BINANCE_TO_CGID:
+        cg_id = BINANCE_TO_CGID[sym]
 
     # ── Resolve to Binance symbol ─────────────────────────────────────────
     # Frontend now sends actual trading symbols: XRPUSDT, EURUSD, SOLUSDT etc.
@@ -1403,19 +1419,57 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
             print(f"  Backtest Binance {binance_sym}: {e}")
             candles = []
 
-    # ── Fallback: Yahoo Finance (forex, stocks, commodities, indexes) ────
+    # ── Fallback 1: CoinGecko OHLCV (for crypto when Binance fails) ────────
+    if not candles and cg_id:
+        try:
+            # CoinGecko /ohlc returns [ts, open, high, low, close] — free, no key
+            # days mapping: use enough days to cover the range
+            days_needed = max(1, (to_ts - from_ts) // 86400)
+            cg_days = "max" if days_needed > 365 else str(min(365, max(days_needed + 5, 30)))
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"https://api.coingecko.com/api/v3/coins/{cg_id}/ohlc",
+                    params={"vs_currency":"usd","days":cg_days},
+                    headers={"Accept":"application/json","User-Agent":USER_AGENT},
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as r:
+                    if r.status == 200:
+                        raw = await r.json(content_type=None)
+                        if isinstance(raw, list) and raw:
+                            for row in raw:
+                                if len(row) < 5: continue
+                                ts_sec = int(row[0]) // 1000
+                                if ts_sec < from_ts or ts_sec > to_ts: continue
+                                candles.append({
+                                    "time":   ts_sec,
+                                    "open":   float(row[1]),
+                                    "high":   float(row[2]),
+                                    "low":    float(row[3]),
+                                    "close":  float(row[4]),
+                                    "volume": 0.0,
+                                })
+                            if candles:
+                                print(f"  Backtest {sym}/{interval}: {len(candles)} candles from CoinGecko ({cg_id})")
+                                return JSONResponse({"source":"coingecko","symbol":sym,"interval":interval,"candles":candles[-5000:]})
+                    else:
+                        print(f"  CoinGecko OHLC {cg_id}: HTTP {r.status}")
+        except Exception as e:
+            print(f"  CoinGecko OHLC {cg_id}: {e}")
+            candles = []
+
+    # ── Fallback 2: Yahoo Finance (forex, stocks, commodities, indexes) ────
     # Complete symbol resolution
     YAHOO_DIRECT = {
         # Crypto (Yahoo Finance supports these as fallback)
         "BTCUSDT":"BTC-USD","ETHUSDT":"ETH-USD","XRPUSDT":"XRP-USD",
         "SOLUSDT":"SOL-USD","BNBUSDT":"BNB-USD","DOGEUSDT":"DOGE-USD",
         "ADAUSDT":"ADA-USD","AVAXUSDT":"AVAX-USD","LINKUSDT":"LINK-USD",
-        "DOTUSDT":"DOT-USD","TONUSDT":"TON-USD","SHIBUSDT":"SHIB-USD",
-        "LTCUSDT":"LTC-USD","TRXUSDT":"TRX-USD","POLUSDT":"POL-USD",
-        "UNIUSDT":"UNI-USD","XLMUSDT":"XLM-USD","NEARUSDT":"NEAR-USD",
-        "ARBUSDT":"ARB-USD","APTUSDT":"APT-USD","SUIUSDT":"SUI-USD",
-        "PEPEUSDT":"PEPE-USD","ICPUSDT":"ICP-USD","XMRUSDT":"XMR-USD",
-        "FILUSDT":"FIL-USD","RENDERUSDT":"RENDER-USD","INJUSDT":"INJ-USD",
+        "DOTUSDT":"DOT-USD","TONUSDT":"TON11419-USD","SHIBUSDT":"SHIB-USD",
+        "LTCUSDT":"LTC-USD","TRXUSDT":"TRX-USD","POLUSDT":"MATIC-USD",
+        "UNIUSDT":"UNI7083-USD","XLMUSDT":"XLM-USD","NEARUSDT":"NEAR-USD",
+        "ARBUSDT":"ARB11841-USD","APTUSDT":"APT21794-USD","SUIUSDT":"SUI20947-USD",
+        "PEPEUSDT":"PEPE24478-USD","ICPUSDT":"ICP-USD","XMRUSDT":"XMR-USD",
+        "FILUSDT":"FIL-USD","RENDERUSDT":"RNDR-USD","INJUSDT":"INJ-USD",
         # Forex
         "EURUSD":"EURUSD=X","GBPUSD":"GBPUSD=X","USDJPY":"JPY=X",
         "AUDUSD":"AUDUSD=X","USDCAD":"CAD=X","USDCHF":"CHF=X",
