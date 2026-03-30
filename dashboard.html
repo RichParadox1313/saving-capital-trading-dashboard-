@@ -47,6 +47,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 
 /* ── Home Page ─────────────────────────────────────────────────────────────── */
 .page{display:block;position:relative;min-height:100vh;overflow-x:hidden}
+#page-backtest{height:100vh;overflow:hidden;min-height:unset}
 .home-wrap{max-width:1100px;margin:0 auto;padding:90px 24px 60px;min-height:100svh;display:flex;flex-direction:column;justify-content:center;gap:40px}
 .home-hero{display:flex;flex-direction:column;gap:0}
 .home-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(4.5rem,13vw,10rem);letter-spacing:4px;line-height:.88;margin-bottom:20px;animation:fu .6s .08s ease both}
@@ -3444,12 +3445,19 @@ async function btLoad(){
     btDrawings = [];
     document.getElementById('bt-chart').style.display='block';
     document.getElementById('bt-draw-canvas').style.display='block';
-    // Small delay so browser paints the container before we measure it
-    await new Promise(r=>setTimeout(r,50));
+    // Wait for browser to paint and resolve flex heights
+    await new Promise(r=>setTimeout(r,120));
     btInitChart(sym);
     btReset();
     document.getElementById('bt-replay-bar').style.display='flex';
     btInitDrawCanvas();
+    // Second resize pass after replay bar appears
+    await new Promise(r=>setTimeout(r,80));
+    if(btChart){
+      const w=document.getElementById('bt-chart-wrap');
+      btChart.applyOptions({width:w.offsetWidth, height:w.offsetHeight});
+      btChart.timeScale().fitContent();
+    }
   }catch(e){
     document.getElementById('bt-placeholder').style.display='flex';
     document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg></div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
@@ -3460,11 +3468,16 @@ async function btLoad(){
 
 function btInitChart(sym){
   const container = document.getElementById('bt-chart');
-  if(btChart){ btChart.remove(); btChart=null; }
+  if(btChart){ try{btChart.remove();}catch(e){} btChart=null; }
+
+  // Always measure from the wrap, not the chart div itself
+  const wrap = document.getElementById('bt-chart-wrap');
+  const W = wrap.offsetWidth  || wrap.clientWidth  || 800;
+  const H = wrap.offsetHeight || wrap.clientHeight || 500;
 
   btChart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight || 400,
+    width: W,
+    height: H,
     layout:{ background:{type:'Solid',color:'#040a04'}, textColor:'rgba(167,243,208,0.6)', fontSize:10 },
     grid:{ vertLines:{color:'rgba(34,197,94,0.06)'}, horzLines:{color:'rgba(34,197,94,0.06)'} },
     crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
@@ -3473,7 +3486,9 @@ function btInitChart(sym){
   });
 
   window.addEventListener('resize', ()=>{
-    if(btChart) btChart.applyOptions({width:container.clientWidth, height:container.clientHeight});
+    if(!btChart) return;
+    const w2 = document.getElementById('bt-chart-wrap');
+    btChart.applyOptions({width: w2.offsetWidth, height: w2.offsetHeight});
     btResizeDrawCanvas();
   });
 
