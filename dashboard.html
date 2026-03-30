@@ -3423,40 +3423,38 @@ async function btLoad(){
   const btn = document.getElementById('bt-asset-btn');
   const sym = btn?.dataset.sym || '';
   if(!sym){
-    const menu = document.getElementById('bt-asset-menu');
-    const btnEl = document.getElementById('bt-asset-btn');
-    menu?.classList.add('open'); btnEl?.classList.add('open');
+    document.getElementById('bt-asset-menu')?.classList.add('open');
+    document.getElementById('bt-asset-btn')?.classList.add('open');
     return;
   }
   const from = document.getElementById('bt-from').value;
   const to   = document.getElementById('bt-to').value;
-  if(!sym){ return; }
 
   btStop();
   document.getElementById('bt-loading').style.display='flex';
   document.getElementById('bt-placeholder').style.display='none';
-  document.getElementById('bt-load-btn').disabled=true;
 
   try{
     const r = await fetch(`/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`);
     if(!r.ok){ const e=await r.json(); throw new Error(e.detail||'Failed to load data'); }
     const data = await r.json();
     btAllCandles = data.candles;
-    if(btAllCandles.length < 2){ throw new Error('Not enough data for selected range'); }
+    if(btAllCandles.length < 2){ throw new Error('Not enough data for this range'); }
 
     btDrawings = [];
+    document.getElementById('bt-chart').style.display='block';
+    document.getElementById('bt-draw-canvas').style.display='block';
+    // Small delay so browser paints the container before we measure it
+    await new Promise(r=>setTimeout(r,50));
     btInitChart(sym);
     btReset();
     document.getElementById('bt-replay-bar').style.display='flex';
-    document.getElementById('bt-chart').style.display='block';
-    document.getElementById('bt-draw-canvas').style.display='block';
     btInitDrawCanvas();
   }catch(e){
     document.getElementById('bt-placeholder').style.display='flex';
     document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M20 4L37 34H3L20 4z" stroke="rgba(245,158,11,0.6)" stroke-width="2" fill="rgba(245,158,11,0.06)"/><line x1="20" y1="16" x2="20" y2="26" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="1.5" fill="#fbbf24"/></svg></div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
   }finally{
     document.getElementById('bt-loading').style.display='none';
-    document.getElementById('bt-load-btn').disabled=false;
   }
 }
 
