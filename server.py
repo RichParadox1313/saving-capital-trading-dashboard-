@@ -1310,68 +1310,92 @@ YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4
 async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = ""):
     """Fetch OHLCV candle data for backtesting. Returns up to 2000 candles."""
     import time as _time
-    symbol_raw = symbol.strip()          # preserve original case (e.g. 'ripple', 'bitcoin')
-    symbol = symbol_raw.upper()          # uppercase for forex/stock/commodity lookups
-    interval = interval.upper().strip()
+    sym = symbol.strip().upper()
+    interval = interval.strip().upper()
+
+    # ── Resolve to Binance symbol ─────────────────────────────────────────
+    # Frontend now sends actual trading symbols: XRPUSDT, EURUSD, SOLUSDT etc.
+    # Also support CoinGecko IDs as fallback (ripple, bitcoin etc.)
+    COINGECKO_TO_BINANCE = {
+        "BITCOIN":"BTCUSDT","ETHEREUM":"ETHUSDT","RIPPLE":"XRPUSDT",
+        "SOLANA":"SOLUSDT","BINANCECOIN":"BNBUSDT","DOGECOIN":"DOGEUSDT",
+        "CARDANO":"ADAUSDT","AVALANCHE-2":"AVAXUSDT","CHAINLINK":"LINKUSDT",
+        "POLKADOT":"DOTUSDT","THE-OPEN-NETWORK":"TONUSDT","SHIBA-INU":"SHIBUSDT",
+        "LITECOIN":"LTCUSDT","TRON":"TRXUSDT","POL-POLYGON-ECOSYSTEM-TOKEN":"POLUSDT",
+        "UNISWAP":"UNIUSDT","STELLAR":"XLMUSDT","NEAR":"NEARUSDT",
+        "ARBITRUM":"ARBUSDT","APTOS":"APTUSDT","SUI":"SUIUSDT","PEPE":"PEPEUSDT",
+        "INTERNET-COMPUTER":"ICPUSDT","MONERO":"XMRUSDT","FILECOIN":"FILUSDT",
+    }
+    # Direct Binance symbols (already correct format)
+    BINANCE_SYMBOLS = {
+        "BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","DOGEUSDT",
+        "ADAUSDT","AVAXUSDT","LINKUSDT","DOTUSDT","TONUSDT","SHIBUSDT",
+        "LTCUSDT","TRXUSDT","POLUSDT","UNIUSDT","XLMUSDT","NEARUSDT",
+        "ARBUSDT","APTUSDT","SUIUSDT","PEPEUSDT","ICPUSDT","XMRUSDT","FILUSDT",
+        "RENDERUSDT","INJUSDT","FETUSDT","SEIUSDT","TAOUSDT",
+    }
+    # Resolve binance sym
+    if sym in BINANCE_SYMBOLS:
+        binance_sym = sym
+    elif sym in COINGECKO_TO_BINANCE:
+        binance_sym = COINGECKO_TO_BINANCE[sym]
+    elif sym.endswith("USDT"):
+        binance_sym = sym  # try directly
+    else:
+        binance_sym = None  # not crypto, skip Binance
 
     # Determine from/to timestamps
     now_ts = int(_time.time())
-    if to_date:
-        try:
-            to_ts = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp())
-        except:
-            to_ts = now_ts
-    else:
-        to_ts = now_ts
+    to_ts  = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp()) if to_date else now_ts
+    from_ts= int(datetime.strptime(from_date, "%Y-%m-%d").timestamp()) if from_date else to_ts - 730*86400  # 2 years default
 
-    if from_date:
-        try:
-            from_ts = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp())
-        except:
-            from_ts = to_ts - 90*86400
-    else:
-        from_ts = to_ts - 90*86400
-
-    # ── Try Binance first (crypto) ────────────────────────────────────────
-    binance_sym = BACKTEST_BINANCE_MAP.get(symbol_raw.lower()) or BACKTEST_BINANCE_MAP.get(symbol.lower()) or (
-        symbol + "USDT" if not symbol.endswith("USDT") and len(symbol) <= 5 else symbol
-    )
     b_interval = BINANCE_INTERVAL_MAP.get(interval, "1h")
 
+    # Cap date range per timeframe to avoid requesting millions of candles
+    # M1: max 7 days, M5: max 30 days, M15: max 90 days, M30: max 6mo, H1: 2yr, H4+: no cap
+    TF_MAX_DAYS = {"M1":7,"M5":30,"M15":90,"M30":180,"H1":730,"H4":1460,"D1":3650,"W1":3650}
+    max_days = TF_MAX_DAYS.get(interval, 730)
+    if (to_ts - from_ts) > max_days * 86400:
+        from_ts = to_ts - max_days * 86400
+
     candles = []
-    try:
-        from_ms = from_ts * 1000
-        to_ms   = to_ts   * 1000
-        async with aiohttp.ClientSession() as s:
-            while from_ms < to_ms and len(candles) < 2000:
-                async with s.get(
-                    "https://api.binance.com/api/v3/klines",
-                    params={"symbol": binance_sym, "interval": b_interval,
-                            "startTime": from_ms, "endTime": to_ms, "limit": 1000},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as r:
-                    if r.status != 200:
-                        break
-                    data = await r.json()
-                    if not data:
-                        break
-                    for k in data:
-                        candles.append({
-                            "time":  int(k[0]) // 1000,
-                            "open":  float(k[1]),
-                            "high":  float(k[2]),
-                            "low":   float(k[3]),
-                            "close": float(k[4]),
-                            "volume":float(k[5]),
-                        })
-                    if len(data) < 1000:
-                        break
-                    from_ms = int(data[-1][0]) + 1
-        if candles:
-            print(f"  Backtest {symbol}/{interval}: {len(candles)} candles from Binance")
-            return JSONResponse({"source":"binance","symbol":symbol,"interval":interval,"candles":candles[-2000:]})
-    except Exception as e:
-        print(f"  Backtest Binance {symbol}: {e}")
+
+    # ── Try Binance ───────────────────────────────────────────────────────
+    if binance_sym:
+        try:
+            from_ms = from_ts * 1000
+            to_ms   = to_ts   * 1000
+            async with aiohttp.ClientSession() as s:
+                while from_ms < to_ms and len(candles) < 5000:
+                    async with s.get(
+                        "https://api.binance.com/api/v3/klines",
+                        params={"symbol": binance_sym, "interval": b_interval,
+                                "startTime": from_ms, "endTime": to_ms, "limit": 1000},
+                        timeout=aiohttp.ClientTimeout(total=12),
+                    ) as r:
+                        if r.status != 200:
+                            break
+                        data = await r.json()
+                        if not data:
+                            break
+                        for k in data:
+                            candles.append({
+                                "time":   int(k[0]) // 1000,
+                                "open":   float(k[1]),
+                                "high":   float(k[2]),
+                                "low":    float(k[3]),
+                                "close":  float(k[4]),
+                                "volume": float(k[5]),
+                            })
+                        if len(data) < 1000:
+                            break
+                        from_ms = int(data[-1][0]) + 1
+            if candles:
+                print(f"  Backtest {sym}/{interval}: {len(candles)} candles from Binance ({binance_sym})")
+                return JSONResponse({"source":"binance","symbol":sym,"interval":interval,"candles":candles[-5000:]})
+        except Exception as e:
+            print(f"  Backtest Binance {binance_sym}: {e}")
+            candles = []
 
     # ── Fallback: Yahoo Finance (forex, stocks, commodities, indexes) ────
     # Complete symbol resolution
@@ -1401,21 +1425,19 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
         "GOOGL":"GOOGL","AMZN":"AMZN","META":"META","JPM":"JPM",
     }
     yahoo_sym = (
-        BACKTEST_YAHOO_MAP.get(symbol_raw) or
-        BACKTEST_YAHOO_MAP.get(symbol_raw.lower()) or
-        BACKTEST_YAHOO_MAP.get(symbol) or
-        BACKTEST_YAHOO_MAP.get(symbol.lower()) or
-        YAHOO_DIRECT.get(symbol)
+        BACKTEST_YAHOO_MAP.get(sym) or
+        BACKTEST_YAHOO_MAP.get(sym.lower()) or
+        YAHOO_DIRECT.get(sym)
     )
     # Last resort: if 6-char ending in USD treat as forex
-    if not yahoo_sym and len(symbol)==6 and symbol.upper().endswith("USD"):
-        yahoo_sym = symbol.upper() + "=X"
+    if not yahoo_sym and len(sym)==6 and sym.endswith("USD"):
+        yahoo_sym = sym + "=X"
     # Bare stock ticker
-    if not yahoo_sym and symbol.isalpha() and len(symbol) <= 5:
-        yahoo_sym = symbol.upper()
+    if not yahoo_sym and sym.isalpha() and len(sym) <= 5:
+        yahoo_sym = sym
 
     if not yahoo_sym:
-        raise HTTPException(404, f"Symbol '{symbol}' not recognised")
+        raise HTTPException(404, f"Symbol '{sym}' not recognised")
 
     y_interval = YAHOO_INTERVAL_MAP.get(interval, "1d")
     # Use period1/period2 (Unix timestamps) instead of range — more precise
@@ -1483,8 +1505,8 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
     if not candles:
         raise HTTPException(404, "No candles returned for this range")
 
-    print(f"  Backtest {symbol}/{interval}: {len(candles)} candles from Yahoo ({yahoo_sym})")
-    return JSONResponse({"source":"yahoo","symbol":symbol,"interval":interval,"candles":candles[-2000:]})
+    print(f"  Backtest {sym}/{interval}: {len(candles)} candles from Yahoo ({yahoo_sym})")
+    return JSONResponse({"source":"yahoo","symbol":sym,"interval":interval,"candles":candles[-5000:]})
 
 
 @app.get("/img/{filename}")
