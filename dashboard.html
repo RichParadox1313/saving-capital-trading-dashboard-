@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -531,6 +532,98 @@ h1 i{color:var(--g);font-style:normal;display:block}
   .rr-display{grid-template-columns:repeat(3,1fr)}
 }
 
+/* ── Backtesting Page ───────────────────────────────────────────────────── */
+.bt-wrap{display:flex;flex-direction:column;height:100vh;padding-top:102px;background:var(--bg);overflow:hidden}
+.bt-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--s1);border-bottom:1px solid var(--br);flex-wrap:wrap;flex-shrink:0;z-index:10}
+.bt-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--g);white-space:nowrap}
+.bt-sym-wrap{position:relative}
+.bt-sym-input{background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:6px 10px;outline:none;width:160px;transition:border-color .2s}
+.bt-sym-input:focus{border-color:var(--g)}
+.bt-sym-dropdown{display:none;position:absolute;top:calc(100%+4px);left:0;background:var(--s2);border:1px solid var(--br);border-radius:8px;min-width:200px;max-height:240px;overflow-y:auto;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.bt-sym-dropdown.open{display:block}
+.bt-sym-item{padding:8px 12px;font-size:11px;color:var(--t2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace}
+.bt-sym-item:hover{background:var(--s3)}
+.bt-sym-cat{font-size:8px;color:var(--g);background:var(--gdim);padding:1px 6px;border-radius:4px;letter-spacing:1px}
+.bt-tfs{display:flex;gap:3px;background:var(--s2);border:1px solid var(--br);border-radius:6px;padding:2px}
+.bt-tf{font-size:9px;letter-spacing:1px;padding:4px 8px;border:none;border-radius:4px;background:transparent;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+.bt-tf:hover{color:var(--t2)}
+.bt-tf-on{background:var(--g)!important;color:#030704!important;font-weight:600}
+.bt-date{background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;outline:none;width:120px}
+.bt-date::-webkit-calendar-picker-indicator{filter:invert(.4)}
+.bt-load-btn{background:var(--g);color:#030704;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:7px 18px;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.bt-load-btn:hover{opacity:.85}
+.bt-load-btn:disabled{opacity:.4;cursor:not-allowed}
+
+.bt-main{display:flex;flex:1;min-height:0;gap:0}
+
+/* Drawing tools sidebar */
+.bt-tools{display:flex;flex-direction:column;gap:4px;padding:8px 6px;background:var(--s1);border-right:1px solid var(--br);width:40px;flex-shrink:0}
+.bt-tool{width:28px;height:28px;border:1px solid var(--br);border-radius:5px;background:transparent;color:var(--t3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.bt-tool:hover{border-color:var(--br2);color:var(--t1)}
+.bt-tool-on{background:var(--gdim)!important;border-color:var(--g)!important;color:var(--g)!important}
+.bt-tool-div{height:1px;background:var(--br);margin:2px 0}
+
+/* Chart center */
+.bt-center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.bt-chart-wrap{flex:1;position:relative;background:#040a04;min-height:0}
+.bt-chart-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--t4)}
+.bt-ph-icon{font-size:3rem}
+.bt-ph-title{font-size:15px;color:var(--t2);font-weight:500}
+.bt-ph-sub{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace}
+.bt-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;background:rgba(3,7,3,.7);gap:12px;color:var(--g);font-family:'DM Mono',monospace;font-size:11px;z-index:20}
+.bt-spinner{width:28px;height:28px;border:2px solid var(--br);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bt-crosshair-info{position:absolute;top:8px;left:8px;background:rgba(3,7,3,.85);border:1px solid var(--br);border-radius:5px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--t2);pointer-events:none;z-index:10;display:none}
+
+/* Replay bar */
+.bt-replay-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--s1);border-top:1px solid var(--br);flex-shrink:0;gap:12px;flex-wrap:wrap}
+.bt-replay-left{display:flex;align-items:center;gap:6px}
+.bt-replay-btn{background:var(--s2);border:1px solid var(--br);border-radius:5px;color:var(--t1);width:30px;height:30px;cursor:pointer;font-size:12px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.bt-replay-btn:hover{border-color:var(--g);color:var(--g)}
+.bt-replay-play{width:36px;height:36px;font-size:16px;background:var(--g);color:#030704;border-color:var(--g)}
+.bt-replay-play:hover{background:#4ade80;color:#030704}
+.bt-replay-play.playing{background:#f59e0b;border-color:#f59e0b}
+.bt-speed-wrap{display:flex;align-items:center;gap:6px;margin-left:8px}
+.bt-speed-lbl{font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:1px}
+.bt-speed-slider{width:80px;accent-color:var(--g);cursor:pointer}
+.bt-speed-val{font-size:10px;color:var(--g);font-family:'DM Mono',monospace;min-width:24px}
+.bt-replay-info{display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--t2)}
+.bt-candle-info{color:var(--t4);font-size:10px}
+
+/* Right panel */
+.bt-right{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:0;background:var(--s1);border-left:1px solid var(--br);overflow-y:auto}
+.bt-balance-card{padding:12px 14px;border-bottom:1px solid var(--br);text-align:center}
+.bt-bal-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace}
+.bt-bal-value{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--t1);letter-spacing:1px;margin:2px 0}
+.bt-bal-pnl{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3)}
+.bt-trade-card,.bt-stats-card,.bt-log-card{padding:12px 14px;border-bottom:1px solid var(--br)}
+.bt-card-title{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:10px}
+.bt-trade-row{margin-bottom:8px}
+.bt-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;display:block;margin-bottom:3px}
+.bt-inp{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:5px;color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none}
+.bt-inp:focus{border-color:var(--g)}
+.bt-trade-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.bt-buy-btn,.bt-sell-btn{padding:8px 4px;border:none;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;transition:opacity .2s}
+.bt-buy-btn{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.bt-buy-btn:hover{background:rgba(34,197,94,.25)}
+.bt-sell-btn{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.bt-sell-btn:hover{background:rgba(239,68,68,.2)}
+.bt-open-trade{font-size:9px;font-family:'DM Mono',monospace;padding:5px 8px;background:var(--s2);border-radius:5px;margin-bottom:4px;border:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.bt-close-btn{background:transparent;border:none;color:var(--r);cursor:pointer;font-size:11px;padding:0 2px}
+.bt-stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--br);font-size:10px;font-family:'DM Mono',monospace;color:var(--t3)}
+.bt-stat-row:last-child{border-bottom:none}
+.bt-log{max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.bt-log-item{font-size:9px;font-family:'DM Mono',monospace;padding:5px 8px;border-radius:5px;display:flex;flex-direction:column;gap:2px}
+.bt-log-buy{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15)}
+.bt-log-sell{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)}
+.bt-log-item .bt-log-pnl{font-weight:600;font-size:10px}
+
+@media(max-width:768px){
+  .bt-right{display:none}
+  .bt-header{gap:6px}
+  .bt-sym-input{width:110px}
+}
+
 /* ── Trading Journal ─────────────────────────────────────────────────────── */
 .jnl{display:flex;flex-direction:column;gap:16px}
 .jnl-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
@@ -791,6 +884,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="npbtn active" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
     <button class="npbtn" id="np-markets" onclick="goPage('markets')" data-i18n="marketIntel">Market Intelligence</button>
     <button class="npbtn" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journal">Trading Journal</button>
+    <button class="npbtn" id="np-backtest" onclick="goPage('backtest')">Backtesting</button>
   </div>
   <div class="nr">
     <div class="lang-switcher">
@@ -832,6 +926,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="hp-np hp-np-on" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
     <button class="hp-np" id="np-markets" onclick="goPage('markets')" data-i18n="intelligence">Intelligence</button>
     <button class="hp-np" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journalShort">Journal</button>
+    <button class="hp-np" id="np-backtest" onclick="goPage('backtest')">Backtest</button>
   </div>
   <div class="hp-nav-r">
     <div class="hp-live"><span class="hp-dot"></span>LIVE</div>
@@ -1181,6 +1276,10 @@ function goPage(page){
   }
   if(page==='journal-page'){
     loadJournal();
+  }
+  if(page==='backtest'){
+    btPageInit();
+    startBgAnim('backtest');
   }
   window.scrollTo(0,0);
   // Start/stop background animations
@@ -3134,6 +3233,529 @@ function runJournalBg(canvas){
 })();
 
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  BACKTESTING ENGINE — FX Replay
+// ══════════════════════════════════════════════════════════════════════════════
+
+const BT_SYMBOLS = [
+  // Crypto
+  {id:'bitcoin',sym:'BTCUSDT',name:'Bitcoin',cat:'Crypto'},
+  {id:'ethereum',sym:'ETHUSDT',name:'Ethereum',cat:'Crypto'},
+  {id:'ripple',sym:'XRPUSDT',name:'XRP',cat:'Crypto'},
+  {id:'solana',sym:'SOLUSDT',name:'Solana',cat:'Crypto'},
+  {id:'pol-polygon-ecosystem-token',sym:'POLUSDT',name:'Polygon',cat:'Crypto'},
+  {id:'binancecoin',sym:'BNBUSDT',name:'BNB',cat:'Crypto'},
+  {id:'dogecoin',sym:'DOGEUSDT',name:'Dogecoin',cat:'Crypto'},
+  {id:'cardano',sym:'ADAUSDT',name:'Cardano',cat:'Crypto'},
+  {id:'litecoin',sym:'LTCUSDT',name:'Litecoin',cat:'Crypto'},
+  {id:'avalanche-2',sym:'AVAXUSDT',name:'Avalanche',cat:'Crypto'},
+  {id:'chainlink',sym:'LINKUSDT',name:'Chainlink',cat:'Crypto'},
+  {id:'sui',sym:'SUIUSDT',name:'Sui',cat:'Crypto'},
+  {id:'pepe',sym:'PEPEUSDT',name:'Pepe',cat:'Crypto'},
+  {id:'monero',sym:'XMRUSDT',name:'Monero',cat:'Crypto'},
+  // Forex
+  {id:'EURUSD',sym:'EURUSD',name:'EUR/USD',cat:'Forex'},
+  {id:'GBPUSD',sym:'GBPUSD',name:'GBP/USD',cat:'Forex'},
+  {id:'USDJPY',sym:'USDJPY',name:'USD/JPY',cat:'Forex'},
+  {id:'AUDUSD',sym:'AUDUSD',name:'AUD/USD',cat:'Forex'},
+  {id:'USDCAD',sym:'USDCAD',name:'USD/CAD',cat:'Forex'},
+  {id:'USDCHF',sym:'USDCHF',name:'USD/CHF',cat:'Forex'},
+  {id:'NZDUSD',sym:'NZDUSD',name:'NZD/USD',cat:'Forex'},
+  {id:'EURGBP',sym:'EURGBP',name:'EUR/GBP',cat:'Forex'},
+  {id:'EURJPY',sym:'EURJPY',name:'EUR/JPY',cat:'Forex'},
+  {id:'GBPJPY',sym:'GBPJPY',name:'GBP/JPY',cat:'Forex'},
+  {id:'AUDJPY',sym:'AUDJPY',name:'AUD/JPY',cat:'Forex'},
+  // Commodities
+  {id:'XAUUSD',sym:'XAUUSD',name:'Gold',cat:'Commodity'},
+  {id:'XAGUSD',sym:'XAGUSD',name:'Silver',cat:'Commodity'},
+  {id:'WTI',sym:'WTI',name:'WTI Crude',cat:'Commodity'},
+  {id:'BRENT',sym:'BRENT',name:'Brent Crude',cat:'Commodity'},
+  {id:'COPPER',sym:'COPPER',name:'Copper',cat:'Commodity'},
+  {id:'NATGAS',sym:'NATGAS',name:'Natural Gas',cat:'Commodity'},
+  // Indexes
+  {id:'SPX',sym:'SPX',name:'S&P 500',cat:'Index'},
+  {id:'DJI',sym:'DJI',name:'Dow Jones',cat:'Index'},
+  {id:'NASDAQ',sym:'NASDAQ',name:'NASDAQ',cat:'Index'},
+  {id:'DAX',sym:'DAX',name:'DAX',cat:'Index'},
+  {id:'FTSE',sym:'FTSE',name:'FTSE 100',cat:'Index'},
+  {id:'NIKKEI',sym:'NIKKEI',name:'Nikkei 225',cat:'Index'},
+  {id:'VIX',sym:'VIX',name:'VIX',cat:'Index'},
+  // Stocks
+  {id:'AAPL',sym:'AAPL',name:'Apple',cat:'Stock'},
+  {id:'NVDA',sym:'NVDA',name:'NVIDIA',cat:'Stock'},
+  {id:'TSLA',sym:'TSLA',name:'Tesla',cat:'Stock'},
+  {id:'MSFT',sym:'MSFT',name:'Microsoft',cat:'Stock'},
+  {id:'GOOGL',sym:'GOOGL',name:'Alphabet',cat:'Stock'},
+  {id:'AMZN',sym:'AMZN',name:'Amazon',cat:'Stock'},
+  {id:'META',sym:'META',name:'Meta',cat:'Stock'},
+  {id:'JPM',sym:'JPM',name:'JPMorgan',cat:'Stock'},
+];
+
+let btChart = null, btCandleSeries = null, btVolumeSeries = null;
+let btAllCandles = [], btVisibleIndex = 0, btPlayInterval = null;
+let btPlaying = false, btSpeed = 3, btTf = 'H1', btStyle = 'candle';
+let btBalance = 10000, btOpenTrades = [], btClosedTrades = [];
+let btDrawTool = 'cursor', btDrawings = [], btDrawing = false, btDrawStart = null;
+let btDrawCanvas = null, btDrawCtx = null;
+
+function btInit(){
+  // Symbol search
+  const inp = document.getElementById('bt-symbol');
+  const dd  = document.getElementById('bt-sym-dropdown');
+  inp.addEventListener('input', ()=>{
+    const q = inp.value.toLowerCase();
+    const matches = BT_SYMBOLS.filter(s=>
+      s.name.toLowerCase().includes(q)||s.sym.toLowerCase().includes(q)||s.id.toLowerCase().includes(q)
+    ).slice(0,12);
+    if(matches.length && q.length > 0){
+      dd.innerHTML = matches.map(s=>
+        `<div class="bt-sym-item" onclick="btSelectSymbol('${s.id}','${s.sym}','${s.name}')">
+          <span>${s.name} <span style="color:var(--t4)">${s.sym}</span></span>
+          <span class="bt-sym-cat">${s.cat}</span>
+        </div>`
+      ).join('');
+      dd.classList.add('open');
+    } else { dd.classList.remove('open'); }
+  });
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('.bt-sym-wrap')) dd.classList.remove('open');
+  });
+
+  // Timeframe buttons
+  document.querySelectorAll('.bt-tf[data-tf]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.bt-tf[data-tf]').forEach(b=>b.classList.remove('bt-tf-on'));
+      btn.classList.add('bt-tf-on');
+      btTf = btn.getAttribute('data-tf');
+    });
+  });
+
+  // Set default dates
+  const today = new Date();
+  const sixMonthsAgo = new Date(today); sixMonthsAgo.setMonth(today.getMonth()-6);
+  document.getElementById('bt-to').value   = today.toISOString().slice(0,10);
+  document.getElementById('bt-from').value = sixMonthsAgo.toISOString().slice(0,10);
+}
+
+function btSelectSymbol(id, sym, name){
+  document.getElementById('bt-symbol').value = name + ' (' + sym + ')';
+  document.getElementById('bt-symbol').dataset.sym = id;
+  document.getElementById('bt-sym-dropdown').classList.remove('open');
+}
+
+async function btLoad(){
+  const symInput = document.getElementById('bt-symbol');
+  const sym = symInput.dataset.sym || symInput.value.split('(')[0].trim().toUpperCase();
+  const from = document.getElementById('bt-from').value;
+  const to   = document.getElementById('bt-to').value;
+  if(!sym){ return; }
+
+  btStop();
+  document.getElementById('bt-loading').style.display='flex';
+  document.getElementById('bt-placeholder').style.display='none';
+  document.getElementById('bt-load-btn').disabled=true;
+
+  try{
+    const r = await fetch(`/api/backtest/data?symbol=${encodeURIComponent(sym)}&interval=${btTf}&from_date=${from}&to_date=${to}`);
+    if(!r.ok){ const e=await r.json(); throw new Error(e.detail||'Failed to load data'); }
+    const data = await r.json();
+    btAllCandles = data.candles;
+    if(btAllCandles.length < 2){ throw new Error('Not enough data for selected range'); }
+
+    btInitChart(sym);
+    btReset();
+    document.getElementById('bt-replay-bar').style.display='flex';
+    document.getElementById('bt-chart').style.display='block';
+    document.getElementById('bt-draw-canvas').style.display='block';
+    btInitDrawCanvas();
+  }catch(e){
+    document.getElementById('bt-placeholder').style.display='flex';
+    document.getElementById('bt-placeholder').innerHTML=`<div class="bt-ph-icon">⚠️</div><div class="bt-ph-title">${e.message}</div><div class="bt-ph-sub">Try a different symbol, timeframe or date range</div>`;
+  }finally{
+    document.getElementById('bt-loading').style.display='none';
+    document.getElementById('bt-load-btn').disabled=false;
+  }
+}
+
+function btInitChart(sym){
+  const container = document.getElementById('bt-chart');
+  if(btChart){ btChart.remove(); btChart=null; }
+
+  btChart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight || 400,
+    layout:{ background:{type:'Solid',color:'#040a04'}, textColor:'rgba(167,243,208,0.6)', fontSize:10 },
+    grid:{ vertLines:{color:'rgba(34,197,94,0.06)'}, horzLines:{color:'rgba(34,197,94,0.06)'} },
+    crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale:{ borderColor:'rgba(34,197,94,0.15)' },
+    timeScale:{ borderColor:'rgba(34,197,94,0.15)', timeVisible:true, secondsVisible:false },
+  });
+
+  window.addEventListener('resize', ()=>{
+    if(btChart) btChart.applyOptions({width:container.clientWidth, height:container.clientHeight});
+    btResizeDrawCanvas();
+  });
+
+  btCandleSeries = btChart.addCandlestickSeries({
+    upColor:'#22c55e', downColor:'#ef4444',
+    borderUpColor:'#22c55e', borderDownColor:'#ef4444',
+    wickUpColor:'#22c55e', wickDownColor:'#ef4444',
+  });
+
+  btVolumeSeries = btChart.addHistogramSeries({
+    color:'rgba(34,197,94,0.15)', priceFormat:{type:'volume'},
+    priceScaleId:'vol', scaleMargins:{top:0.85, bottom:0},
+  });
+
+  // Crosshair tooltip
+  btChart.subscribeCrosshairMove(param=>{
+    const info = document.getElementById('bt-crosshair-info');
+    if(!param.point || !param.seriesData){ info.style.display='none'; return; }
+    const d = param.seriesData.get(btCandleSeries);
+    if(!d){ info.style.display='none'; return; }
+    const fmt = p=>p>1000?p.toLocaleString('en',{maximumFractionDigits:2}):p>1?p.toFixed(4):p.toFixed(6);
+    const col = d.close>=d.open?'#4ade80':'#f87171';
+    info.style.display='block';
+    info.innerHTML=`<span style="color:${col}">O:${fmt(d.open)} H:${fmt(d.high)} L:${fmt(d.low)} C:${fmt(d.close)}</span>`;
+  });
+}
+
+function btGetCandles(raw){
+  if(btStyle==='ha'){
+    const ha=[]; let prevO=raw[0].open, prevC=raw[0].close;
+    for(const c of raw){
+      const hc=(c.open+c.high+c.low+c.close)/4;
+      const ho=(prevO+prevC)/2;
+      const hh=Math.max(c.high,ho,hc);
+      const hl=Math.min(c.low,ho,hc);
+      ha.push({time:c.time,open:ho,high:hh,low:hl,close:hc,volume:c.volume});
+      prevO=ho; prevC=hc;
+    } return ha;
+  }
+  return raw;
+}
+
+function btReset(){
+  btVisibleIndex = Math.min(100, btAllCandles.length);
+  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
+  btRenderChart();
+  btUpdateUI();
+  document.getElementById('bt-open-trades').innerHTML='';
+  document.getElementById('bt-log').innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
+}
+
+function btRenderChart(){
+  if(!btChart||!btCandleSeries) return;
+  const slice = btGetCandles(btAllCandles.slice(0, btVisibleIndex));
+  btCandleSeries.setData(slice);
+  btVolumeSeries.setData(slice.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'})));
+  btChart.timeScale().scrollToRealTime();
+
+  // Update replay date
+  const last = btAllCandles[btVisibleIndex-1];
+  if(last){
+    document.getElementById('bt-replay-date').textContent = new Date(last.time*1000).toUTCString().slice(0,16);
+    document.getElementById('bt-candle-info').textContent = `${btVisibleIndex}/${btAllCandles.length} candles`;
+  }
+
+  // Check open trades SL/TP
+  btCheckTrades(last);
+  btDrawAll();
+}
+
+function btTogglePlay(){
+  if(btPlaying) btStop();
+  else btPlay();
+}
+
+function btPlay(){
+  if(btVisibleIndex >= btAllCandles.length){ btRestart(); return; }
+  btPlaying=true;
+  document.getElementById('bt-play-btn').textContent='⏸';
+  document.getElementById('bt-play-btn').classList.add('playing');
+  const delay = Math.max(50, 600 / btSpeed);
+  btPlayInterval = setInterval(()=>{
+    if(btVisibleIndex >= btAllCandles.length){ btStop(); return; }
+    btVisibleIndex++;
+    btRenderChart();
+  }, delay);
+}
+
+function btStop(){
+  btPlaying=false;
+  clearInterval(btPlayInterval);
+  const btn = document.getElementById('bt-play-btn');
+  if(btn){ btn.textContent='▶'; btn.classList.remove('playing'); }
+}
+
+function btStepForward(){
+  btStop();
+  if(btVisibleIndex < btAllCandles.length){ btVisibleIndex++; btRenderChart(); }
+}
+
+function btStepBack(){
+  btStop();
+  if(btVisibleIndex > 1){ btVisibleIndex--; btRenderChart(); }
+}
+
+function btRestart(){
+  btStop();
+  btBalance=10000; btOpenTrades=[]; btClosedTrades=[];
+  btVisibleIndex=1;
+  btRenderChart();
+  btUpdateUI();
+  document.getElementById('bt-open-trades').innerHTML='';
+  document.getElementById('bt-log').innerHTML='<div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div>';
+}
+
+function btSetSpeed(v){
+  btSpeed=parseInt(v);
+  document.getElementById('bt-speed-val').textContent=v+'×';
+  if(btPlaying){ btStop(); btPlay(); }
+}
+
+function btSetStyle(style){
+  btStyle=style;
+  ['candle','line','ha'].forEach(s=>{
+    const el=document.getElementById('bt-style-'+s);
+    if(el) el.classList.toggle('bt-tf-on', s===style);
+  });
+  if(btCandleSeries) btRenderChart();
+}
+
+function btSetTool(tool){
+  btDrawTool=tool;
+  document.querySelectorAll('.bt-tool').forEach(b=>b.classList.remove('bt-tool-on'));
+  const el=document.getElementById('bt-tool-'+tool);
+  if(el) el.classList.add('bt-tool-on');
+  if(btDrawCanvas) btDrawCanvas.style.cursor = tool==='cursor'?'crosshair':'crosshair';
+}
+
+function btClearDrawings(){
+  btDrawings=[];
+  btDrawAll();
+}
+
+// ── Drawing canvas ───────────────────────────────────────────────────────────
+function btInitDrawCanvas(){
+  btDrawCanvas = document.getElementById('bt-draw-canvas');
+  btDrawCtx    = btDrawCanvas.getContext('2d');
+  btResizeDrawCanvas();
+
+  btDrawCanvas.addEventListener('mousedown', btDrawMouseDown);
+  btDrawCanvas.addEventListener('mousemove', btDrawMouseMove);
+  btDrawCanvas.addEventListener('mouseup',   btDrawMouseUp);
+}
+
+function btResizeDrawCanvas(){
+  if(!btDrawCanvas) return;
+  const wrap = document.getElementById('bt-chart-wrap');
+  btDrawCanvas.width  = wrap.clientWidth;
+  btDrawCanvas.height = wrap.clientHeight;
+  btDrawAll();
+}
+
+function btDrawMouseDown(e){
+  if(btDrawTool==='cursor') return;
+  btDrawing=true;
+  btDrawStart={x:e.offsetX, y:e.offsetY};
+}
+
+function btDrawMouseMove(e){
+  if(!btDrawing || !btDrawStart) return;
+  btDrawAll();
+  const {x:sx,y:sy}=btDrawStart; const ex=e.offsetX,ey=e.offsetY;
+  btDrawCtx.strokeStyle='rgba(250,204,21,0.8)';
+  btDrawCtx.lineWidth=1.5;
+  btDrawCtx.setLineDash([]);
+  if(btDrawTool==='line'){
+    btDrawCtx.beginPath(); btDrawCtx.moveTo(sx,sy); btDrawCtx.lineTo(ex,ey); btDrawCtx.stroke();
+  } else if(btDrawTool==='hline'){
+    btDrawCtx.beginPath(); btDrawCtx.moveTo(0,sy); btDrawCtx.lineTo(btDrawCanvas.width,sy); btDrawCtx.stroke();
+  } else if(btDrawTool==='rect'){
+    btDrawCtx.strokeRect(sx,sy,ex-sx,ey-sy);
+  } else if(btDrawTool==='fib'){
+    btDrawFib(sx,sy,ex,ey);
+  }
+}
+
+function btDrawMouseUp(e){
+  if(!btDrawing) return; btDrawing=false;
+  const {x:sx,y:sy}=btDrawStart; const ex=e.offsetX,ey=e.offsetY;
+  if(Math.abs(ex-sx)<3 && Math.abs(ey-sy)<3) return;
+  btDrawings.push({type:btDrawTool,x1:sx,y1:sy,x2:ex,y2:ey});
+  btDrawAll();
+}
+
+function btDrawFib(x1,y1,x2,y2){
+  const levels=[0,0.236,0.382,0.5,0.618,0.786,1];
+  const colors=['rgba(250,204,21,.6)','rgba(96,165,250,.6)','rgba(74,222,128,.6)','rgba(167,139,250,.6)','rgba(74,222,128,.6)','rgba(96,165,250,.6)','rgba(250,204,21,.6)'];
+  levels.forEach((l,i)=>{
+    const y = y1 + (y2-y1)*l;
+    btDrawCtx.strokeStyle=colors[i]; btDrawCtx.lineWidth=1; btDrawCtx.setLineDash([4,4]);
+    btDrawCtx.beginPath(); btDrawCtx.moveTo(x1,y); btDrawCtx.lineTo(btDrawCanvas.width,y); btDrawCtx.stroke();
+    btDrawCtx.fillStyle=colors[i]; btDrawCtx.font='9px DM Mono,monospace';
+    btDrawCtx.fillText((l*100).toFixed(1)+'%', x1+4, y-3);
+  });
+  btDrawCtx.setLineDash([]);
+}
+
+function btDrawAll(){
+  if(!btDrawCtx) return;
+  btDrawCtx.clearRect(0,0,btDrawCanvas.width,btDrawCanvas.height);
+  btDrawings.forEach(d=>{
+    btDrawCtx.strokeStyle='rgba(250,204,21,0.7)';
+    btDrawCtx.lineWidth=1.5;
+    btDrawCtx.setLineDash([]);
+    if(d.type==='line'){
+      btDrawCtx.beginPath(); btDrawCtx.moveTo(d.x1,d.y1); btDrawCtx.lineTo(d.x2,d.y2); btDrawCtx.stroke();
+    } else if(d.type==='hline'){
+      btDrawCtx.beginPath(); btDrawCtx.moveTo(0,d.y1); btDrawCtx.lineTo(btDrawCanvas.width,d.y1); btDrawCtx.stroke();
+    } else if(d.type==='rect'){
+      btDrawCtx.strokeStyle='rgba(250,204,21,0.5)';
+      btDrawCtx.fillStyle='rgba(250,204,21,0.04)';
+      btDrawCtx.fillRect(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
+      btDrawCtx.strokeRect(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
+    } else if(d.type==='fib'){
+      btDrawFib(d.x1,d.y1,d.x2,d.y2);
+    }
+  });
+}
+
+// ── Trade simulation ─────────────────────────────────────────────────────────
+function btPlaceTrade(direction){
+  if(!btAllCandles.length||btVisibleIndex<1) return;
+  const current = btAllCandles[btVisibleIndex-1];
+  const size = parseFloat(document.getElementById('bt-trade-size').value)||1000;
+  const sl   = parseFloat(document.getElementById('bt-sl').value)||null;
+  const tp   = parseFloat(document.getElementById('bt-tp').value)||null;
+
+  const trade = {
+    id: Date.now(),
+    direction,
+    entryPrice: current.close,
+    entryTime:  current.time,
+    size, sl, tp,
+    pnl: 0,
+  };
+  btOpenTrades.push(trade);
+  btRenderOpenTrades();
+  document.getElementById('bt-sl').value='';
+  document.getElementById('bt-tp').value='';
+}
+
+function btCheckTrades(candle){
+  if(!candle) return;
+  const toClose=[];
+  btOpenTrades.forEach(t=>{
+    let pnl=0;
+    const priceDiff = candle.close - t.entryPrice;
+    pnl = t.direction==='BUY' ? (priceDiff/t.entryPrice)*t.size : (-priceDiff/t.entryPrice)*t.size;
+
+    // Check SL/TP
+    let closed=false;
+    if(t.sl && t.direction==='BUY'  && candle.low  <= t.sl){ pnl=((t.sl -t.entryPrice)/t.entryPrice)*t.size; closed=true; }
+    if(t.sl && t.direction==='SELL' && candle.high >= t.sl){ pnl=((t.entryPrice-t.sl)/t.entryPrice)*t.size;  closed=true; }
+    if(t.tp && t.direction==='BUY'  && candle.high >= t.tp){ pnl=((t.tp -t.entryPrice)/t.entryPrice)*t.size; closed=true; }
+    if(t.tp && t.direction==='SELL' && candle.low  <= t.tp){ pnl=((t.entryPrice-t.tp)/t.entryPrice)*t.size; closed=true; }
+
+    t.pnl=pnl;
+    if(closed) toClose.push(t);
+  });
+  toClose.forEach(t=>btCloseTrade(t.id, true));
+  btRenderOpenTrades();
+}
+
+function btCloseTrade(id, auto=false){
+  const idx = btOpenTrades.findIndex(t=>t.id===id);
+  if(idx<0) return;
+  const t = btOpenTrades.splice(idx,1)[0];
+  const current = btAllCandles[btVisibleIndex-1];
+  if(!auto){
+    const diff = current.close - t.entryPrice;
+    t.pnl = t.direction==='BUY' ? (diff/t.entryPrice)*t.size : (-diff/t.entryPrice)*t.size;
+  }
+  btBalance += t.pnl;
+  btClosedTrades.push({...t, closePrice: current.close, closeTime: current.time});
+  btUpdateUI();
+  btAddToLog(t);
+  btRenderOpenTrades();
+}
+
+function btRenderOpenTrades(){
+  const el = document.getElementById('bt-open-trades');
+  if(!btOpenTrades.length){ el.innerHTML=''; return; }
+  const current = btAllCandles[btVisibleIndex-1];
+  el.innerHTML = btOpenTrades.map(t=>{
+    const diff = current ? current.close - t.entryPrice : 0;
+    const livePnl = t.direction==='BUY' ? (diff/t.entryPrice)*t.size : (-diff/t.entryPrice)*t.size;
+    const col = livePnl>=0?'#4ade80':'#f87171';
+    return `<div class="bt-open-trade">
+      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} $${t.size}</span>
+      <span style="color:${col}">${livePnl>=0?'+':''}$${livePnl.toFixed(2)}</span>
+      <button class="bt-close-btn" onclick="btCloseTrade(${t.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function btAddToLog(t){
+  const log = document.getElementById('bt-log');
+  const isWin = t.pnl>=0;
+  const col = isWin?'#4ade80':'#f87171';
+  const placeholder = log.querySelector('div[style]');
+  if(placeholder) placeholder.remove();
+  const item = document.createElement('div');
+  item.className = `bt-log-item ${t.direction==='BUY'?'bt-log-buy':'bt-log-sell'}`;
+  item.innerHTML = `
+    <div style="display:flex;justify-content:space-between">
+      <span style="color:${t.direction==='BUY'?'#4ade80':'#f87171'}">${t.direction} @ ${t.entryPrice.toFixed(t.entryPrice>100?2:5)}</span>
+      <span class="bt-log-pnl" style="color:${col}">${isWin?'+':''}$${t.pnl.toFixed(2)}</span>
+    </div>
+    <div style="color:var(--t4)">${new Date(t.entryTime*1000).toUTCString().slice(0,16)}</div>`;
+  log.insertBefore(item, log.firstChild);
+}
+
+function btUpdateUI(){
+  // Balance
+  const startBal = 10000;
+  const pnl = btBalance - startBal;
+  const pct = (pnl/startBal)*100;
+  const col = pnl>=0?'#4ade80':'#f87171';
+  document.getElementById('bt-balance').textContent = '$'+btBalance.toFixed(2);
+  document.getElementById('bt-total-pnl').style.color=col;
+  document.getElementById('bt-total-pnl').textContent = (pnl>=0?'+':'')+'$'+pnl.toFixed(2)+' ('+pct.toFixed(2)+'%)';
+
+  // Stats
+  const closed = btClosedTrades;
+  const wins  = closed.filter(t=>t.pnl>0);
+  const losses= closed.filter(t=>t.pnl<0);
+  const totalPnl = closed.reduce((s,t)=>s+t.pnl,0);
+  const winPnl    = wins.reduce((s,t)=>s+t.pnl,0);
+  const lossPnl   = Math.abs(losses.reduce((s,t)=>s+t.pnl,0));
+  const avgWin  = wins.length?  winPnl/wins.length  : 0;
+  const avgLoss = losses.length? lossPnl/losses.length: 0;
+  const pf = lossPnl>0?(winPnl/lossPnl).toFixed(2):'∞';
+  const wr = closed.length?Math.round((wins.length/closed.length)*100):0;
+  const best  = closed.length?Math.max(...closed.map(t=>t.pnl)):0;
+  const worst = closed.length?Math.min(...closed.map(t=>t.pnl)):0;
+
+  document.getElementById('st-trades').textContent = closed.length;
+  document.getElementById('st-wr').textContent     = closed.length? wr+'%':'—';
+  document.getElementById('st-wr').style.color     = wr>=50?'#4ade80':'#f87171';
+  document.getElementById('st-aw').textContent     = avgWin? '+$'+avgWin.toFixed(2):'—';
+  document.getElementById('st-al').textContent     = avgLoss?'-$'+avgLoss.toFixed(2):'—';
+  document.getElementById('st-best').textContent   = best? '+$'+best.toFixed(2):'—';
+  document.getElementById('st-worst').textContent  = worst?'$'+worst.toFixed(2):'—';
+  document.getElementById('st-pf').textContent     = closed.length?pf:'—';
+  document.getElementById('st-pf').style.color     = lossPnl>0&&(winPnl/lossPnl)>=1?'#4ade80':'#f87171';
+}
+
+// Init on page switch
+function btPageInit(){
+  btInit();
+}
+
 loadPrices().then(()=>initLivePrices());
 setInterval(loadPrices, 5*60*1000);
 loadNewsTicker();
@@ -3146,6 +3768,162 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 
 </div><!-- end markets page -->
+
+<!-- BACKTESTING PAGE -->
+<div id="page-backtest" class="page" style="display:none">
+<canvas id="backtest-bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.03;display:none"></canvas>
+
+<div class="bt-wrap z">
+
+  <!-- Header bar -->
+  <div class="bt-header">
+    <div class="bt-title">⚡ Backtesting — FX Replay</div>
+
+    <!-- Symbol search -->
+    <div class="bt-sym-wrap">
+      <input class="bt-sym-input" id="bt-symbol" placeholder="EURUSD, BTCUSDT, AAPL..." value="EURUSD" autocomplete="off"/>
+      <div class="bt-sym-dropdown" id="bt-sym-dropdown"></div>
+    </div>
+
+    <!-- Timeframe -->
+    <div class="bt-tfs">
+      <button class="bt-tf" data-tf="M1">M1</button>
+      <button class="bt-tf" data--tf="M5">M5</button>
+      <button class="bt-tf" data-tf="M15">M15</button>
+      <button class="bt-tf" data-tf="M30">M30</button>
+      <button class="bt-tf bt-tf-on" data-tf="H1">H1</button>
+      <button class="bt-tf" data-tf="H4">H4</button>
+      <button class="bt-tf" data-tf="D1">D1</button>
+      <button class="bt-tf" data-tf="W1">W1</button>
+    </div>
+
+    <!-- Date range -->
+    <div class="bt-dates">
+      <input class="bt-date" id="bt-from" type="date" value="2024-01-01"/>
+      <span style="color:var(--t4);font-size:10px">→</span>
+      <input class="bt-date" id="bt-to" type="date" value="2024-06-30"/>
+    </div>
+
+    <!-- Chart style -->
+    <div class="bt-tfs">
+      <button class="bt-tf bt-tf-on" id="bt-style-candle" onclick="btSetStyle('candle')">Candles</button>
+      <button class="bt-tf" id="bt-style-line" onclick="btSetStyle('line')">Line</button>
+      <button class="bt-tf" id="bt-style-ha" onclick="btSetStyle('ha')">Heikin Ashi</button>
+    </div>
+
+    <!-- Load button -->
+    <button class="bt-load-btn" id="bt-load-btn" onclick="btLoad()">▶ Load</button>
+  </div>
+
+  <!-- Main layout -->
+  <div class="bt-main">
+
+    <!-- Left: Drawing tools -->
+    <div class="bt-tools">
+      <button class="bt-tool bt-tool-on" id="bt-tool-cursor" onclick="btSetTool('cursor')" title="Cursor">↖</button>
+      <button class="bt-tool" id="bt-tool-line" onclick="btSetTool('line')" title="Trendline">╱</button>
+      <button class="bt-tool" id="bt-tool-hline" onclick="btSetTool('hline')" title="Horizontal line">━</button>
+      <button class="bt-tool" id="bt-tool-rect" onclick="btSetTool('rect')" title="Rectangle">▭</button>
+      <button class="bt-tool" id="bt-tool-fib" onclick="btSetTool('fib')" title="Fibonacci">φ</button>
+      <div class="bt-tool-div"></div>
+      <button class="bt-tool" onclick="btClearDrawings()" title="Clear all drawings" style="color:#f87171;font-size:11px">✕</button>
+    </div>
+
+    <!-- Center: Chart + replay controls -->
+    <div class="bt-center">
+
+      <!-- Chart container -->
+      <div class="bt-chart-wrap" id="bt-chart-wrap">
+        <div class="bt-chart-placeholder" id="bt-placeholder">
+          <div class="bt-ph-icon">📊</div>
+          <div class="bt-ph-title">Select a symbol and load data to start replaying</div>
+          <div class="bt-ph-sub">Supports Crypto (Binance) · Forex · Stocks · Commodities · Indexes</div>
+        </div>
+        <div id="bt-chart" style="width:100%;height:100%;display:none"></div>
+        <canvas id="bt-draw-canvas" style="position:absolute;top:0;left:0;pointer-events:all;display:none"></canvas>
+        <div class="bt-crosshair-info" id="bt-crosshair-info"></div>
+        <div class="bt-loading" id="bt-loading" style="display:none">
+          <div class="bt-spinner"></div>
+          <div>Loading candle data...</div>
+        </div>
+      </div>
+
+      <!-- Replay controls -->
+      <div class="bt-replay-bar" id="bt-replay-bar" style="display:none">
+        <div class="bt-replay-left">
+          <button class="bt-replay-btn" onclick="btStepBack()" title="Step back">⏮</button>
+          <button class="bt-replay-btn bt-replay-play" id="bt-play-btn" onclick="btTogglePlay()">▶</button>
+          <button class="bt-replay-btn" onclick="btStepForward()" title="Step forward">⏭</button>
+          <div class="bt-speed-wrap">
+            <span class="bt-speed-lbl">Speed</span>
+            <input type="range" min="1" max="10" value="3" id="bt-speed" class="bt-speed-slider" oninput="btSetSpeed(this.value)"/>
+            <span class="bt-speed-val" id="bt-speed-val">3×</span>
+          </div>
+        </div>
+        <div class="bt-replay-info">
+          <span id="bt-replay-date">—</span>
+          <span class="bt-candle-info" id="bt-candle-info"></span>
+        </div>
+        <div class="bt-replay-right">
+          <button class="bt-replay-btn" onclick="btRestart()" title="Restart from beginning" style="font-size:11px">↺ Restart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Trade panel + stats -->
+    <div class="bt-right">
+
+      <!-- Balance -->
+      <div class="bt-balance-card">
+        <div class="bt-bal-label">Virtual Balance</div>
+        <div class="bt-bal-value" id="bt-balance">$10,000.00</div>
+        <div class="bt-bal-pnl" id="bt-total-pnl">+$0.00 (0.00%)</div>
+      </div>
+
+      <!-- Place trade -->
+      <div class="bt-trade-card">
+        <div class="bt-card-title">Place Trade</div>
+        <div class="bt-trade-row">
+          <label class="bt-lbl">Size ($)</label>
+          <input class="bt-inp" id="bt-trade-size" type="number" value="1000" min="10"/>
+        </div>
+        <div class="bt-trade-row">
+          <label class="bt-lbl">Stop Loss</label>
+          <input class="bt-inp" id="bt-sl" type="number" step="any" placeholder="Optional"/>
+        </div>
+        <div class="bt-trade-row">
+          <label class="bt-lbl">Take Profit</label>
+          <input class="bt-inp" id="bt-tp" type="number" step="any" placeholder="Optional"/>
+        </div>
+        <div class="bt-trade-btns">
+          <button class="bt-buy-btn" onclick="btPlaceTrade('BUY')">▲ BUY</button>
+          <button class="bt-sell-btn" onclick="btPlaceTrade('SELL')">▼ SELL</button>
+        </div>
+        <div id="bt-open-trades" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="bt-stats-card" id="bt-stats-card">
+        <div class="bt-card-title">Session Stats</div>
+        <div class="bt-stat-row"><span>Trades</span><span id="st-trades">0</span></div>
+        <div class="bt-stat-row"><span>Win Rate</span><span id="st-wr">—</span></div>
+        <div class="bt-stat-row"><span>Avg Win</span><span id="st-aw" class="up">—</span></div>
+        <div class="bt-stat-row"><span>Avg Loss</span><span id="st-al" class="dn">—</span></div>
+        <div class="bt-stat-row"><span>Best Trade</span><span id="st-best" class="up">—</span></div>
+        <div class="bt-stat-row"><span>Worst Trade</span><span id="st-worst" class="dn">—</span></div>
+        <div class="bt-stat-row"><span>Profit Factor</span><span id="st-pf">—</span></div>
+      </div>
+
+      <!-- Trade log -->
+      <div class="bt-log-card">
+        <div class="bt-card-title">Trade Log</div>
+        <div class="bt-log" id="bt-log"><div style="color:var(--t4);font-size:10px;text-align:center;padding:12px">No trades yet</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- END BACKTESTING PAGE -->
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
