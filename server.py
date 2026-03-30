@@ -1307,282 +1307,148 @@ BINANCE_INTERVAL_MAP = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H
 YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"1h","D1":"1d","W1":"1wk"}
 
 @app.get("/api/backtest/data")
-async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = "", cgid: str = ""):
-    """Fetch OHLCV candle data for backtesting. Returns up to 5000 candles."""
+async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", to_date: str = "", cgid: str = "", src: str = ""):
+    """
+    Fetch OHLCV candle data for backtesting.
+    - Crypto (BTCUSDT etc): called from browser via Binance directly — this endpoint used as fallback only
+    - Non-crypto: called from browser with src=stooq, server proxies Stooq CSV
+    """
     import time as _time
     sym = symbol.strip().upper()
-    interval = interval.strip().upper()
-    cg_id = cgid.strip().lower()  # CoinGecko ID e.g. 'bitcoin', 'ethereum'
+    tf  = interval.strip().upper()
 
-    # Map Binance sym back to CoinGecko ID if not provided by frontend
-    BINANCE_TO_CGID = {
-        "BTCUSDT":"bitcoin","ETHUSDT":"ethereum","XRPUSDT":"ripple",
-        "SOLUSDT":"solana","BNBUSDT":"binancecoin","DOGEUSDT":"dogecoin",
-        "ADAUSDT":"cardano","AVAXUSDT":"avalanche-2","LINKUSDT":"chainlink",
-        "DOTUSDT":"polkadot","TONUSDT":"the-open-network","SHIBUSDT":"shiba-inu",
-        "LTCUSDT":"litecoin","TRXUSDT":"tron","POLUSDT":"pol-polygon-ecosystem-token",
-        "UNIUSDT":"uniswap","XLMUSDT":"stellar","NEARUSDT":"near",
-        "ARBUSDT":"arbitrum","APTUSDT":"aptos","SUIUSDT":"sui",
-        "PEPEUSDT":"pepe","ICPUSDT":"internet-computer","XMRUSDT":"monero",
-        "FILUSDT":"filecoin","RENDERUSDT":"render-token","INJUSDT":"injective-protocol",
-    }
-    if not cg_id and sym in BINANCE_TO_CGID:
-        cg_id = BINANCE_TO_CGID[sym]
+    # Date range
+    now_ts  = int(_time.time())
+    to_ts   = int(datetime.strptime(to_date,   "%Y-%m-%d").timestamp()) if to_date   else now_ts
+    from_ts = int(datetime.strptime(from_date, "%Y-%m-%d").timestamp()) if from_date else to_ts - 730*86400
 
-    # ── Resolve to Binance symbol ─────────────────────────────────────────
-    # Frontend now sends actual trading symbols: XRPUSDT, EURUSD, SOLUSDT etc.
-    # Also support CoinGecko IDs as fallback (ripple, bitcoin etc.)
-    COINGECKO_TO_BINANCE = {
-        "BITCOIN":"BTCUSDT","ETHEREUM":"ETHUSDT","RIPPLE":"XRPUSDT",
-        "SOLANA":"SOLUSDT","BINANCECOIN":"BNBUSDT","DOGECOIN":"DOGEUSDT",
-        "CARDANO":"ADAUSDT","AVALANCHE-2":"AVAXUSDT","CHAINLINK":"LINKUSDT",
-        "POLKADOT":"DOTUSDT","THE-OPEN-NETWORK":"TONUSDT","SHIBA-INU":"SHIBUSDT",
-        "LITECOIN":"LTCUSDT","TRON":"TRXUSDT","POL-POLYGON-ECOSYSTEM-TOKEN":"POLUSDT",
-        "UNISWAP":"UNIUSDT","STELLAR":"XLMUSDT","NEAR":"NEARUSDT",
-        "ARBITRUM":"ARBUSDT","APTOS":"APTUSDT","SUI":"SUIUSDT","PEPE":"PEPEUSDT",
-        "INTERNET-COMPUTER":"ICPUSDT","MONERO":"XMRUSDT","FILECOIN":"FILUSDT",
-    }
-    # Direct Binance symbols (already correct format)
+    # ── Stooq path (called from browser for forex/stocks/indexes/commodities) ──
+    if src == "stooq" or (sym not in {
+        "BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","DOGEUSDT","ADAUSDT",
+        "AVAXUSDT","LINKUSDT","DOTUSDT","TONUSDT","SHIBUSDT","LTCUSDT","TRXUSDT",
+        "POLUSDT","UNIUSDT","XLMUSDT","NEARUSDT","ARBUSDT","APTUSDT","SUIUSDT",
+        "PEPEUSDT","ICPUSDT","XMRUSDT","FILUSDT","RENDERUSDT","INJUSDT",
+    } and not cgid):
+        # symbol here is already the Stooq symbol (e.g. eurusd, xauusd, ^spx, msft.us)
+        # passed directly from btFetchStooq via btAsset.st
+        st_sym = sym.lower()
+        d1 = datetime.utcfromtimestamp(from_ts).strftime("%Y%m%d")
+        d2 = datetime.utcfromtimestamp(to_ts).strftime("%Y%m%d")
+        url = f"https://stooq.com/q/d/l/?s={st_sym}&d1={d1}&d2={d2}&i=d"
+        candles = []
+        try:
+            jar = aiohttp.CookieJar(unsafe=True)
+            async with aiohttp.ClientSession(cookie_jar=jar) as s:
+                async with s.get(url, headers=YAHOO_HEADERS, timeout=TIMEOUT_SLOW) as r:
+                    if r.status != 200:
+                        return JSONResponse({"error": f"Stooq HTTP {r.status} for {st_sym}"}, status_code=502)
+                    text = await r.text()
+                    lines = text.strip().split("\n")
+                    if len(lines) < 2 or "No data" in text or text.startswith("<"):
+                        return JSONResponse({"error": f"No Stooq data for {st_sym}"}, status_code=404)
+                    for line in lines[1:]:
+                        cols = line.strip().split(",")
+                        if len(cols) < 5: continue
+                        date_str, o, h, l, c = cols[0], cols[1], cols[2], cols[3], cols[4]
+                        v = cols[5] if len(cols) > 5 else "0"
+                        if not date_str or not c or c in ("null","N/A",""): continue
+                        try:
+                            ts = int(datetime.strptime(date_str, "%Y-%m-%d").timestamp())
+                            candles.append({
+                                "time": ts, "open": float(o), "high": float(h),
+                                "low": float(l), "close": float(c), "volume": float(v or 0),
+                            })
+                        except: continue
+        except Exception as e:
+            return JSONResponse({"error": f"Stooq error: {e}"}, status_code=500)
+
+        if not candles:
+            return JSONResponse({"error": f"No data returned from Stooq for {st_sym}"}, status_code=404)
+        candles.sort(key=lambda x: x["time"])
+        print(f"  BT Stooq {st_sym}: {len(candles)} candles")
+        return JSONResponse({"source": "stooq", "symbol": sym, "interval": tf, "candles": candles[-5000:]})
+
+    # ── Binance path (fallback if browser Binance call failed) ───────────────
     BINANCE_SYMBOLS = {
-        "BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","DOGEUSDT",
-        "ADAUSDT","AVAXUSDT","LINKUSDT","DOTUSDT","TONUSDT","SHIBUSDT",
-        "LTCUSDT","TRXUSDT","POLUSDT","UNIUSDT","XLMUSDT","NEARUSDT",
-        "ARBUSDT","APTUSDT","SUIUSDT","PEPEUSDT","ICPUSDT","XMRUSDT","FILUSDT",
-        "RENDERUSDT","INJUSDT","FETUSDT","SEIUSDT","TAOUSDT",
+        "BTCUSDT","ETHUSDT","XRPUSDT","SOLUSDT","BNBUSDT","DOGEUSDT","ADAUSDT",
+        "AVAXUSDT","LINKUSDT","DOTUSDT","TONUSDT","SHIBUSDT","LTCUSDT","TRXUSDT",
+        "POLUSDT","UNIUSDT","XLMUSDT","NEARUSDT","ARBUSDT","APTUSDT","SUIUSDT",
+        "PEPEUSDT","ICPUSDT","XMRUSDT","FILUSDT","RENDERUSDT","INJUSDT",
     }
-    # Resolve binance sym
-    if sym in BINANCE_SYMBOLS:
-        binance_sym = sym
-    elif sym in COINGECKO_TO_BINANCE:
-        binance_sym = COINGECKO_TO_BINANCE[sym]
-    elif sym.endswith("USDT"):
-        binance_sym = sym  # try directly
-    else:
-        binance_sym = None  # not crypto, skip Binance
+    SYM_TO_CGID = {
+        "BTCUSDT":"bitcoin","ETHUSDT":"ethereum","XRPUSDT":"ripple","SOLUSDT":"solana",
+        "BNBUSDT":"binancecoin","DOGEUSDT":"dogecoin","ADAUSDT":"cardano","AVAXUSDT":"avalanche-2",
+        "LINKUSDT":"chainlink","DOTUSDT":"polkadot","TONUSDT":"the-open-network","SHIBUSDT":"shiba-inu",
+        "LTCUSDT":"litecoin","TRXUSDT":"tron","POLUSDT":"pol-polygon-ecosystem-token","UNIUSDT":"uniswap",
+        "XLMUSDT":"stellar","NEARUSDT":"near","ARBUSDT":"arbitrum","APTUSDT":"aptos","SUIUSDT":"sui",
+        "PEPEUSDT":"pepe","ICPUSDT":"internet-computer","XMRUSDT":"monero","FILUSDT":"filecoin",
+    }
+    cg_id = cgid.strip().lower() or SYM_TO_CGID.get(sym, "")
 
-    # Determine from/to timestamps
-    now_ts = int(_time.time())
-    to_ts  = int(datetime.strptime(to_date, "%Y-%m-%d").timestamp()) if to_date else now_ts
-    from_ts= int(datetime.strptime(from_date, "%Y-%m-%d").timestamp()) if from_date else to_ts - 730*86400  # 2 years default
-
-    b_interval = BINANCE_INTERVAL_MAP.get(interval, "1h")
-
-    # Cap date range per timeframe to avoid requesting millions of candles
-    # M1: max 7 days, M5: max 30 days, M15: max 90 days, M30: max 6mo, H1: 2yr, H4+: no cap
     TF_MAX_DAYS = {"M1":7,"M5":30,"M15":90,"M30":180,"H1":730,"H4":1460,"D1":3650,"W1":3650}
-    max_days = TF_MAX_DAYS.get(interval, 730)
+    max_days = TF_MAX_DAYS.get(tf, 730)
     if (to_ts - from_ts) > max_days * 86400:
         from_ts = to_ts - max_days * 86400
 
+    B_INT = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"4h","D1":"1d","W1":"1w"}
     candles = []
 
-    # ── Try Binance ───────────────────────────────────────────────────────
-    if binance_sym:
+    # Try Binance
+    if sym in BINANCE_SYMBOLS:
         try:
             from_ms = from_ts * 1000
             to_ms   = to_ts   * 1000
+            b_int   = B_INT.get(tf, "1h")
             async with aiohttp.ClientSession() as s:
                 while from_ms < to_ms and len(candles) < 5000:
                     async with s.get(
                         "https://api.binance.com/api/v3/klines",
-                        params={"symbol": binance_sym, "interval": b_interval,
-                                "startTime": from_ms, "endTime": to_ms, "limit": 1000},
+                        params={"symbol":sym,"interval":b_int,"startTime":from_ms,"endTime":to_ms,"limit":1000},
                         timeout=aiohttp.ClientTimeout(total=12),
                     ) as r:
-                        if r.status != 200:
-                            break
                         text = await r.text()
-                        if not text or text.strip().startswith('<'):
-                            break
-                        try:
-                            data = json.loads(text)
-                        except Exception:
-                            break
-                        if not data or not isinstance(data, list):
-                            break
-                        for k in data:
-                            candles.append({
-                                "time":   int(k[0]) // 1000,
-                                "open":   float(k[1]),
-                                "high":   float(k[2]),
-                                "low":    float(k[3]),
-                                "close":  float(k[4]),
-                                "volume": float(k[5]),
-                            })
-                        if len(data) < 1000:
-                            break
-                        from_ms = int(data[-1][0]) + 1
+                        if r.status != 200 or not text or text.lstrip().startswith("<"): break
+                        rows = json.loads(text)
+                        if not rows or not isinstance(rows, list): break
+                        for k in rows:
+                            candles.append({"time":int(k[0])//1000,"open":float(k[1]),"high":float(k[2]),"low":float(k[3]),"close":float(k[4]),"volume":float(k[5])})
+                        if len(rows) < 1000: break
+                        from_ms = int(rows[-1][0]) + 1
             if candles:
-                print(f"  Backtest {sym}/{interval}: {len(candles)} candles from Binance ({binance_sym})")
-                return JSONResponse({"source":"binance","symbol":sym,"interval":interval,"candles":candles[-5000:]})
+                print(f"  BT Binance {sym}: {len(candles)} candles")
+                return JSONResponse({"source":"binance","symbol":sym,"interval":tf,"candles":candles[-5000:]})
         except Exception as e:
-            print(f"  Backtest Binance {binance_sym}: {e}")
-            candles = []
+            print(f"  BT Binance failed: {e}")
 
-    # ── Fallback 1: CoinGecko OHLCV (for crypto when Binance fails) ────────
-    if not candles and cg_id:
+    # Try CoinGecko fallback
+    if cg_id:
         try:
-            # CoinGecko /ohlc returns [ts, open, high, low, close] — free, no key
-            # days mapping: use enough days to cover the range
-            days_needed = max(1, (to_ts - from_ts) // 86400)
-            cg_days = "max" if days_needed > 365 else str(min(365, max(days_needed + 5, 30)))
+            days = max(30, (to_ts - from_ts) // 86400)
+            days_p = "max" if days > 365 else str(days + 5)
             async with aiohttp.ClientSession() as s:
                 async with s.get(
                     f"https://api.coingecko.com/api/v3/coins/{cg_id}/ohlc",
-                    params={"vs_currency":"usd","days":cg_days},
+                    params={"vs_currency":"usd","days":days_p},
                     headers={"Accept":"application/json","User-Agent":USER_AGENT},
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as r:
                     if r.status == 200:
-                        raw = await r.json(content_type=None)
-                        if isinstance(raw, list) and raw:
-                            for row in raw:
-                                if len(row) < 5: continue
-                                ts_sec = int(row[0]) // 1000
-                                if ts_sec < from_ts or ts_sec > to_ts: continue
-                                candles.append({
-                                    "time":   ts_sec,
-                                    "open":   float(row[1]),
-                                    "high":   float(row[2]),
-                                    "low":    float(row[3]),
-                                    "close":  float(row[4]),
-                                    "volume": 0.0,
-                                })
-                            if candles:
-                                print(f"  Backtest {sym}/{interval}: {len(candles)} candles from CoinGecko ({cg_id})")
-                                return JSONResponse({"source":"coingecko","symbol":sym,"interval":interval,"candles":candles[-5000:]})
-                    else:
-                        print(f"  CoinGecko OHLC {cg_id}: HTTP {r.status}")
+                        text = await r.text()
+                        if text and not text.lstrip().startswith("<"):
+                            rows = json.loads(text)
+                            if isinstance(rows, list):
+                                for row in rows:
+                                    if len(row) < 5: continue
+                                    ts = int(row[0]) // 1000
+                                    if ts < from_ts or ts > to_ts: continue
+                                    candles.append({"time":ts,"open":float(row[1]),"high":float(row[2]),"low":float(row[3]),"close":float(row[4]),"volume":0.0})
+                                if candles:
+                                    print(f"  BT CoinGecko {cg_id}: {len(candles)} candles")
+                                    return JSONResponse({"source":"coingecko","symbol":sym,"interval":tf,"candles":candles[-5000:]})
         except Exception as e:
-            print(f"  CoinGecko OHLC {cg_id}: {e}")
-            candles = []
+            print(f"  BT CoinGecko failed: {e}")
 
-    # ── Fallback 2: Yahoo Finance (forex, stocks, commodities, indexes) ────
-    # Complete symbol resolution
-    YAHOO_DIRECT = {
-        # Crypto (Yahoo Finance supports these as fallback)
-        "BTCUSDT":"BTC-USD","ETHUSDT":"ETH-USD","XRPUSDT":"XRP-USD",
-        "SOLUSDT":"SOL-USD","BNBUSDT":"BNB-USD","DOGEUSDT":"DOGE-USD",
-        "ADAUSDT":"ADA-USD","AVAXUSDT":"AVAX-USD","LINKUSDT":"LINK-USD",
-        "DOTUSDT":"DOT-USD","TONUSDT":"TON11419-USD","SHIBUSDT":"SHIB-USD",
-        "LTCUSDT":"LTC-USD","TRXUSDT":"TRX-USD","POLUSDT":"MATIC-USD",
-        "UNIUSDT":"UNI7083-USD","XLMUSDT":"XLM-USD","NEARUSDT":"NEAR-USD",
-        "ARBUSDT":"ARB11841-USD","APTUSDT":"APT21794-USD","SUIUSDT":"SUI20947-USD",
-        "PEPEUSDT":"PEPE24478-USD","ICPUSDT":"ICP-USD","XMRUSDT":"XMR-USD",
-        "FILUSDT":"FIL-USD","RENDERUSDT":"RNDR-USD","INJUSDT":"INJ-USD",
-        # Forex
-        "EURUSD":"EURUSD=X","GBPUSD":"GBPUSD=X","USDJPY":"JPY=X",
-        "AUDUSD":"AUDUSD=X","USDCAD":"CAD=X","USDCHF":"CHF=X",
-        "NZDUSD":"NZDUSD=X","EURGBP":"EURGBP=X","EURJPY":"EURJPY=X",
-        "GBPJPY":"GBPJPY=X","AUDJPY":"AUDJPY=X","EURAUD":"EURAUD=X",
-        "EURCAD":"EURCAD=X","EURCHF":"EURCHF=X","EURNZD":"EURNZD=X",
-        "GBPAUD":"GBPAUD=X","GBPCAD":"GBPCAD=X","GBPCHF":"GBPCHF=X",
-        "GBPNZD":"GBPNZD=X","CADJPY":"CADJPY=X","CHFJPY":"CHFJPY=X",
-        "NZDJPY":"NZDJPY=X","AUDCAD":"AUDCAD=X","AUDCHF":"AUDCHF=X",
-        "AUDNZD":"AUDNZD=X","NZDCAD":"NZDCAD=X","NZDCHF":"NZDCHF=X",
-        "CADCHF":"CADCHF=X","USDTRY":"TRY=X","USDZAR":"ZAR=X",
-        "USDMXN":"MXN=X","USDSEK":"SEK=X","USDNOK":"NOK=X",
-        "USDDKK":"DKK=X","USDSGD":"SGD=X","USDHKD":"HKD=X",
-        "USDINR":"INR=X","USDAED":"AED=X","USDSAR":"SAR=X",
-        # Commodities
-        "XAUUSD":"GC=F","XAGUSD":"SI=F","WTI":"CL=F","BRENT":"BZ=F",
-        "COPPER":"HG=F","NATGAS":"NG=F","XPTUSD":"PL=F",
-        # Indexes
-        "SPX":"^GSPC","DJI":"^DJI","NASDAQ":"^IXIC","DAX":"^GDAXI",
-        "FTSE":"^FTSE","NIKKEI":"^N225","VIX":"^VIX","DXY":"DX-Y.NYB",
-        # Stocks
-        "AAPL":"AAPL","NVDA":"NVDA","TSLA":"TSLA","MSFT":"MSFT",
-        "GOOGL":"GOOGL","AMZN":"AMZN","META":"META","JPM":"JPM",
-    }
-    yahoo_sym = (
-        BACKTEST_YAHOO_MAP.get(sym) or
-        BACKTEST_YAHOO_MAP.get(sym.lower()) or
-        YAHOO_DIRECT.get(sym)
-    )
-    # Last resort: if 6-char ending in USD treat as forex
-    if not yahoo_sym and len(sym)==6 and sym.endswith("USD"):
-        yahoo_sym = sym + "=X"
-    # Bare stock ticker
-    if not yahoo_sym and sym.isalpha() and len(sym) <= 5:
-        yahoo_sym = sym
-
-    if not yahoo_sym:
-        raise HTTPException(404, f"Symbol '{sym}' not recognised")
-
-    y_interval = YAHOO_INTERVAL_MAP.get(interval, "1d")
-    # Use period1/period2 (Unix timestamps) instead of range — more precise
-    try:
-        jar = aiohttp.CookieJar(unsafe=True)
-        async with aiohttp.ClientSession(cookie_jar=jar) as s:
-            params = {
-                "interval":      y_interval,
-                "period1":       str(from_ts),
-                "period2":       str(to_ts),
-                "includePrePost":"false",
-                "events":        "history",
-            }
-            async with s.get(
-                f"https://query1.finance.yahoo.com/v8/finance/chart/{yahoo_sym}",
-                params=params,
-                headers=YAHOO_HEADERS,
-                timeout=TIMEOUT_SLOW,
-            ) as r:
-                if r.status != 200:
-                    # Try query2 as backup
-                    async with s.get(
-                        f"https://query2.finance.yahoo.com/v8/finance/chart/{yahoo_sym}",
-                        params=params,
-                        headers=YAHOO_HEADERS,
-                        timeout=TIMEOUT_SLOW,
-                    ) as r2:
-                        if r2.status != 200:
-                            raise HTTPException(502, f"Yahoo HTTP {r2.status} for {yahoo_sym}")
-                        txt2 = await r2.text()
-                        if not txt2 or txt2.strip().startswith('<'):
-                            raise HTTPException(502, f"Yahoo returned HTML for {yahoo_sym}")
-                        data = json.loads(txt2)
-                else:
-                    txt = await r.text()
-                    if not txt or txt.strip().startswith('<'):
-                        raise HTTPException(502, f"Yahoo returned HTML for {yahoo_sym}")
-                    data = json.loads(txt)
-
-                result = data.get("chart",{}).get("result")
-                if not result:
-                    err = data.get("chart",{}).get("error",{})
-                    raise HTTPException(502, f"Yahoo: {err.get('description','No data returned')}")
-                ts   = result[0].get("timestamp",[]) or []
-                q    = result[0].get("indicators",{}).get("quote",[{}])[0]
-                opens  = q.get("open",[])  or []
-                highs  = q.get("high",[])  or []
-                lows   = q.get("low",[])   or []
-                closes = q.get("close",[]) or []
-                vols   = q.get("volume",[])or []
-                for i,t in enumerate(ts):
-                    if i >= len(closes): break
-                    o = opens[i] if i < len(opens) else None
-                    h = highs[i] if i < len(highs) else None
-                    l = lows[i]  if i < len(lows)  else None
-                    c = closes[i]
-                    if None in (o,h,l,c): continue
-                    candles.append({
-                        "time":   int(t),
-                        "open":   round(float(o),6),
-                        "high":   round(float(h),6),
-                        "low":    round(float(l),6),
-                        "close":  round(float(c),6),
-                        "volume": float(vols[i]) if i < len(vols) and vols[i] else 0,
-                    })
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-    if not candles:
-        raise HTTPException(404, "No candles returned for this range")
-
-    print(f"  Backtest {sym}/{interval}: {len(candles)} candles from Yahoo ({yahoo_sym})")
-    return JSONResponse({"source":"yahoo","symbol":sym,"interval":interval,"candles":candles[-5000:]})
+    return JSONResponse({"error": f"No data found for {sym}"}, status_code=404)
 
 
 @app.get("/img/{filename}")
