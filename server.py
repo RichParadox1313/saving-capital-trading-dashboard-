@@ -1016,8 +1016,8 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
         _ssl_ctx2.verify_mode = _ssl2.CERT_NONE
         _conn2 = aiohttp.TCPConnector(ssl=_ssl_ctx2)
 
-        from_ms = int((datetime.utcnow() - timedelta(days=365)).timestamp() * 1000)
-        to_ms   = int(datetime.utcnow().timestamp() * 1000)
+        from_iso = (datetime.utcnow() - timedelta(days=365)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        to_iso   = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
         async with aiohttp.ClientSession(connector=_conn2) as s:
             # Resolve correct account ID — the stored ID may be stale
@@ -1040,7 +1040,7 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
 
             # Pull closed deal history
             async with s.get(
-                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
+                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
                 raw = await r.text()
@@ -1404,7 +1404,7 @@ async def mt5_debug(account_id: str):
             result["account_server"] = acc.get("server","?")
 
         # Deals - last 365 days
-        async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
+        async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}",
                          headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as r:
             raw_text = await r.text()
             result["deals_http"] = r.status
