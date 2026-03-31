@@ -1087,23 +1087,85 @@ async def mt5_sync(account_id: str):
         _ssl_ctx2.check_hostname = False
         _ssl_ctx2.verify_mode = _ssl2.CERT_NONE
         _conn2 = aiohttp.TCPConnector(ssl=_ssl_ctx2)
+
+        from_ms = int((datetime.utcnow() - timedelta(days=90)).timestamp() * 1000)
+        to_ms   = int(datetime.utcnow().timestamp() * 1000)
+
         async with aiohttp.ClientSession(connector=_conn2) as s:
+            # Pull closed deal history
+            async with s.get(
+                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
+                headers=headers, timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                deals = await r.json() if r.status == 200 else []
+                if r.status != 200:
+                    print(f"  MT5 sync deals HTTP {r.status}: {await r.text()}")
+
+            # Pull open positions
             async with s.get(
                 f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 positions = await r.json() if r.status == 200 else []
+
         trades = load_journal()
+        existing_ids = {t.get("id") for t in trades}
+        new_count = 0
+
+        # Process closed deals
+        for deal in (deals if isinstance(deals, list) else []):
+            deal_id = f"mt5_{deal.get('id', deal.get('ticket',''))}"
+            dtype   = deal.get("type","")
+            if dtype not in ("DEAL_TYPE_BUY","DEAL_TYPE_SELL"): continue
+            entry_type = deal.get("entryType","")
+            if entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY"): continue  # skip closes
+            if deal_id in existing_ids: continue
+
+            direction = "LONG" if dtype == "DEAL_TYPE_BUY" else "SHORT"
+            sym = deal.get("symbol","")
+            vol = deal.get("volume",0) or 0
+            price = deal.get("price",0) or 0
+            profit = round((deal.get("profit",0) or 0) + (deal.get("swap",0) or 0) + (deal.get("commission",0) or 0), 2)
+            t_time = deal.get("time","") or deal.get("brokerTime","")
+
+            trades.append({
+                "id": deal_id, "symbol": sym, "direction": direction,
+                "entry": price, "exit": None, "size": vol,
+                "pnl": profit, "date": t_time[:10] if t_time else "",
+                "time": t_time, "notes": "", "tags": [],
+                "source": "mt5",
+            })
+            existing_ids.add(deal_id)
+            new_count += 1
+
+        # Update open positions pnl
         for pos in (positions if isinstance(positions, list) else []):
-            pos_id = f"pos_{pos.get('id',pos.get('ticket',''))}"
+            pos_id = f"pos_{pos.get('id', pos.get('ticket',''))}"
             pnl = round((pos.get("profit",0) or 0) + (pos.get("swap",0) or 0), 2)
-            for t in trades:
-                if t.get("id") == pos_id:
-                    t["exit"] = pos.get("currentPrice")
-                    t["pnl"]  = pnl
+            if pos_id not in existing_ids:
+                sym = pos.get("symbol","")
+                dtype = pos.get("type","")
+                direction = "LONG" if dtype == "POSITION_TYPE_BUY" else "SHORT"
+                trades.append({
+                    "id": pos_id, "symbol": sym, "direction": direction,
+                    "entry": pos.get("openPrice",0), "exit": pos.get("currentPrice"),
+                    "size": pos.get("volume",0), "pnl": pnl,
+                    "date": (pos.get("time","") or "")[:10],
+                    "time": pos.get("time",""), "notes": "", "tags": [],
+                    "source": "mt5",
+                })
+                new_count += 1
+            else:
+                for t in trades:
+                    if t.get("id") == pos_id:
+                        t["exit"] = pos.get("currentPrice")
+                        t["pnl"]  = pnl
+
         save_journal(trades)
-        return JSONResponse({"ok": True, "positions": len(positions)})
+        print(f"  MT5 sync: {new_count} new trades, {len(positions)} open positions")
+        return JSONResponse({"ok": True, "new_trades": new_count, "positions": len(positions)})
     except Exception as e:
+        print(f"  MT5 sync error: {e}")
         raise HTTPException(500, f"Sync error: {e}")
 
 
