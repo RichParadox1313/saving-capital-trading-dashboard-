@@ -963,8 +963,8 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
             if not account_id:
                 raise HTTPException(500, "No account ID returned from MetaAPI")
 
-            # Step 2: Wait for connection (poll up to 30s)
-            for _ in range(6):
+            # Step 2: Wait for connection (poll up to 90s)
+            for _ in range(18):
                 await asyncio.sleep(5)
                 async with s.get(
                     f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
@@ -1012,6 +1012,7 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
                     "id":        deal_id,
                     "date":      date_str,
                     "asset":     deal.get("symbol",""),
+                    "symbol":    deal.get("symbol",""),
                     "direction": direction,
                     "entry":     deal.get("price"),
                     "exit":      None,
@@ -1043,6 +1044,7 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
                     "id":        pos_id,
                     "date":      date_str,
                     "asset":     pos.get("symbol",""),
+                    "symbol":    pos.get("symbol",""),
                     "direction": direction,
                     "entry":     pos.get("openPrice"),
                     "exit":      pos.get("currentPrice"),
@@ -1129,11 +1131,12 @@ async def mt5_sync(account_id: str):
             t_time = deal.get("time","") or deal.get("brokerTime","")
 
             trades.append({
-                "id": deal_id, "symbol": sym, "direction": direction,
+                "id": deal_id, "asset": sym, "symbol": sym, "direction": direction,
                 "entry": price, "exit": None, "size": vol,
                 "pnl": profit, "date": t_time[:10] if t_time else "",
-                "time": t_time, "notes": "", "tags": [],
-                "source": "mt5",
+                "status": "CLOSED", "strategy": "MT5 Auto",
+                "notes": "", "tags": [], "source": "mt5",
+                "createdAt": datetime.utcnow().isoformat(),
             })
             existing_ids.add(deal_id)
             new_count += 1
@@ -1147,12 +1150,13 @@ async def mt5_sync(account_id: str):
                 dtype = pos.get("type","")
                 direction = "LONG" if dtype == "POSITION_TYPE_BUY" else "SHORT"
                 trades.append({
-                    "id": pos_id, "symbol": sym, "direction": direction,
+                    "id": pos_id, "asset": sym, "symbol": sym, "direction": direction,
                     "entry": pos.get("openPrice",0), "exit": pos.get("currentPrice"),
                     "size": pos.get("volume",0), "pnl": pnl,
                     "date": (pos.get("time","") or "")[:10],
-                    "time": pos.get("time",""), "notes": "", "tags": [],
-                    "source": "mt5",
+                    "status": "OPEN", "strategy": "MT5 Live",
+                    "notes": "", "tags": [], "source": "mt5",
+                    "createdAt": datetime.utcnow().isoformat(),
                 })
                 new_count += 1
             else:
