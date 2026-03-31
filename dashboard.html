@@ -1279,6 +1279,9 @@ function setLang(lang){
 // ── Page Navigation ──────────────────────────────────────────────────────────
 function goPage(page){
   document.querySelectorAll('.page').forEach(p=>{ p.style.display='none'; p.style.pointerEvents='none'; });
+  // Explicitly ensure backtest fixed page is hidden when not active
+  const btp = document.getElementById('page-backtest');
+  if(btp && page !== 'backtest'){ btp.style.display='none'; btp.style.pointerEvents='none'; }
   const el = document.getElementById('page-'+page);
   if(el){ el.style.display='block'; el.style.pointerEvents=''; }
 
@@ -4041,7 +4044,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
 <!-- BACKTESTING PAGE -->
-<div id="page-backtest" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704;pointer-events:none">
+<div id="page-backtest" class="page" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704;pointer-events:none">
 <div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
 
   <!-- Top bar -->
