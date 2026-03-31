@@ -1114,28 +1114,41 @@ async def mt5_sync(account_id: str):
         existing_ids = {t.get("id") for t in trades}
         new_count = 0
 
-        # Process closed deals
+        # Process deals — both entries and exits
+        # MetaAPI returns individual deal legs. We record each deal as a trade row.
+        print(f"  MT5 sync: {len(deals) if isinstance(deals,list) else 0} raw deals, {len(positions) if isinstance(positions,list) else 0} positions")
         for deal in (deals if isinstance(deals, list) else []):
             deal_id = f"mt5_{deal.get('id', deal.get('ticket',''))}"
             dtype   = deal.get("type","")
+            # Only process buy/sell deals
             if dtype not in ("DEAL_TYPE_BUY","DEAL_TYPE_SELL"): continue
-            entry_type = deal.get("entryType","")
-            if entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY"): continue  # skip closes
             if deal_id in existing_ids: continue
 
+            entry_type = deal.get("entryType","")
+            # DEAL_ENTRY_IN  = opening a position
+            # DEAL_ENTRY_OUT = closing a position (has the actual P&L)
+            # DEAL_ENTRY_OUT_BY = closed by opposite position
+            is_close = entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY")
             direction = "LONG" if dtype == "DEAL_TYPE_BUY" else "SHORT"
-            sym = deal.get("symbol","")
-            vol = deal.get("volume",0) or 0
-            price = deal.get("price",0) or 0
+            # For closing deals, the direction is the direction being closed
+            # i.e. BUY to close means was SHORT, SELL to close means was LONG
+            if is_close:
+                direction = "SHORT" if dtype == "DEAL_TYPE_BUY" else "LONG"
+
+            sym    = deal.get("symbol","")
+            vol    = deal.get("volume",0) or 0
+            price  = deal.get("price",0) or 0
             profit = round((deal.get("profit",0) or 0) + (deal.get("swap",0) or 0) + (deal.get("commission",0) or 0), 2)
             t_time = deal.get("time","") or deal.get("brokerTime","")
+            status = "CLOSED" if is_close else "OPEN"
 
             trades.append({
                 "id": deal_id, "asset": sym, "symbol": sym, "direction": direction,
-                "entry": price, "exit": None, "size": vol,
-                "pnl": profit, "date": t_time[:10] if t_time else "",
-                "status": "CLOSED", "strategy": "MT5 Auto",
-                "notes": "", "tags": [], "source": "mt5",
+                "entry": price, "exit": None if not is_close else price,
+                "size": vol, "pnl": profit,
+                "date": t_time[:10] if t_time else "",
+                "status": status, "strategy": "MT5 Auto",
+                "notes": entry_type, "tags": [], "source": "mt5",
                 "createdAt": datetime.utcnow().isoformat(),
             })
             existing_ids.add(deal_id)
@@ -1528,6 +1541,39 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
 
     return JSONResponse({"error": f"No data found for {sym}"}, status_code=404)
 
+
+
+@app.get("/api/mt5/debug/{account_id}")
+async def mt5_debug(account_id: str):
+    """Return raw MetaAPI data for debugging."""
+    if not META_API_TOKEN:
+        return JSONResponse({"error": "no token"})
+    headers = {"auth-token": META_API_TOKEN}
+    import ssl as _ssl3
+    ctx = _ssl3.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=_ssl3.CERT_NONE
+    from_ms = int((datetime.utcnow() - timedelta(days=90)).timestamp() * 1000)
+    to_ms   = int(datetime.utcnow().timestamp() * 1000)
+    result = {}
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ctx)) as s:
+        # Account info
+        async with s.get(f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
+                         headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+            result["account"] = await r.json() if r.status==200 else {"error": r.status}
+        # Deals
+        async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
+                         headers=headers, timeout=aiohttp.ClientTimeout(total=20)) as r:
+            deals = await r.json() if r.status==200 else []
+            result["deals_count"] = len(deals) if isinstance(deals,list) else 0
+            result["deals_sample"] = deals[:3] if isinstance(deals,list) else deals
+            result["deals_http"] = r.status
+        # Positions
+        async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
+                         headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+            pos = await r.json() if r.status==200 else []
+            result["positions_count"] = len(pos) if isinstance(pos,list) else 0
+            result["positions"] = pos
+            result["positions_http"] = r.status
+    return JSONResponse(result)
 
 @app.get("/img/{filename}")
 async def serve_img(filename: str):
