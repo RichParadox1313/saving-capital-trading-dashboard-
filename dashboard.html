@@ -576,7 +576,7 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .bt-styles{display:flex;gap:2px;background:var(--s2);border:1px solid var(--br);border-radius:5px;padding:2px;flex-shrink:0}
 
 /* Body */
-.bt-body{display:flex;min-height:calc(100vh - 130px)}
+.bt-body{display:flex;flex:1;min-height:0;overflow:hidden}
 
 /* Left toolbar */
 .bt-toolbar{width:42px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;align-items:center;padding:6px 4px;gap:2px;overflow-y:auto}
@@ -589,8 +589,8 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .bt-color{width:26px;height:22px;border:1px solid var(--br);border-radius:4px;cursor:pointer;padding:0;background:transparent}
 
 /* Center */
-.bt-center{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-.bt-chart-area{flex:1;position:relative;background:#040a04;min-height:500px}
+.bt-center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
+.bt-chart-area{flex:1;position:relative;background:#040a04;min-height:0}
 #bt-chart{width:100%;height:100%;position:absolute;inset:0}
 .bt-canvas{position:absolute;inset:0;pointer-events:none;z-index:5}
 .bt-ohlc{position:absolute;top:6px;left:8px;font-family:'DM Mono',monospace;font-size:10px;pointer-events:none;z-index:6;display:none}
@@ -1043,7 +1043,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 
 <div id="page-markets" class="page" style="display:none">
-<canvas id="matrix-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.045;display:none"></canvas>
+<canvas id="matrix-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.18;display:none"></canvas>
 <section class="hero z">
   <div class="htag"><div class="htag-dot"></div><span data-i18n="heroTag">AI-Powered · Institutional Grade · Real-Time</span></div>
   <h1>Market<i>Intelligence</i></h1>
@@ -2970,33 +2970,123 @@ function startBgAnim(page){
   if(page==='journal-page' && jc){ jc.style.display='block'; runJournalBg(jc); }
 }
 
-// ── Matrix Rain ───────────────────────────────────────────────────────────────
+// ── 3D Matrix Background ──────────────────────────────────────────────────────
 function runMatrix(canvas){
   const ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
 
-  const cols   = Math.floor(canvas.width / 18);
-  const drops  = Array.from({length:cols}, ()=>Math.random()*-100);
-  const chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ₿$€¥£ΔΣΠΩ∞≈±×÷<>{}[]|/\\';
+  const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ₿$€¥£ΔΣΠΩ∞≈±×÷<>{}[]|/\\アイウエオカキクケコサシスセソタチツテト';
+  const FOCAL = 400; // perspective focal length
+
+  // 3D particles — each is a character floating in 3D space
+  const COUNT = 180;
+  function mkParticle(){
+    return {
+      x: (Math.random()-0.5)*1800,
+      y: (Math.random()-0.5)*1200,
+      z: Math.random()*1200 + 100,
+      vz: -(1.5 + Math.random()*2.5),  // moving toward viewer
+      char: CHARS[Math.floor(Math.random()*CHARS.length)],
+      tick: 0,
+      changAt: Math.floor(Math.random()*20+5),
+      col: Math.random()>0.92 ? '#86efac' : (Math.random()>0.7 ? '#4ade80' : '#22c55e'),
+    };
+  }
+
+  const particles = Array.from({length:COUNT}, mkParticle);
+
+  // Streaming columns — classic matrix rain in background
+  const COLS = Math.floor(window.innerWidth/18);
+  const drops = Array.from({length:COLS}, ()=>Math.random()*-80);
 
   function draw(){
-    if(!_matrixRaf && document.getElementById('page-markets')?.style.display==='none') return;
-    ctx.fillStyle = 'rgba(3,7,3,0.18)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.font = '13px "DM Mono",monospace';
+    if(!_matrixRaf) return;
+    const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2;
 
+    // Dim background — slower fade = longer trails
+    ctx.fillStyle = 'rgba(3,7,3,0.13)';
+    ctx.fillRect(0,0,W,H);
+
+    // ── Layer 1: background column rain (dim) ──
+    ctx.font = '12px "DM Mono",monospace';
     for(let i=0;i<drops.length;i++){
-      const char = chars[Math.floor(Math.random()*chars.length)];
-      const bright = Math.random() > 0.93;
-      ctx.fillStyle = bright ? '#86efac' : '#22c55e';
-      ctx.globalAlpha = bright ? 0.9 : 0.45 + Math.random()*0.3;
-      ctx.fillText(char, i*18, drops[i]*18);
+      const ch = CHARS[Math.floor(Math.random()*CHARS.length)];
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = '#22c55e';
+      ctx.fillText(ch, i*18, drops[i]*18);
       ctx.globalAlpha = 1;
-      if(drops[i]*18 > canvas.height && Math.random()>0.97) drops[i]=0;
-      drops[i] += 0.4 + Math.random()*0.3;
+      if(drops[i]*18 > H && Math.random()>0.975) drops[i]=0;
+      drops[i] += 0.35 + Math.random()*0.2;
     }
+
+    // ── Layer 2: 3D particles flying toward viewer ──
+    // Sort by z descending so closer particles draw on top
+    particles.sort((a,b)=>b.z-a.z);
+
+    for(const p of particles){
+      // Perspective projection
+      const scale = FOCAL / p.z;
+      const sx = cx + p.x * scale;
+      const sy = cy + p.y * scale;
+
+      // Only draw if on screen
+      if(sx < -20 || sx > W+20 || sy < -20 || sy > H+20){
+        Object.assign(p, mkParticle());
+        p.z = 1200; // reset to far
+        continue;
+      }
+
+      // Size and alpha based on depth
+      const fontSize = Math.max(7, Math.min(22, scale * 11));
+      const alpha = Math.min(0.9, Math.max(0.08, (1200-p.z)/1200 * 0.85));
+
+      // Randomly change character
+      p.tick++;
+      if(p.tick >= p.changAt){
+        p.char = CHARS[Math.floor(Math.random()*CHARS.length)];
+        p.tick = 0;
+        p.changAt = Math.floor(Math.random()*20+5);
+      }
+
+      // Brightest particles near viewer
+      const isClose = p.z < 200;
+      ctx.font = `${fontSize}px "DM Mono",monospace`;
+      ctx.globalAlpha = isClose ? Math.min(1, alpha*1.4) : alpha;
+      ctx.fillStyle = isClose ? '#a7f3d0' : p.col;
+
+      // Glow for close particles
+      if(isClose && p.z < 100){
+        ctx.shadowColor = '#4ade80';
+        ctx.shadowBlur = 8;
+      }
+
+      ctx.fillText(p.char, sx, sy);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+
+      // Move toward viewer
+      p.z += p.vz;
+
+      // Reset when too close
+      if(p.z < 20){
+        Object.assign(p, mkParticle());
+      }
+    }
+
+    // ── Layer 3: occasional bright "shooting" column ──
+    if(Math.random() > 0.994){
+      const bx = Math.random()*W;
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = '#86efac';
+      ctx.font = '14px "DM Mono",monospace';
+      for(let i=0;i<8;i++){
+        ctx.fillText(CHARS[Math.floor(Math.random()*CHARS.length)], bx, Math.random()*H);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     _matrixRaf = requestAnimationFrame(draw);
   }
   draw();
@@ -3265,73 +3355,129 @@ function runJournalBg(canvas){
 
 // ── Asset definitions ─────────────────────────────────────────────────────────
 const BT_ASSETS = [
-  // Crypto — fetched from Binance
-  {sym:'BTCUSDT', name:'Bitcoin',    cat:'Crypto',    cg:'bitcoin'},
-  {sym:'ETHUSDT', name:'Ethereum',   cat:'Crypto',    cg:'ethereum'},
-  {sym:'XRPUSDT', name:'XRP',        cat:'Crypto',    cg:'ripple'},
-  {sym:'SOLUSDT', name:'Solana',     cat:'Crypto',    cg:'solana'},
-  {sym:'BNBUSDT', name:'BNB',        cat:'Crypto',    cg:'binancecoin'},
-  {sym:'DOGEUSDT',name:'Dogecoin',   cat:'Crypto',    cg:'dogecoin'},
-  {sym:'ADAUSDT', name:'Cardano',    cat:'Crypto',    cg:'cardano'},
-  {sym:'AVAXUSDT',name:'Avalanche',  cat:'Crypto',    cg:'avalanche-2'},
-  {sym:'LINKUSDT',name:'Chainlink',  cat:'Crypto',    cg:'chainlink'},
-  {sym:'DOTUSDT', name:'Polkadot',   cat:'Crypto',    cg:'polkadot'},
-  {sym:'LTCUSDT', name:'Litecoin',   cat:'Crypto',    cg:'litecoin'},
-  {sym:'XLMUSDT', name:'Stellar',    cat:'Crypto',    cg:'stellar'},
-  {sym:'NEARUSDT',name:'NEAR',       cat:'Crypto',    cg:'near'},
-  {sym:'SUIUSDT', name:'Sui',        cat:'Crypto',    cg:'sui'},
-  {sym:'PEPEUSDT',name:'Pepe',       cat:'Crypto',    cg:'pepe'},
-  {sym:'XMRUSDT', name:'Monero',     cat:'Crypto',    cg:'monero'},
-  {sym:'POLUSDT', name:'Polygon',    cat:'Crypto',    cg:'pol-polygon-ecosystem-token'},
-  // Forex — fetched from Stooq
-  {sym:'EURUSD',  name:'EUR/USD',    cat:'Forex',     st:'eurusd'},
-  {sym:'GBPUSD',  name:'GBP/USD',    cat:'Forex',     st:'gbpusd'},
-  {sym:'USDJPY',  name:'USD/JPY',    cat:'Forex',     st:'usdjpy'},
-  {sym:'AUDUSD',  name:'AUD/USD',    cat:'Forex',     st:'audusd'},
-  {sym:'USDCAD',  name:'USD/CAD',    cat:'Forex',     st:'usdcad'},
-  {sym:'USDCHF',  name:'USD/CHF',    cat:'Forex',     st:'usdchf'},
-  {sym:'NZDUSD',  name:'NZD/USD',    cat:'Forex',     st:'nzdusd'},
-  {sym:'EURGBP',  name:'EUR/GBP',    cat:'Forex',     st:'eurgbp'},
-  {sym:'EURJPY',  name:'EUR/JPY',    cat:'Forex',     st:'eurjpy'},
-  {sym:'GBPJPY',  name:'GBP/JPY',    cat:'Forex',     st:'gbpjpy'},
-  {sym:'AUDJPY',  name:'AUD/JPY',    cat:'Forex',     st:'audjpy'},
-  {sym:'EURCHF',  name:'EUR/CHF',    cat:'Forex',     st:'eurchf'},
-  {sym:'GBPAUD',  name:'GBP/AUD',    cat:'Forex',     st:'gbpaud'},
-  {sym:'CADJPY',  name:'CAD/JPY',    cat:'Forex',     st:'cadjpy'},
-  {sym:'USDTRY',  name:'USD/TRY',    cat:'Forex',     st:'usdtry'},
-  {sym:'USDZAR',  name:'USD/ZAR',    cat:'Forex',     st:'usdzar'},
-  {sym:'USDMXN',  name:'USD/MXN',    cat:'Forex',     st:'usdmxn'},
-  {sym:'USDSEK',  name:'USD/SEK',    cat:'Forex',     st:'usdsek'},
-  {sym:'USDNOK',  name:'USD/NOK',    cat:'Forex',     st:'usdnok'},
-  {sym:'USDSGD',  name:'USD/SGD',    cat:'Forex',     st:'usdsgd'},
-  {sym:'USDINR',  name:'USD/INR',    cat:'Forex',     st:'usdinr'},
-  // Commodities — Stooq futures
-  {sym:'XAUUSD',  name:'Gold',       cat:'Commodity', st:'xauusd'},
-  {sym:'XAGUSD',  name:'Silver',     cat:'Commodity', st:'xagusd'},
-  {sym:'WTI',     name:'WTI Crude',  cat:'Commodity', st:'cl.f'},
-  {sym:'BRENT',   name:'Brent Crude',cat:'Commodity', st:'lcod.f'},
-  {sym:'COPPER',  name:'Copper',     cat:'Commodity', st:'hg.f'},
-  {sym:'NATGAS',  name:'Natural Gas',cat:'Commodity', st:'ng.f'},
-  // Indexes — Stooq
-  {sym:'SPX',     name:'S&P 500',    cat:'Index',     st:'^spx'},
-  {sym:'DJI',     name:'Dow Jones',  cat:'Index',     st:'^dji'},
-  {sym:'NASDAQ',  name:'NASDAQ',     cat:'Index',     st:'^ndx'},
-  {sym:'DAX',     name:'DAX',        cat:'Index',     st:'^dax'},
-  {sym:'FTSE',    name:'FTSE 100',   cat:'Index',     st:'^ukx'},
-  {sym:'NIKKEI',  name:'Nikkei 225', cat:'Index',     st:'^nky'},
-  {sym:'VIX',     name:'VIX',        cat:'Index',     st:'^vix'},
-  {sym:'DXY',     name:'DXY',        cat:'Index',     st:'dxy'},
-  // Stocks — Stooq (US stocks use .us suffix)
-  {sym:'AAPL',    name:'Apple',      cat:'Stock',     st:'aapl.us'},
-  {sym:'NVDA',    name:'NVIDIA',     cat:'Stock',     st:'nvda.us'},
-  {sym:'TSLA',    name:'Tesla',      cat:'Stock',     st:'tsla.us'},
-  {sym:'MSFT',    name:'Microsoft',  cat:'Stock',     st:'msft.us'},
-  {sym:'GOOGL',   name:'Alphabet',   cat:'Stock',     st:'googl.us'},
-  {sym:'AMZN',    name:'Amazon',     cat:'Stock',     st:'amzn.us'},
-  {sym:'META',    name:'Meta',       cat:'Stock',     st:'meta.us'},
-  {sym:'JPM',     name:'JPMorgan',   cat:'Stock',     st:'jpm.us'},
-  {sym:'NFLX',    name:'Netflix',    cat:'Stock',     st:'nflx.us'},
-  {sym:'AMD',     name:'AMD',        cat:'Stock',     st:'amd.us'},
+  // ── Crypto — Binance ─────────────────────────────────────────────────────
+  {sym:'BTCUSDT',  name:'Bitcoin',       cat:'Crypto',    cg:'bitcoin'},
+  {sym:'ETHUSDT',  name:'Ethereum',      cat:'Crypto',    cg:'ethereum'},
+  {sym:'XRPUSDT',  name:'XRP',           cat:'Crypto',    cg:'ripple'},
+  {sym:'SOLUSDT',  name:'Solana',        cat:'Crypto',    cg:'solana'},
+  {sym:'BNBUSDT',  name:'BNB',           cat:'Crypto',    cg:'binancecoin'},
+  {sym:'DOGEUSDT', name:'Dogecoin',      cat:'Crypto',    cg:'dogecoin'},
+  {sym:'ADAUSDT',  name:'Cardano',       cat:'Crypto',    cg:'cardano'},
+  {sym:'AVAXUSDT', name:'Avalanche',     cat:'Crypto',    cg:'avalanche-2'},
+  {sym:'LINKUSDT', name:'Chainlink',     cat:'Crypto',    cg:'chainlink'},
+  {sym:'DOTUSDT',  name:'Polkadot',      cat:'Crypto',    cg:'polkadot'},
+  {sym:'TONUSDT',  name:'Toncoin',       cat:'Crypto',    cg:'the-open-network'},
+  {sym:'SHIBUSDT', name:'Shiba Inu',     cat:'Crypto',    cg:'shiba-inu'},
+  {sym:'LTCUSDT',  name:'Litecoin',      cat:'Crypto',    cg:'litecoin'},
+  {sym:'TRXUSDT',  name:'TRON',          cat:'Crypto',    cg:'tron'},
+  {sym:'POLUSDT',  name:'Polygon',       cat:'Crypto',    cg:'pol-polygon-ecosystem-token'},
+  {sym:'UNIUSDT',  name:'Uniswap',       cat:'Crypto',    cg:'uniswap'},
+  {sym:'XLMUSDT',  name:'Stellar',       cat:'Crypto',    cg:'stellar'},
+  {sym:'NEARUSDT', name:'NEAR',          cat:'Crypto',    cg:'near'},
+  {sym:'ARBUSDT',  name:'Arbitrum',      cat:'Crypto',    cg:'arbitrum'},
+  {sym:'APTUSDT',  name:'Aptos',         cat:'Crypto',    cg:'aptos'},
+  {sym:'ICPUSDT',  name:'ICP',           cat:'Crypto',    cg:'internet-computer'},
+  {sym:'FILUSDT',  name:'Filecoin',      cat:'Crypto',    cg:'filecoin'},
+  {sym:'RENDERUSDT',name:'Render',       cat:'Crypto',    cg:'render-token'},
+  {sym:'INJUSDT',  name:'Injective',     cat:'Crypto',    cg:'injective-protocol'},
+  {sym:'XMRUSDT',  name:'Monero',        cat:'Crypto',    cg:'monero'},
+  {sym:'SUIUSDT',  name:'Sui',           cat:'Crypto',    cg:'sui'},
+  {sym:'PEPEUSDT', name:'Pepe',          cat:'Crypto',    cg:'pepe'},
+  {sym:'FETUSDT',  name:'Fetch.ai',      cat:'Crypto',    cg:'fetch-ai'},
+  {sym:'SEIUSDT',  name:'Sei',           cat:'Crypto',    cg:'sei-network'},
+  {sym:'TAOUSDT',  name:'Bittensor',     cat:'Crypto',    cg:'bittensor'},
+  // ── Forex — Stooq ────────────────────────────────────────────────────────
+  {sym:'DXY',     name:'DXY Index',      cat:'Forex',     st:'dxy'},
+  {sym:'EURUSD',  name:'EUR/USD',        cat:'Forex',     st:'eurusd'},
+  {sym:'GBPUSD',  name:'GBP/USD',        cat:'Forex',     st:'gbpusd'},
+  {sym:'USDJPY',  name:'USD/JPY',        cat:'Forex',     st:'usdjpy'},
+  {sym:'AUDUSD',  name:'AUD/USD',        cat:'Forex',     st:'audusd'},
+  {sym:'USDCAD',  name:'USD/CAD',        cat:'Forex',     st:'usdcad'},
+  {sym:'USDCHF',  name:'USD/CHF',        cat:'Forex',     st:'usdchf'},
+  {sym:'NZDUSD',  name:'NZD/USD',        cat:'Forex',     st:'nzdusd'},
+  {sym:'EURGBP',  name:'EUR/GBP',        cat:'Forex',     st:'eurgbp'},
+  {sym:'EURJPY',  name:'EUR/JPY',        cat:'Forex',     st:'eurjpy'},
+  {sym:'EURAUD',  name:'EUR/AUD',        cat:'Forex',     st:'euraud'},
+  {sym:'EURCAD',  name:'EUR/CAD',        cat:'Forex',     st:'eurcad'},
+  {sym:'EURCHF',  name:'EUR/CHF',        cat:'Forex',     st:'eurchf'},
+  {sym:'EURNZD',  name:'EUR/NZD',        cat:'Forex',     st:'eurnzd'},
+  {sym:'GBPJPY',  name:'GBP/JPY',        cat:'Forex',     st:'gbpjpy'},
+  {sym:'GBPAUD',  name:'GBP/AUD',        cat:'Forex',     st:'gbpaud'},
+  {sym:'GBPCAD',  name:'GBP/CAD',        cat:'Forex',     st:'gbpcad'},
+  {sym:'GBPCHF',  name:'GBP/CHF',        cat:'Forex',     st:'gbpchf'},
+  {sym:'GBPNZD',  name:'GBP/NZD',        cat:'Forex',     st:'gbpnzd'},
+  {sym:'AUDJPY',  name:'AUD/JPY',        cat:'Forex',     st:'audjpy'},
+  {sym:'CADJPY',  name:'CAD/JPY',        cat:'Forex',     st:'cadjpy'},
+  {sym:'CHFJPY',  name:'CHF/JPY',        cat:'Forex',     st:'chfjpy'},
+  {sym:'NZDJPY',  name:'NZD/JPY',        cat:'Forex',     st:'nzdjpy'},
+  {sym:'AUDCAD',  name:'AUD/CAD',        cat:'Forex',     st:'audcad'},
+  {sym:'AUDCHF',  name:'AUD/CHF',        cat:'Forex',     st:'audchf'},
+  {sym:'AUDNZD',  name:'AUD/NZD',        cat:'Forex',     st:'audnzd'},
+  {sym:'NZDCAD',  name:'NZD/CAD',        cat:'Forex',     st:'nzdcad'},
+  {sym:'NZDCHF',  name:'NZD/CHF',        cat:'Forex',     st:'nzdchf'},
+  {sym:'CADCHF',  name:'CAD/CHF',        cat:'Forex',     st:'cadchf'},
+  {sym:'USDTRY',  name:'USD/TRY',        cat:'Forex',     st:'usdtry'},
+  {sym:'USDZAR',  name:'USD/ZAR',        cat:'Forex',     st:'usdzar'},
+  {sym:'USDMXN',  name:'USD/MXN',        cat:'Forex',     st:'usdmxn'},
+  {sym:'USDSEK',  name:'USD/SEK',        cat:'Forex',     st:'usdsek'},
+  {sym:'USDNOK',  name:'USD/NOK',        cat:'Forex',     st:'usdnok'},
+  {sym:'USDDKK',  name:'USD/DKK',        cat:'Forex',     st:'usddkk'},
+  {sym:'USDSGD',  name:'USD/SGD',        cat:'Forex',     st:'usdsgd'},
+  {sym:'USDHKD',  name:'USD/HKD',        cat:'Forex',     st:'usdhkd'},
+  {sym:'USDINR',  name:'USD/INR',        cat:'Forex',     st:'usdinr'},
+  {sym:'USDAED',  name:'USD/AED',        cat:'Forex',     st:'usdaed'},
+  {sym:'USDSAR',  name:'USD/SAR',        cat:'Forex',     st:'usdsar'},
+  // ── Commodities — Stooq ──────────────────────────────────────────────────
+  {sym:'XAUUSD',  name:'Gold',           cat:'Commodity', st:'xauusd'},
+  {sym:'XAGUSD',  name:'Silver',         cat:'Commodity', st:'xagusd'},
+  {sym:'WTI',     name:'WTI Crude',      cat:'Commodity', st:'cl.f'},
+  {sym:'BRENT',   name:'Brent Crude',    cat:'Commodity', st:'lcod.f'},
+  {sym:'COPPER',  name:'Copper',         cat:'Commodity', st:'hg.f'},
+  {sym:'NATGAS',  name:'Natural Gas',    cat:'Commodity', st:'ng.f'},
+  {sym:'XPTUSD',  name:'Platinum',       cat:'Commodity', st:'pl.f'},
+  // ── Indexes — Stooq ──────────────────────────────────────────────────────
+  {sym:'SPX',     name:'S&P 500',        cat:'Index',     st:'^spx'},
+  {sym:'DJI',     name:'Dow Jones',      cat:'Index',     st:'^dji'},
+  {sym:'NASDAQ',  name:'NASDAQ',         cat:'Index',     st:'^ndx'},
+  {sym:'RUT',     name:'Russell 2000',   cat:'Index',     st:'^rut'},
+  {sym:'VIX',     name:'VIX',            cat:'Index',     st:'^vix'},
+  {sym:'FTSE',    name:'FTSE 100',       cat:'Index',     st:'^ukx'},
+  {sym:'DAX',     name:'DAX',            cat:'Index',     st:'^dax'},
+  {sym:'CAC',     name:'CAC 40',         cat:'Index',     st:'^cac'},
+  {sym:'NIKKEI',  name:'Nikkei 225',     cat:'Index',     st:'^nky'},
+  {sym:'HSI',     name:'Hang Seng',      cat:'Index',     st:'^hsi'},
+  {sym:'SSE',     name:'Shanghai',       cat:'Index',     st:'000001.ss'},
+  // ── Stocks — Stooq ───────────────────────────────────────────────────────
+  {sym:'AAPL',    name:'Apple',          cat:'Stock',     st:'aapl.us'},
+  {sym:'NVDA',    name:'NVIDIA',         cat:'Stock',     st:'nvda.us'},
+  {sym:'MSFT',    name:'Microsoft',      cat:'Stock',     st:'msft.us'},
+  {sym:'GOOGL',   name:'Alphabet',       cat:'Stock',     st:'googl.us'},
+  {sym:'AMZN',    name:'Amazon',         cat:'Stock',     st:'amzn.us'},
+  {sym:'META',    name:'Meta',           cat:'Stock',     st:'meta.us'},
+  {sym:'TSLA',    name:'Tesla',          cat:'Stock',     st:'tsla.us'},
+  {sym:'BRK',     name:'Berkshire',      cat:'Stock',     st:'brk-b.us'},
+  {sym:'TSM',     name:'TSMC',           cat:'Stock',     st:'tsm.us'},
+  {sym:'LLY',     name:'Eli Lilly',      cat:'Stock',     st:'lly.us'},
+  {sym:'JPM',     name:'JPMorgan',       cat:'Stock',     st:'jpm.us'},
+  {sym:'V',       name:'Visa',           cat:'Stock',     st:'v.us'},
+  {sym:'XOM',     name:'ExxonMobil',     cat:'Stock',     st:'xom.us'},
+  {sym:'UNH',     name:'UnitedHealth',   cat:'Stock',     st:'unh.us'},
+  {sym:'MA',      name:'Mastercard',     cat:'Stock',     st:'ma.us'},
+  {sym:'JNJ',     name:'J&J',            cat:'Stock',     st:'jnj.us'},
+  {sym:'AVGO',    name:'Broadcom',       cat:'Stock',     st:'avgo.us'},
+  {sym:'WMT',     name:'Walmart',        cat:'Stock',     st:'wmt.us'},
+  {sym:'PG',      name:'P&G',            cat:'Stock',     st:'pg.us'},
+  {sym:'HD',      name:'Home Depot',     cat:'Stock',     st:'hd.us'},
+  {sym:'ORCL',    name:'Oracle',         cat:'Stock',     st:'orcl.us'},
+  {sym:'COST',    name:'Costco',         cat:'Stock',     st:'cost.us'},
+  {sym:'NFLX',    name:'Netflix',        cat:'Stock',     st:'nflx.us'},
+  {sym:'AMD',     name:'AMD',            cat:'Stock',     st:'amd.us'},
+  {sym:'ADBE',    name:'Adobe',          cat:'Stock',     st:'adbe.us'},
+  {sym:'CRM',     name:'Salesforce',     cat:'Stock',     st:'crm.us'},
+  {sym:'BAC',     name:'Bank of Am.',    cat:'Stock',     st:'bac.us'},
+  {sym:'PEP',     name:'PepsiCo',        cat:'Stock',     st:'pep.us'},
+  {sym:'KO',      name:'Coca-Cola',      cat:'Stock',     st:'ko.us'},
+  {sym:'BABA',    name:'Alibaba',        cat:'Stock',     st:'baba.us'},
 ];
 
 const BT_CRYPTO = new Set(BT_ASSETS.filter(a=>a.cat==='Crypto').map(a=>a.sym));
@@ -3889,8 +4035,8 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
 <!-- BACKTESTING PAGE -->
-<div id="page-backtest" class="page" style="display:none">
-<div class="bt-wrap z">
+<div id="page-backtest" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704">
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
 
   <!-- Top bar -->
   <div class="bt-bar">
