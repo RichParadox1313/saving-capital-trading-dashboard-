@@ -1390,8 +1390,8 @@ async def mt5_debug(account_id: str):
     headers = {"auth-token": META_API_TOKEN}
     import ssl as _ssl3
     ctx = _ssl3.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=_ssl3.CERT_NONE
-    from_ms = int((datetime.utcnow() - timedelta(days=365)).timestamp() * 1000)
-    to_ms   = int(datetime.utcnow().timestamp() * 1000)
+    from_iso = (datetime.utcnow() - timedelta(days=365)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    to_iso   = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
     result = {}
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ctx)) as s:
         # Account info
