@@ -1389,23 +1389,69 @@ async function connectMT5(){
 async function syncMT5(){
   const info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
   if(!info?.accountId){ alert('No MT5 account connected.'); return; }
+
   const link = document.querySelector('[onclick="syncMT5()"]');
-  if(link){ link.textContent = '↻ Syncing...'; link.style.opacity='0.5'; link.style.pointerEvents='none'; }
+  if(link){ link.textContent='↻ Syncing...'; link.style.opacity='0.5'; link.style.pointerEvents='none'; }
+
+  // Show live sync log
+  let logEl = document.getElementById('mt5-sync-log');
+  if(!logEl){
+    logEl = document.createElement('div');
+    logEl.id = 'mt5-sync-log';
+    logEl.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--br);border-radius:6px;font-family:DM Mono,monospace;font-size:10px;color:var(--t3);line-height:1.7';
+    const statusEl = document.getElementById('mt5-status');
+    if(statusEl) statusEl.after(logEl);
+    else document.querySelector('.mt5-connected')?.appendChild(logEl);
+  }
+
+  const log = (msg, color='var(--t3)') => {
+    const ts = new Date().toLocaleTimeString();
+    logEl.innerHTML += `<div style="color:${color}">[${ts}] ${msg}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  logEl.innerHTML = '';
+  log('Starting sync...');
+  log(`Account: ${info.login} @ ${info.server}`);
+  log(`Stored ID: ${info.accountId}`);
+
   try{
-    const r = await fetch('/api/mt5/sync/'+info.accountId);
+    log('Calling /api/mt5/sync — resolving account & fetching deals...');
+    const r = await fetch(`/api/mt5/sync/${info.accountId}?login=${encodeURIComponent(info.login||'')}&server=${encodeURIComponent(info.server||'')}`);
     const data = await r.json().catch(()=>({}));
+
     if(r.ok){
+      log(`✓ Server responded OK`, 'var(--g)');
+      log(`Resolved account ID: ${data.resolved_id || info.accountId}`, 'var(--g)');
+      log(`Raw deals from MetaAPI: ${data.raw_deals ?? '?'}`, '#fbbf24');
+      log(`New trades saved: ${data.new_trades ?? 0}`, data.new_trades > 0 ? '#4ade80' : '#fbbf24');
+      log(`Open positions: ${data.positions ?? 0}`);
+      log(`Total in journal: ${data.total ?? '?'}`);
+
+      if((data.new_trades||0) === 0 && (data.raw_deals||0) === 0){
+        log('⚠ MetaAPI returned 0 deals — account may still be syncing history. Try again in 1 minute.', '#f59e0b');
+      } else if((data.new_trades||0) === 0 && (data.raw_deals||0) > 0){
+        log('⚠ Deals received but filtered (may be duplicate or wrong type). Check Railway logs.', '#f59e0b');
+      } else {
+        log('✓ Trades saved to journal!', '#4ade80');
+      }
+
       await loadJournal();
-      if(link){ link.textContent = `↻ Synced (${data.new_trades||0} new)`; }
-      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
+      log(`✓ Journal refreshed — ${jTrades.length} trades now showing`, '#4ade80');
+      log(`✓ Trading calendar updated`, '#4ade80');
+
+      if(link){ link.textContent=`↻ Synced (${data.new_trades||0} new)`; }
+      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
     } else {
-      if(link){ link.textContent = '✗ Sync failed'; link.style.color='#f87171'; }
-      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
-      console.error('[MT5 Sync]', data);
+      log(`✗ Sync failed: HTTP ${r.status}`, '#f87171');
+      log(`Error: ${data.detail||data.error||JSON.stringify(data)}`, '#f87171');
+      if(link){ link.textContent='✗ Sync failed'; link.style.color='#f87171'; }
+      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
     }
   }catch(e){
-    if(link){ link.textContent = '✗ Error'; link.style.color='#f87171'; }
-    setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
+    log(`✗ Network error: ${e.message}`, '#f87171');
+    if(link){ link.textContent='✗ Error'; link.style.color='#f87171'; }
+    setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
   }
 }
 
