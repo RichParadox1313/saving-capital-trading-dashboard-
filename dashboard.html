@@ -1278,9 +1278,9 @@ function setLang(lang){
 
 // ── Page Navigation ──────────────────────────────────────────────────────────
 function goPage(page){
-  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.querySelectorAll('.page').forEach(p=>{ p.style.display='none'; p.style.pointerEvents='none'; });
   const el = document.getElementById('page-'+page);
-  if(el) el.style.display='block';
+  if(el){ el.style.display='block'; el.style.pointerEvents=''; }
 
   // Update ALL nav buttons across both navs
   document.querySelectorAll('.npbtn, .hp-np, .sc-hn').forEach(b=>b.classList.remove('active','hp-np-on','sc-hn-active'));
@@ -4041,7 +4041,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
 <!-- BACKTESTING PAGE -->
-<div id="page-backtest" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704">
+<div id="page-backtest" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704;pointer-events:none">
 <div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
 
   <!-- Top bar -->
