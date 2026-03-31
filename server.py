@@ -1494,28 +1494,45 @@ async def mt5_debug(account_id: str):
     headers = {"auth-token": META_API_TOKEN}
     import ssl as _ssl3
     ctx = _ssl3.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=_ssl3.CERT_NONE
-    from_ms = int((datetime.utcnow() - timedelta(days=90)).timestamp() * 1000)
+    from_ms = int((datetime.utcnow() - timedelta(days=365)).timestamp() * 1000)
     to_ms   = int(datetime.utcnow().timestamp() * 1000)
     result = {}
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ctx)) as s:
         # Account info
         async with s.get(f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
                          headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
-            result["account"] = await r.json() if r.status==200 else {"error": r.status}
-        # Deals
+            acc = await r.json() if r.status==200 else {}
+            result["account_state"] = acc.get("state","?")
+            result["account_connection"] = acc.get("connectionStatus","?")
+            result["account_login"] = acc.get("login","?")
+            result["account_server"] = acc.get("server","?")
+
+        # Deals - last 365 days
         async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
-                         headers=headers, timeout=aiohttp.ClientTimeout(total=20)) as r:
-            deals = await r.json() if r.status==200 else []
-            result["deals_count"] = len(deals) if isinstance(deals,list) else 0
-            result["deals_sample"] = deals[:3] if isinstance(deals,list) else deals
+                         headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as r:
+            raw_text = await r.text()
             result["deals_http"] = r.status
+            result["deals_raw_preview"] = raw_text[:500]
+            try:
+                deals = _json.loads(raw_text)
+                result["deals_count"] = len(deals) if isinstance(deals,list) else "not a list"
+                result["deals_sample"] = deals[:2] if isinstance(deals,list) else deals
+            except:
+                result["deals_parse_error"] = raw_text[:200]
+
         # Positions
         async with s.get(f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
                          headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
-            pos = await r.json() if r.status==200 else []
-            result["positions_count"] = len(pos) if isinstance(pos,list) else 0
-            result["positions"] = pos
+            raw_pos = await r.text()
             result["positions_http"] = r.status
+            try:
+                pos = _json.loads(raw_pos)
+                result["positions_count"] = len(pos) if isinstance(pos,list) else "not a list"
+                result["positions"] = pos
+            except:
+                result["positions_raw"] = raw_pos[:200]
+
+    result["journal_count"] = len(load_journal())
     return JSONResponse(result)
 
 @app.get("/img/{filename}")
