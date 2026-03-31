@@ -940,7 +940,12 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
     }
 
     try:
-        async with aiohttp.ClientSession() as s:
+        import ssl as _ssl
+        _ssl_ctx = _ssl.create_default_context()
+        _ssl_ctx.check_hostname = False
+        _ssl_ctx.verify_mode = _ssl.CERT_NONE
+        _connector = aiohttp.TCPConnector(ssl=_ssl_ctx)
+        async with aiohttp.ClientSession(connector=_connector) as s:
             # Create account
             async with s.post(
                 "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
@@ -1077,7 +1082,12 @@ async def mt5_sync(account_id: str):
         raise HTTPException(500, "META_API_TOKEN not configured")
     headers = {"auth-token": META_API_TOKEN, "Content-Type": "application/json"}
     try:
-        async with aiohttp.ClientSession() as s:
+        import ssl as _ssl2
+        _ssl_ctx2 = _ssl2.create_default_context()
+        _ssl_ctx2.check_hostname = False
+        _ssl_ctx2.verify_mode = _ssl2.CERT_NONE
+        _conn2 = aiohttp.TCPConnector(ssl=_ssl_ctx2)
+        async with aiohttp.ClientSession(connector=_conn2) as s:
             async with s.get(
                 f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=10),
