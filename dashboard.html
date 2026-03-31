@@ -1424,6 +1424,7 @@ async function loadJournal(){
 // ── Trading Calendar ─────────────────────────────────────────────────────────
 let jCalYear  = new Date().getFullYear();
 let jCalMonth = new Date().getMonth(); // 0-based
+let jCalRange = 'month'; // 'week' | 'month' | '3m' | '6m' | 'year' | 'all'
 
 function jCalRender(){
   const el = document.getElementById('jcal');
@@ -1444,7 +1445,35 @@ function jCalRender(){
     byDate[d].push(t);
   });
 
-  // Month summary
+  // Range-based summary (respects the selected timeframe)
+  const now2 = new Date();
+  let rangeFrom = new Date(year, month, 1);
+  let rangeTo   = new Date(year, month+1, 0);
+  let rangeLabel = monthNames[month];
+
+  if(jCalRange === 'week'){
+    rangeFrom = new Date(now2); rangeFrom.setDate(now2.getDate()-((now2.getDay()+6)%7));
+    rangeTo   = new Date(rangeFrom); rangeTo.setDate(rangeFrom.getDate()+6);
+    rangeLabel = '1W';
+  } else if(jCalRange === '3m'){
+    rangeFrom = new Date(year, month-2, 1); rangeLabel = '3 Months';
+  } else if(jCalRange === '6m'){
+    rangeFrom = new Date(year, month-5, 1); rangeLabel = '6 Months';
+  } else if(jCalRange === 'year'){
+    rangeFrom = new Date(year, 0, 1); rangeTo = new Date(year, 11, 31); rangeLabel = year;
+  } else if(jCalRange === 'all'){
+    rangeFrom = new Date(2000, 0, 1); rangeTo = new Date(2099, 11, 31); rangeLabel = 'All Time';
+  }
+
+  const rfStr = rangeFrom.toISOString().slice(0,10);
+  const rtStr = rangeTo.toISOString().slice(0,10);
+  const rangeTrades  = jTrades.filter(t => (t.date||'') >= rfStr && (t.date||'') <= rtStr);
+  const rangeClosed  = rangeTrades.filter(t => t.status==='CLOSED');
+  const rangeWins    = rangeClosed.filter(t => (t.pnl||0) > 0);
+  const rangePnl     = rangeTrades.reduce((s,t) => s+(t.pnl||0), 0);
+  const rangeWinRate = rangeClosed.length ? Math.round(rangeWins.length/rangeClosed.length*100) : 0;
+
+  // Month summary (still used for the calendar grid)
   const monthTrades = jTrades.filter(t => {
     const d = (t.date||'').slice(0,7);
     return d === `${year}-${String(month+1).padStart(2,'0')}`;
@@ -1508,29 +1537,34 @@ function jCalRender(){
     <div class="jcal-wrap">
       <div class="jcal-header">
         <div class="jcal-title">Trading Calendar</div>
-        <div class="jcal-nav">
-          <button class="jcal-navbtn" onclick="jCalPrev()">‹</button>
-          <div class="jcal-month">${monthNames[month]} ${year}</div>
-          <button class="jcal-navbtn" onclick="jCalNext()">›</button>
-          <button class="jcal-navbtn" onclick="jCalToday()" style="width:auto;padding:0 8px;font-size:9px;letter-spacing:1px">TODAY</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:2px;background:var(--s2);border:1px solid var(--br);border-radius:5px;padding:2px">
+            ${['week','month','3m','6m','year','all'].map(r=>`<button onclick="jCalSetRange('${r}')" style="font-size:8px;letter-spacing:.5px;padding:3px 7px;border:none;border-radius:3px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .12s;background:${jCalRange===r?'var(--g)':'transparent'};color:${jCalRange===r?'#030704':'var(--t4)'};font-weight:${jCalRange===r?'700':'400'}">${r==='week'?'1W':r==='month'?'1M':r==='3m'?'3M':r==='6m'?'6M':r==='year'?'1Y':'ALL'}</button>`).join('')}
+          </div>
+          <div class="jcal-nav">
+            <button class="jcal-navbtn" onclick="jCalPrev()">‹</button>
+            <div class="jcal-month">${monthNames[month]} ${year}</div>
+            <button class="jcal-navbtn" onclick="jCalNext()">›</button>
+            <button class="jcal-navbtn" onclick="jCalToday()" style="width:auto;padding:0 8px;font-size:9px;letter-spacing:1px">TODAY</button>
+          </div>
         </div>
       </div>
       <div class="jcal-grid">${daysHTML}</div>
       <div class="jcal-summary">
         <div class="jcal-sum-cell">
-          <div class="jcal-sum-v" style="color:${monthPnl>=0?'#4ade80':'#f87171'}">${monthPnl>=0?'+':''}$${Math.abs(monthPnl).toFixed(0)}</div>
-          <div class="jcal-sum-l">Month P&L</div>
+          <div class="jcal-sum-v" style="color:${rangePnl>=0?'#4ade80':'#f87171'}">${rangePnl>=0?'+':''}$${Math.abs(rangePnl).toFixed(0)}</div>
+          <div class="jcal-sum-l">${rangeLabel} P&L</div>
         </div>
         <div class="jcal-sum-cell">
-          <div class="jcal-sum-v">${monthClosed.length}</div>
+          <div class="jcal-sum-v">${rangeClosed.length}</div>
           <div class="jcal-sum-l">Closed Trades</div>
         </div>
         <div class="jcal-sum-cell">
-          <div class="jcal-sum-v" style="color:${monthWinRate>=50?'#4ade80':'#f87171'}">${monthWinRate}%</div>
+          <div class="jcal-sum-v" style="color:${rangeWinRate>=50?'#4ade80':'#f87171'}">${rangeWinRate}%</div>
           <div class="jcal-sum-l">Win Rate</div>
         </div>
         <div class="jcal-sum-cell">
-          <div class="jcal-sum-v">${monthTrades.filter(t=>t.status==='OPEN').length}</div>
+          <div class="jcal-sum-v">${rangeTrades.filter(t=>t.status==='OPEN').length}</div>
           <div class="jcal-sum-l">Open Trades</div>
         </div>
       </div>
@@ -1540,6 +1574,7 @@ function jCalRender(){
 function jCalPrev(){ if(jCalMonth===0){jCalMonth=11;jCalYear--;}else{jCalMonth--;} jCalRender(); }
 function jCalNext(){ if(jCalMonth===11){jCalMonth=0;jCalYear++;}else{jCalMonth++;} jCalRender(); }
 function jCalToday(){ jCalYear=new Date().getFullYear(); jCalMonth=new Date().getMonth(); jCalRender(); }
+function jCalSetRange(r){ jCalRange=r; jCalToday(); }
 
 function renderJournal(){
   const con = document.getElementById('s-journal') || document.getElementById('journal-standalone');
