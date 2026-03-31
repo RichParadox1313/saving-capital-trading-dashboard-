@@ -917,7 +917,7 @@ class MT5ConnectRequest(BaseModel):
 
 @app.post("/api/mt5/connect")
 async def mt5_connect(req: MT5ConnectRequest, request: Request):
-    """Provision a MetaAPI MT5 account and sync trades."""
+    """Provision a MetaAPI MT5 account — non-blocking, syncs in background."""
     if not META_API_TOKEN:
         raise HTTPException(500, "META_API_TOKEN not set — add it to Railway environment variables")
     print(f"  MT5 connect: login={req.login} server={req.server} broker={req.broker}")
@@ -927,16 +927,15 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
         "Content-Type": "application/json",
     }
 
-    # Step 1: Create MetaAPI account
     payload = {
-        "login":          req.login,
-        "password":       req.password,
-        "name":           req.name or f"SC-{req.login}",
-        "server":         req.server,
-        "platform":       "mt5",
-        "magic":          0,
-        "application":    "MetaApi",
-        "type":           "cloud",
+        "login":       req.login,
+        "password":    req.password,
+        "name":        req.name or f"SC-{req.login}",
+        "server":      req.server,
+        "platform":    "mt5",
+        "magic":       0,
+        "application": "MetaApi",
+        "type":        "cloud",
     }
 
     try:
@@ -946,136 +945,63 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
         _ssl_ctx.verify_mode = _ssl.CERT_NONE
         _connector = aiohttp.TCPConnector(ssl=_ssl_ctx)
         async with aiohttp.ClientSession(connector=_connector) as s:
-            # Create account
-            async with s.post(
+            # Step 1: Check if account already exists for this login+server
+            async with s.get(
                 "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
-                json=payload,
                 headers=headers,
-                timeout=aiohttp.ClientTimeout(total=30),
+                timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                body = await r.text()
-                if r.status not in (200, 201):
-                    print(f"  MT5 connect MetaAPI error: HTTP {r.status} — {body[:500]}")
-                    raise HTTPException(400, f"MetaAPI HTTP {r.status}: {body[:300]}")
-                data = await r.json()
-                account_id = data.get("id")
+                existing_accounts = await r.json() if r.status == 200 else []
+                account_id = None
+                if isinstance(existing_accounts, list):
+                    for acc in existing_accounts:
+                        if str(acc.get("login","")) == str(req.login) and acc.get("server","") == req.server:
+                            account_id = acc.get("id")
+                            print(f"  MT5: found existing account {account_id}")
+                            break
+
+            # Step 2: Create account if not exists
+            if not account_id:
+                async with s.post(
+                    "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    body = await r.text()
+                    if r.status not in (200, 201):
+                        print(f"  MT5 connect error: HTTP {r.status} — {body[:500]}")
+                        raise HTTPException(400, f"MetaAPI HTTP {r.status}: {body[:300]}")
+                    data = await r.json()
+                    account_id = data.get("id")
+                    print(f"  MT5: created account {account_id}")
 
             if not account_id:
                 raise HTTPException(500, "No account ID returned from MetaAPI")
 
-            # Step 2: Wait for connection (poll up to 90s)
-            for _ in range(18):
-                await asyncio.sleep(5)
-                async with s.get(
-                    f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as r:
-                    if r.status == 200:
-                        info = await r.json()
-                        state = info.get("state","")
-                        if state in ("DEPLOYED", "CONNECTED"):
-                            break
-
-            # Step 3: Pull trade history
-            async with s.get(
-                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{{}}/{{}}"
-                .format(
-                    int((datetime.utcnow() - timedelta(days=30)).timestamp() * 1000),
-                    int(datetime.utcnow().timestamp() * 1000),
-                ),
+            # Step 3: Deploy account (ensure it's running)
+            async with s.post(
+                f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/deploy",
                 headers=headers,
-                timeout=aiohttp.ClientTimeout(total=20),
+                timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                deals = await r.json() if r.status == 200 else []
+                print(f"  MT5 deploy: HTTP {r.status}")
 
-            # Step 4: Convert and store trades
-            trades = load_journal()
-            existing_ids = {t.get("id") for t in trades}
-            new_trades = []
-
-            for deal in (deals if isinstance(deals, list) else []):
-                deal_id = f"mt5_{deal.get('id',deal.get('ticket',''))}"
-                if deal_id in existing_ids:
-                    continue
-                dtype = deal.get("type","")
-                if dtype not in ("DEAL_TYPE_BUY","DEAL_TYPE_SELL"):
-                    continue
-                direction = "LONG" if dtype == "DEAL_TYPE_BUY" else "SHORT"
-                entry_type = deal.get("entryType","")
-                if entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY"):
-                    direction = "SHORT" if dtype == "DEAL_TYPE_BUY" else "LONG"
-                pnl = round((deal.get("profit",0) or 0) + (deal.get("swap",0) or 0) + (deal.get("commission",0) or 0), 2)
-                t_str = deal.get("time","")
-                date_str = t_str[:10] if t_str else datetime.utcnow().strftime("%Y-%m-%d")
-                trade = {
-                    "id":        deal_id,
-                    "date":      date_str,
-                    "asset":     deal.get("symbol",""),
-                    "symbol":    deal.get("symbol",""),
-                    "direction": direction,
-                    "entry":     deal.get("price"),
-                    "exit":      None,
-                    "size":      deal.get("volume"),
-                    "pnl":       pnl,
-                    "status":    "OPEN" if entry_type == "DEAL_ENTRY_IN" else "CLOSED",
-                    "strategy":  "MT5 Auto",
-                    "notes":     f"{req.broker} | Account: {req.login} | {deal.get('comment','')}".strip(" |"),
-                    "createdAt": datetime.utcnow().isoformat(),
-                }
-                new_trades.append(trade)
-
-            # Also pull open positions
-            async with s.get(
-                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
-                headers=headers,
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r:
-                positions = await r.json() if r.status == 200 else []
-
-            for pos in (positions if isinstance(positions, list) else []):
-                pos_id = f"pos_{pos.get('id',pos.get('ticket',''))}"
-                ptype = pos.get("type","")
-                direction = "LONG" if ptype == "POSITION_TYPE_BUY" else "SHORT"
-                pnl = round((pos.get("profit",0) or 0) + (pos.get("swap",0) or 0), 2)
-                t_str = pos.get("time","")
-                date_str = t_str[:10] if t_str else datetime.utcnow().strftime("%Y-%m-%d")
-                trade = {
-                    "id":        pos_id,
-                    "date":      date_str,
-                    "asset":     pos.get("symbol",""),
-                    "symbol":    pos.get("symbol",""),
-                    "direction": direction,
-                    "entry":     pos.get("openPrice"),
-                    "exit":      pos.get("currentPrice"),
-                    "size":      pos.get("volume"),
-                    "pnl":       pnl,
-                    "status":    "OPEN",
-                    "strategy":  "MT5 Live",
-                    "notes":     f"{req.broker} | Account: {req.login}",
-                    "createdAt": datetime.utcnow().isoformat(),
-                }
-                # Update existing open position or add new
-                existing = next((i for i,t in enumerate(trades) if t.get("id")==pos_id), None)
-                if existing is not None:
-                    trades[existing] = trade
-                else:
-                    new_trades.append(trade)
-
-            all_trades = new_trades + trades
-            save_journal(all_trades)
-
+            # Step 4: Return immediately — don't wait for deployment
+            # The /api/mt5/sync endpoint will be called by the frontend to pull history
+            # Return the account ID so frontend can store it and sync later
             return JSONResponse({
                 "ok":        True,
                 "accountId": account_id,
-                "synced":    len(new_trades),
-                "message":   f"Connected! Synced {len(new_trades)} trades from {req.broker or req.server}",
+                "synced":    0,
+                "message":   f"Connected to {req.broker or req.server}! Click 'Sync now' in ~30 seconds to import your trades.",
             })
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(500, f"Connection error: {e}")
+
 
 @app.get("/api/mt5/sync/{account_id}")
 async def mt5_sync(account_id: str):
