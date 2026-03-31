@@ -1366,6 +1366,14 @@ async function connectMT5(){
       localStorage.setItem('sc_mt5', JSON.stringify({login,server,broker,accountId:data.accountId}));
       if(status){status.textContent='✓ '+data.message;status.className='mt5-status ok';}
       setTimeout(()=>{ loadJournal(); },1500);
+      // Auto-sync after 35s — gives MetaAPI time to deploy and connect to broker
+      setTimeout(()=>{
+        if(status){status.textContent='⟳ Importing trades from MT5...';status.className='mt5-status loading';}
+        syncMT5().then(()=>{
+          if(status){status.textContent='✓ Sync complete — check your journal';status.className='mt5-status ok';}
+          loadJournal();
+        });
+      }, 35000);
     } else {
       const msg = data.detail||data.message||'Connection failed';
       if(status){status.textContent='✗ '+msg;status.className='mt5-status err';}
