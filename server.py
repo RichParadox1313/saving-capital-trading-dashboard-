@@ -919,7 +919,8 @@ class MT5ConnectRequest(BaseModel):
 async def mt5_connect(req: MT5ConnectRequest, request: Request):
     """Provision a MetaAPI MT5 account and sync trades."""
     if not META_API_TOKEN:
-        raise HTTPException(500, "META_API_TOKEN not configured in Railway")
+        raise HTTPException(500, "META_API_TOKEN not set — add it to Railway environment variables")
+    print(f"  MT5 connect: login={req.login} server={req.server} broker={req.broker}")
 
     headers = {
         "auth-token":   META_API_TOKEN,
@@ -947,9 +948,10 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
+                body = await r.text()
                 if r.status not in (200, 201):
-                    err = await r.text()
-                    raise HTTPException(400, f"MetaAPI error: {err}")
+                    print(f"  MT5 connect MetaAPI error: HTTP {r.status} — {body[:500]}")
+                    raise HTTPException(400, f"MetaAPI HTTP {r.status}: {body[:300]}")
                 data = await r.json()
                 account_id = data.get("id")
 
