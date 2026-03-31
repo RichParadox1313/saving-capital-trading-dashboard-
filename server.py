@@ -1004,7 +1004,7 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
 
 
 @app.get("/api/mt5/sync/{account_id}")
-async def mt5_sync(account_id: str):
+async def mt5_sync(account_id: str, login: str = "", server: str = ""):
     """Re-sync trades for an already connected MetaAPI account."""
     if not META_API_TOKEN:
         raise HTTPException(500, "META_API_TOKEN not configured")
@@ -1016,18 +1016,38 @@ async def mt5_sync(account_id: str):
         _ssl_ctx2.verify_mode = _ssl2.CERT_NONE
         _conn2 = aiohttp.TCPConnector(ssl=_ssl_ctx2)
 
-        from_ms = int((datetime.utcnow() - timedelta(days=90)).timestamp() * 1000)
+        from_ms = int((datetime.utcnow() - timedelta(days=365)).timestamp() * 1000)
         to_ms   = int(datetime.utcnow().timestamp() * 1000)
 
         async with aiohttp.ClientSession(connector=_conn2) as s:
+            # Resolve correct account ID — the stored ID may be stale
+            async with s.get(
+                "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
+                headers=headers, timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                if r.status == 200:
+                    all_accounts = await r.json()
+                    if isinstance(all_accounts, list):
+                        for acc in all_accounts:
+                            aid = acc.get("_id") or acc.get("id","")
+                            # Match by login if provided, otherwise use stored ID
+                            if login and str(acc.get("login","")) == str(login):
+                                account_id = aid
+                                print(f"  MT5 sync: resolved account {account_id} for login {login}")
+                                break
+                            elif not login and aid == account_id:
+                                break
+
             # Pull closed deal history
             async with s.get(
                 f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_ms}/{to_ms}",
-                headers=headers, timeout=aiohttp.ClientTimeout(total=20),
+                headers=headers, timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
-                deals = await r.json() if r.status == 200 else []
+                raw = await r.text()
+                print(f"  MT5 sync deals: HTTP {r.status}, len={len(raw)}, preview={raw[:100]}")
+                deals = _json.loads(raw) if r.status == 200 and raw.strip().startswith("[") else []
                 if r.status != 200:
-                    print(f"  MT5 sync deals HTTP {r.status}: {await r.text()}")
+                    print(f"  MT5 sync deals error: {raw[:300]}")
 
             # Pull open positions
             async with s.get(
@@ -1106,7 +1126,14 @@ async def mt5_sync(account_id: str):
 
         save_journal(trades)
         print(f"  MT5 sync: {new_count} new trades, {len(positions)} open positions")
-        return JSONResponse({"ok": True, "new_trades": new_count, "positions": len(positions)})
+        return JSONResponse({
+            "ok": True,
+            "new_trades": new_count,
+            "positions": len(positions) if isinstance(positions, list) else 0,
+            "raw_deals": len(deals) if isinstance(deals, list) else 0,
+            "total": len(trades),
+            "resolved_id": account_id,
+        })
     except Exception as e:
         print(f"  MT5 sync error: {e}")
         raise HTTPException(500, f"Sync error: {e}")
