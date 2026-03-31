@@ -1338,6 +1338,7 @@ async function connectMT5(){
     } else {
       const msg = data.detail||data.message||'Connection failed';
       if(status){status.textContent='✗ '+msg;status.className='mt5-status err';}
+      console.error('[MT5]', data);
       if(btn){btn.disabled=false;btn.textContent='🔗 Connect Account';}
     }
   }catch(e){
