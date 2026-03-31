@@ -1604,7 +1604,7 @@ function renderJournal(){
   const mt5Block = mt5Info ? `
     <div class="mt5-connected">
       <div class="mt5-conn-dot"></div>
-      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync now</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
+      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync now</a> · <a href="/api/mt5/accounts" target="_blank" style="color:var(--t4);text-decoration:none;font-size:9px">accounts</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
     </div>` : `
     <div class="mt5-connect" id="mt5-connect-box">
       <div class="mt5-connect-title">Connect MT5 Account</div>
