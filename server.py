@@ -1190,7 +1190,11 @@ async def mt5_sync(account_id: str):
 import json as _json
 from pathlib import Path as _Path
 
-JOURNAL_FILE = _Path(__file__).parent / "journal.json"
+# Railway persistent storage: mount a Volume at /data in Railway dashboard
+# Without a volume, falls back to /tmp (survives restarts but not redeploys)
+_DATA_DIR = _Path("/data") if _Path("/data").exists() else _Path("/tmp")
+JOURNAL_FILE = _DATA_DIR / "sc_journal.json"
+print(f"  Journal storage: {JOURNAL_FILE}")
 
 JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
 
@@ -1542,6 +1546,19 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
     return JSONResponse({"error": f"No data found for {sym}"}, status_code=404)
 
 
+
+@app.get("/api/journal/debug")
+async def journal_debug():
+    """Show journal storage info for debugging."""
+    trades = load_journal()
+    return JSONResponse({
+        "file": str(JOURNAL_FILE),
+        "exists": JOURNAL_FILE.exists(),
+        "trade_count": len(trades),
+        "trades_sample": trades[:3],
+        "data_dir_exists": _Path("/data").exists(),
+        "tmp_journal": (_Path("/tmp") / "sc_journal.json").exists(),
+    })
 
 @app.get("/api/mt5/debug/{account_id}")
 async def mt5_debug(account_id: str):
