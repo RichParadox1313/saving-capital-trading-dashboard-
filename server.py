@@ -1486,6 +1486,34 @@ async def journal_debug():
         "tmp_journal": (_Path("/tmp") / "sc_journal.json").exists(),
     })
 
+@app.get("/api/mt5/accounts")
+async def mt5_list_accounts():
+    """List all MetaAPI accounts — use this to find the correct account ID."""
+    if not META_API_TOKEN:
+        return JSONResponse({"error": "META_API_TOKEN not set"})
+    import ssl as _ssl4
+    ctx = _ssl4.create_default_context(); ctx.check_hostname=False; ctx.verify_mode=_ssl4.CERT_NONE
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ctx)) as s:
+        async with s.get(
+            "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
+            headers={"auth-token": META_API_TOKEN},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            raw = await r.text()
+            try:
+                data = _json.loads(raw)
+                accounts = data if isinstance(data, list) else data.get("items", data.get("accounts", []))
+                return JSONResponse({
+                    "http": r.status,
+                    "count": len(accounts) if isinstance(accounts, list) else "?",
+                    "accounts": [{"id": a.get("_id") or a.get("id"), "login": a.get("login"),
+                                  "server": a.get("server"), "state": a.get("state"),
+                                  "connection": a.get("connectionStatus")}
+                                 for a in (accounts if isinstance(accounts, list) else [])]
+                })
+            except:
+                return JSONResponse({"http": r.status, "raw": raw[:500]})
+
 @app.get("/api/mt5/debug/{account_id}")
 async def mt5_debug(account_id: str):
     """Return raw MetaAPI data for debugging."""
