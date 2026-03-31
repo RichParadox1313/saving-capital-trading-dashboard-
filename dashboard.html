@@ -2176,7 +2176,7 @@ const BROKERS = [
   // ══════════════════════════════════════════════════════════════════════════
 
   // ── Ultima Markets ───────────────────────────────────────────────────────
-  { name:"Ultima Markets",               servers:["Ultima Markets-Live","Ultima Markets-Live2","Ultima Markets-Live3","Ultima Markets-Live4","Ultima Markets-Live5","Ultima Markets-Demo"] },
+  { name:"Ultima Markets LTD",            servers:["UltimaMarketsLive - 1","UltimaMarketsLive - 2","UltimaMarketsLive - 3","Ultima Markets-Demo"] },
   { name:"Ultima Markets (EU / Huaprime)",servers:["Huaprime-Live","Huaprime-Live2","Huaprime-Demo"] },
 
   // ── JustMarkets ──────────────────────────────────────────────────────────
@@ -2959,7 +2959,7 @@ let _matrixRaf = null, _journalRaf = null;
 
 function startBgAnim(page){
   // Stop all first
-  if(_matrixRaf){ cancelAnimationFrame(_matrixRaf); _matrixRaf=null; }
+  if(_matrixRaf){ const mc2=document.getElementById("matrix-canvas"); if(mc2&&mc2._stopMatrix)mc2._stopMatrix(); cancelAnimationFrame(_matrixRaf); _matrixRaf=null; }
   if(_journalRaf){ cancelAnimationFrame(_journalRaf); _journalRaf=null; }
   const mc = document.getElementById('matrix-canvas');
   const jc = document.getElementById('journal-canvas');
@@ -3001,8 +3001,9 @@ function runMatrix(canvas){
   const COLS = Math.floor(window.innerWidth/18);
   const drops = Array.from({length:COLS}, ()=>Math.random()*-80);
 
+  let _running = true;
   function draw(){
-    if(!_matrixRaf) return;
+    if(!_running) return;
     const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2;
 
     // Dim background — slower fade = longer trails
@@ -3089,6 +3090,10 @@ function runMatrix(canvas){
 
     _matrixRaf = requestAnimationFrame(draw);
   }
+  // Stop hook
+  const _origCancel = cancelAnimationFrame;
+  const _stop = ()=>{ _running=false; };
+  canvas._stopMatrix = _stop;
   draw();
 }
 
