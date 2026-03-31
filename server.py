@@ -5,7 +5,7 @@ Reliable price sources — no extra API keys required beyond Anthropic
 """
 
 import asyncio, json, os, re, time, xml.etree.ElementTree as ET, random
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp, anthropic
