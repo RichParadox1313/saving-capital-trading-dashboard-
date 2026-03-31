@@ -1352,11 +1352,25 @@ async function connectMT5(){
 
 async function syncMT5(){
   const info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
-  if(!info?.accountId) return;
+  if(!info?.accountId){ alert('No MT5 account connected.'); return; }
+  const link = document.querySelector('[onclick="syncMT5()"]');
+  if(link){ link.textContent = '↻ Syncing...'; link.style.opacity='0.5'; link.style.pointerEvents='none'; }
   try{
     const r = await fetch('/api/mt5/sync/'+info.accountId);
-    if(r.ok){ await loadJournal(); }
-  }catch(e){}
+    const data = await r.json().catch(()=>({}));
+    if(r.ok){
+      await loadJournal();
+      if(link){ link.textContent = `↻ Synced (${data.new_trades||0} new)`; }
+      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
+    } else {
+      if(link){ link.textContent = '✗ Sync failed'; link.style.color='#f87171'; }
+      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
+      console.error('[MT5 Sync]', data);
+    }
+  }catch(e){
+    if(link){ link.textContent = '✗ Error'; link.style.color='#f87171'; }
+    setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 3000);
+  }
 }
 
 function disconnectMT5(){
