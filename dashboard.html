@@ -1475,7 +1475,7 @@ function renderJournal(){
           ${jTrades.map(t=>`
             <tr>
               <td class="jmono">${t.date||'—'}</td>
-              <td><strong>${t.asset||'—'}</strong></td>
+              <td><strong>${t.asset||t.symbol||'—'}</strong></td>
               <td><span class="${t.direction==='LONG'?'jdir-long':'jdir-short'}">${t.direction||'—'}</span></td>
               <td class="jmono">${t.entry?'$'+parseFloat(t.entry).toLocaleString():'—'}</td>
               <td class="jmono">${t.exit?'$'+parseFloat(t.exit).toLocaleString():'—'}</td>
