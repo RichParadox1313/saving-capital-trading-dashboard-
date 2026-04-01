@@ -970,23 +970,46 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
                     timeout=aiohttp.ClientTimeout(total=30),
                 ) as r:
                     body = await r.text()
-                    if r.status not in (200, 201):
+                    data = _json.loads(body) if body else {}
+                    if r.status == 202:
+                        # Validation in progress — account was created, get the ID
+                        account_id = data.get("id")
+                        retry_after = 65
+                        print(f"  MT5: 202 AcceptedError — validation in progress, waiting {retry_after}s")
+                        await asyncio.sleep(retry_after)
+                    elif r.status not in (200, 201):
                         print(f"  MT5 connect error: HTTP {r.status} — {body[:500]}")
                         raise HTTPException(400, f"MetaAPI HTTP {r.status}: {body[:300]}")
-                    data = await r.json()
-                    account_id = data.get("id")
-                    print(f"  MT5: created account {account_id}")
+                    else:
+                        account_id = data.get("id")
+                        print(f"  MT5: created account {account_id}")
 
             if not account_id:
                 raise HTTPException(500, "No account ID returned from MetaAPI")
 
-            # Step 3: Deploy account (ensure it's running)
+            # Step 3: Deploy account and poll until DEPLOYED
             async with s.post(
                 f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/deploy",
                 headers=headers,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 print(f"  MT5 deploy: HTTP {r.status}")
+
+            # Poll up to 120s for DEPLOYED state
+            for attempt in range(24):
+                await asyncio.sleep(5)
+                async with s.get(
+                    f"https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}",
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status == 200:
+                        info = await r.json()
+                        state = info.get("state","")
+                        conn  = info.get("connectionStatus","")
+                        print(f"  MT5 poll {attempt+1}: state={state} connection={conn}")
+                        if state == "DEPLOYED":
+                            break
 
             # Step 4: Return immediately — don't wait for deployment
             # The /api/mt5/sync endpoint will be called by the frontend to pull history
