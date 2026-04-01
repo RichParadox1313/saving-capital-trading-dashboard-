@@ -1423,6 +1423,12 @@ async function syncMT5(){
     if(r.ok){
       log(`✓ Server responded OK`, 'var(--g)');
       log(`Resolved account ID: ${data.resolved_id || info.accountId}`, 'var(--g)');
+      // Update stored account ID if it was resolved to a different one
+      if(data.resolved_id && data.resolved_id !== info.accountId){
+        info.accountId = data.resolved_id;
+        localStorage.setItem('sc_mt5', JSON.stringify(info));
+        log(`↻ Updated stored account ID to correct one`, '#fbbf24');
+      }
       log(`Raw deals from MetaAPI: ${data.raw_deals ?? '?'}`, '#fbbf24');
       log(`New trades saved: ${data.new_trades ?? 0}`, data.new_trades > 0 ? '#4ade80' : '#fbbf24');
       log(`Open positions: ${data.positions ?? 0}`);
