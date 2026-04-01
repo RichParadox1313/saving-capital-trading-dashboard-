@@ -1001,7 +1001,10 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Connection error: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"  MT5 connect exception: {tb}")
+        raise HTTPException(500, f"Connection error: {type(e).__name__}: {e}")
 
 
 @app.get("/api/mt5/sync/{account_id}")
