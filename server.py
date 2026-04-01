@@ -1077,44 +1077,91 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
         existing_ids = {t.get("id") for t in trades}
         new_count = 0
 
-        # Process deals — both entries and exits
-        # MetaAPI returns individual deal legs. We record each deal as a trade row.
+        # Process deals — match ENTRY_IN with ENTRY_OUT by positionId
+        # Build position map: positionId -> {entry_deal, exit_deal}
         print(f"  MT5 sync: {len(deals) if isinstance(deals,list) else 0} raw deals, {len(positions) if isinstance(positions,list) else 0} positions")
+
+        def parse_tp_sl(comment):
+            """Parse TP/SL from deal comment like [tp 68045.37] or [sl 67000]."""
+            import re as _re
+            tp = sl = None
+            if comment:
+                m = _re.search(r'\[tp\s+([\d.]+)\]', comment, _re.IGNORECASE)
+                if m: tp = float(m.group(1))
+                m = _re.search(r'\[sl\s+([\d.]+)\]', comment, _re.IGNORECASE)
+                if m: sl = float(m.group(1))
+            return tp, sl
+
+        pos_map = {}  # positionId -> deal data
         for deal in (deals if isinstance(deals, list) else []):
-            deal_id = f"mt5_{deal.get('id', deal.get('ticket',''))}"
-            dtype   = deal.get("type","")
-            # Only process buy/sell deals
+            dtype = deal.get("type","")
             if dtype not in ("DEAL_TYPE_BUY","DEAL_TYPE_SELL"): continue
-            if deal_id in existing_ids: continue
-
             entry_type = deal.get("entryType","")
-            # DEAL_ENTRY_IN  = opening a position
-            # DEAL_ENTRY_OUT = closing a position (has the actual P&L)
-            # DEAL_ENTRY_OUT_BY = closed by opposite position
-            is_close = entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY")
+            pos_id = deal.get("positionId") or deal.get("id","")
+
+            if entry_type == "DEAL_ENTRY_IN":
+                # Opening leg
+                if pos_id not in pos_map:
+                    pos_map[pos_id] = {"entry": deal, "exit": None}
+                else:
+                    pos_map[pos_id]["entry"] = deal
+            elif entry_type in ("DEAL_ENTRY_OUT","DEAL_ENTRY_OUT_BY"):
+                # Closing leg — has the real P&L
+                if pos_id not in pos_map:
+                    pos_map[pos_id] = {"entry": None, "exit": deal}
+                else:
+                    pos_map[pos_id]["exit"] = deal
+
+        for pos_id, legs in pos_map.items():
+            entry_deal = legs.get("entry")
+            exit_deal  = legs.get("exit")
+            main_deal  = entry_deal or exit_deal
+            if not main_deal: continue
+
+            trade_id = f"mt5_pos_{pos_id}"
+            if trade_id in existing_ids: continue
+
+            sym   = main_deal.get("symbol","")
+            dtype = main_deal.get("type","")
             direction = "LONG" if dtype == "DEAL_TYPE_BUY" else "SHORT"
-            # For closing deals, the direction is the direction being closed
-            # i.e. BUY to close means was SHORT, SELL to close means was LONG
-            if is_close:
-                direction = "SHORT" if dtype == "DEAL_TYPE_BUY" else "LONG"
+            vol   = main_deal.get("volume",0) or 0
+            entry_price = entry_deal.get("price",0) if entry_deal else 0
+            exit_price  = exit_deal.get("price") if exit_deal else None
+            t_time = main_deal.get("time","") or main_deal.get("brokerTime","")
+            close_time = exit_deal.get("time","") if exit_deal else None
 
-            sym    = deal.get("symbol","")
-            vol    = deal.get("volume",0) or 0
-            price  = deal.get("price",0) or 0
-            profit = round((deal.get("profit",0) or 0) + (deal.get("swap",0) or 0) + (deal.get("commission",0) or 0), 2)
-            t_time = deal.get("time","") or deal.get("brokerTime","")
-            status = "CLOSED" if is_close else "OPEN"
+            # P&L only from closing deal (includes commission+swap)
+            profit = 0.0
+            if exit_deal:
+                profit = round(
+                    (exit_deal.get("profit",0) or 0) +
+                    (exit_deal.get("swap",0) or 0) +
+                    (exit_deal.get("commission",0) or 0) +
+                    (entry_deal.get("commission",0) if entry_deal else 0),
+                    2
+                )
 
-            trades.append({
-                "id": deal_id, "asset": sym, "symbol": sym, "direction": direction,
-                "entry": price, "exit": None if not is_close else price,
-                "size": vol, "pnl": profit,
+            # Parse TP/SL from comments
+            comment = (main_deal.get("comment","") or "") + " " + (exit_deal.get("comment","") if exit_deal else "")
+            tp, sl = parse_tp_sl(comment)
+
+            status = "CLOSED" if exit_deal else "OPEN"
+
+            trade = {
+                "id": trade_id, "asset": sym, "symbol": sym, "direction": direction,
+                "entry": entry_price, "exit": exit_price,
+                "size": vol,  # in LOTS as reported by broker
+                "pnl": profit,
                 "date": t_time[:10] if t_time else "",
+                "closeDate": close_time[:10] if close_time else None,
                 "status": status, "strategy": "MT5 Auto",
-                "notes": entry_type, "tags": [], "source": "mt5",
+                "notes": comment.strip(), "tags": [], "source": "mt5",
+                "tp": tp, "sl": sl,
+                "positionId": pos_id,
                 "createdAt": datetime.utcnow().isoformat(),
-            })
-            existing_ids.add(deal_id)
+            }
+            trades.append(trade)
+            existing_ids.add(trade_id)
             new_count += 1
 
         # Update open positions pnl
