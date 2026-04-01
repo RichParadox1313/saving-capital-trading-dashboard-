@@ -1020,7 +1020,8 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
         to_iso   = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
         async with aiohttp.ClientSession(connector=_conn2) as s:
-            # Resolve correct account ID — the stored ID may be stale
+            # Step 1: Resolve account ID by login + get region
+            region = "vint-hill"  # default
             async with s.get(
                 "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=15),
@@ -1030,28 +1031,44 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
                     if isinstance(all_accounts, list):
                         for acc in all_accounts:
                             aid = acc.get("_id") or acc.get("id","")
-                            # Match by login if provided, otherwise use stored ID
                             if login and str(acc.get("login","")) == str(login):
                                 account_id = aid
-                                print(f"  MT5 sync: resolved account {account_id} for login {login}")
+                                region = acc.get("region","vint-hill")
+                                print(f"  MT5 sync: resolved {account_id} region={region}")
                                 break
                             elif not login and aid == account_id:
+                                region = acc.get("region","vint-hill")
                                 break
 
-            # Pull closed deal history
+            # Step 2: Build correct regional client API URL
+            # MetaAPI uses region-specific endpoints: vint-hill -> new-york, etc.
+            region_map = {
+                "vint-hill": "new-york",
+                "us-east-1": "new-york",
+                "new-york": "new-york",
+                "london": "london",
+                "eu-central-1": "london",
+                "singapore": "singapore",
+                "ap-southeast-1": "singapore",
+            }
+            api_region = region_map.get(region, region)
+            client_host = f"mt-client-api-v1.{api_region}.agiliumtrade.ai"
+            print(f"  MT5 sync: using client host {client_host}")
+
+            # Step 3: Pull closed deal history
             async with s.get(
-                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}",
+                f"https://{client_host}/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
                 raw = await r.text()
-                print(f"  MT5 sync deals: HTTP {r.status}, len={len(raw)}, preview={raw[:100]}")
+                print(f"  MT5 sync deals: HTTP {r.status}, len={len(raw)}, preview={raw[:200]}")
                 deals = _json.loads(raw) if r.status == 200 and raw.strip().startswith("[") else []
                 if r.status != 200:
                     print(f"  MT5 sync deals error: {raw[:300]}")
 
-            # Pull open positions
+            # Step 4: Pull open positions
             async with s.get(
-                f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
+                f"https://{client_host}/users/current/accounts/{account_id}/positions",
                 headers=headers, timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 positions = await r.json() if r.status == 200 else []
@@ -1425,7 +1442,12 @@ async def mt5_debug(account_id: str):
 
             # Deals
             try:
-                url = f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}"
+                # Get region from account info
+                acc_region = result.get("account_region","vint-hill")
+                _rmap = {"vint-hill":"new-york","us-east-1":"new-york","new-york":"new-york","london":"london","eu-central-1":"london","singapore":"singapore"}
+                _host = f"mt-client-api-v1.{_rmap.get(acc_region,acc_region)}.agiliumtrade.ai"
+                result["client_host"] = _host
+                url = f"https://{_host}/users/current/accounts/{account_id}/history-deals/time/{from_iso}/{to_iso}"
                 result["deals_url"] = url
                 async with s.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as r:
                     raw = await r.text()
@@ -1440,8 +1462,9 @@ async def mt5_debug(account_id: str):
 
             # Positions
             try:
+                _host2 = result.get("client_host","mt-client-api-v1.new-york.agiliumtrade.ai")
                 async with s.get(
-                    f"https://mt-client-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/{account_id}/positions",
+                    f"https://{_host2}/users/current/accounts/{account_id}/positions",
                     headers=headers, timeout=aiohttp.ClientTimeout(total=10)
                 ) as r:
                     raw = await r.text()
