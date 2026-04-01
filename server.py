@@ -24,6 +24,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 @app.on_event("startup")
 async def startup_event():
+    print(f"[STARTUP] Dashboard path: {DASHBOARD_PATH}, exists: {DASHBOARD_PATH.exists()}")
     print("[STARTUP] Pre-loading all prices...")
     try:
         data = await load_all_prices()
@@ -1701,9 +1702,29 @@ async def serve_img(filename: str):
         raise HTTPException(404, "Image not found")
     return FileResponse(p, headers={"Cache-Control": "public, max-age=86400"})
 
+# Load dashboard HTML at startup into memory so it survives if file gets wiped
+_DASHBOARD_HTML: str = ""
+
+@app.on_event("startup")
+async def load_dashboard():
+    global _DASHBOARD_HTML
+    try:
+        _DASHBOARD_HTML = DASHBOARD_PATH.read_text(encoding="utf-8")
+        print(f"[STARTUP] Dashboard loaded: {len(_DASHBOARD_HTML):,} bytes")
+    except Exception as e:
+        print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
+        _DASHBOARD_HTML = ""
+
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
-    return FileResponse(DASHBOARD_PATH)
+    if _DASHBOARD_HTML:
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=_DASHBOARD_HTML)
+    # Fallback if dashboard.html was never loaded
+    if DASHBOARD_PATH.exists():
+        return FileResponse(DASHBOARD_PATH)
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content="<h1>Dashboard not found</h1><p>dashboard.html is missing from the server. Please redeploy with dashboard.html in the same directory as server.py.</p>", status_code=404)
 
 if __name__ == "__main__":
     import uvicorn
