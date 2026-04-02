@@ -412,21 +412,24 @@ h1 i{color:var(--g);font-style:normal;display:block}
 
 
 /* NEWS TICKER */
-.news-ticker{position:fixed;top:56px;left:0;width:100%;z-index:8000;height:46px;display:flex;align-items:center;background:rgba(3,6,3,0.98);border-bottom:1px solid var(--br);backdrop-filter:blur(12px)}
-.nt-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;padding:0 16px;white-space:nowrap;border-right:1px solid var(--br);height:100%;display:flex;align-items:center;background:rgba(34,197,94,0.05);flex-shrink:0}
-.nt-track{overflow:hidden;flex:1;height:100%;position:relative}
-.nt-scroll{display:flex;align-items:center;white-space:nowrap;animation:ntscroll 20s linear infinite;position:absolute;inset:0;height:100%}
-.nt-scroll:hover{animation-play-state:paused}
-@keyframes ntscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.nt-item{display:inline-flex;align-items:center;gap:10px;padding:0 22px;height:100%;font-size:13px;color:var(--t3);border-right:1px solid rgba(34,197,94,0.07);cursor:pointer;transition:color .2s;text-decoration:none;white-space:nowrap;font-weight:300}
-.nt-item:hover{color:var(--t1)}
-.nt-cat{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;padding:1px 6px;border-radius:10px;font-family:'DM Mono',monospace;flex-shrink:0}
-.nc-crypto{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.18)}
-.nc-forex{background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.18)}
-.nc-commodity{background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.18)}
-.nc-macro{background:rgba(167,243,208,0.06);color:var(--t3);border:1px solid var(--br)}
-.nt-dot{padding:0 12px;flex-shrink:0}
-.nt-loading{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;padding:0 16px;font-style:italic}
+.news-ticker{position:fixed;top:56px;left:0;width:100%;z-index:8000;height:40px;display:flex;align-items:center;background:rgba(2,4,2,0.98);border-bottom:1px solid rgba(34,197,94,0.15);backdrop-filter:blur(16px)}
+.nt-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;padding:0 14px;white-space:nowrap;border-right:1px solid rgba(34,197,94,0.2);height:100%;display:flex;align-items:center;gap:7px;background:linear-gradient(90deg,rgba(34,197,94,0.08),transparent);flex-shrink:0}
+.nt-live-dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0;animation:ntpulse 1.4s ease-in-out infinite}
+@keyframes ntpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.nt-track{overflow:hidden;flex:1;height:100%;position:relative;cursor:default}
+.nt-scroll{display:flex;align-items:center;white-space:nowrap;will-change:transform;position:absolute;top:0;left:0;height:100%}
+.nt-scroll:hover .nt-item{opacity:.7}
+.nt-item{display:inline-flex;align-items:center;gap:8px;padding:0 20px;height:100%;font-size:11.5px;color:var(--t2);border-right:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:color .15s;text-decoration:none;white-space:nowrap;font-weight:350;letter-spacing:.2px}
+.nt-item:hover{color:var(--g) !important;opacity:1 !important}
+.nt-sep{display:inline-block;width:4px;height:4px;border-radius:50%;background:rgba(34,197,94,0.25);margin:0 4px;flex-shrink:0}
+.nt-cat{font-size:6.5px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;flex-shrink:0;font-weight:700}
+.nc-crypto{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2)}
+.nc-forex{background:rgba(96,165,250,0.1);color:#93c5fd;border:1px solid rgba(96,165,250,0.2)}
+.nc-commodity{background:rgba(251,191,36,0.1);color:#fcd34d;border:1px solid rgba(251,191,36,0.2)}
+.nc-macro{background:rgba(167,139,250,0.1);color:#c4b5fd;border:1px solid rgba(167,139,250,0.2)}
+.nc-geo{background:rgba(248,113,113,0.1);color:#fca5a5;border:1px solid rgba(248,113,113,0.2)}
+.nt-dot{padding:0 10px;flex-shrink:0}
+.nt-loading{font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;padding:0 16px;font-style:italic}
 
 
 
@@ -1478,7 +1481,7 @@ async function loadJournal(){
   }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
   renderJournal();
   setTimeout(populateBrokers, 50);
-  setTimeout(jCalRender, 60);
+  setTimeout(jCalRender, 80); // after renderJournal creates #jcal
 }
 
 // ── Trading Calendar ─────────────────────────────────────────────────────────
@@ -1973,696 +1976,232 @@ function editJTrade(id){ openJModal(id); }
 
 
 const BROKERS = [
-  // ── IC Markets ───────────────────────────────────────────────────────────
-  // Global entity (ASIC / AU) — server prefix ICMarkets
-  { name:"IC Markets (Global)",        servers:["ICMarkets-Live","ICMarkets-Live02","ICMarkets-Live03","ICMarkets-Live04","ICMarkets-Live05","ICMarkets-Live06","ICMarkets-Demo"] },
-  // Seychelles entity — server prefix ICMarketsSC (most common for non-AU/EU)
-  { name:"IC Markets (SC)",            servers:["ICMarketsSC-Live","ICMarketsSC-Live01","ICMarketsSC-Live02","ICMarketsSC-Live03","ICMarketsSC-Live04","ICMarketsSC-Live05","ICMarketsSC-Live06","ICMarketsSC-Live07","ICMarketsSC-Live08","ICMarketsSC-Live09","ICMarketsSC-Live10","ICMarketsSC-Live11","ICMarketsSC-Live12","ICMarketsSC-Live13","ICMarketsSC-Live14","ICMarketsSC-Live15","ICMarketsSC-Live16","ICMarketsSC-Live17","ICMarketsSC-Live18","ICMarketsSC-Live19","ICMarketsSC-Live20","ICMarketsSC-Live21","ICMarketsSC-Live22","ICMarketsSC-Live23","ICMarketsSC-Live24","ICMarketsSC-Live25","ICMarketsSC-Live26","ICMarketsSC-Demo"] },
-  // EU entity (CySEC) — Raw Trading Ltd branding since Feb 2025
-  { name:"IC Markets (EU / Raw Trading Ltd)", servers:["ICMarketsEU-Live","ICMarketsEU-Live2","ICMarketsEU-Live3","ICMarketsEU-Demo"] },
-
-  // ── Pepperstone ───────────────────────────────────────────────────────────
-  // Global (ASIC/DFSA/SCB) and UK/EU (FCA/CySEC/BaFin) entities
-  { name:"Pepperstone",                servers:["Pepperstone-MT5-Live01","Pepperstone-MT5-Live02","Pepperstone-MT5-Live03","Pepperstone-MT5-Live04","Pepperstone-MT5-Live05","Pepperstone-Demo"] },
-  { name:"Pepperstone (UK/EU)",        servers:["PepperstoneUK-Live","PepperstoneUK-Live2","PepperstoneUK-Live3","PepperstoneUK-Demo"] },
-
-  // ── Vantage ───────────────────────────────────────────────────────────────
-  // International entity (8 live servers confirmed from Vantage webtrader portal)
-  { name:"Vantage (International)",    servers:["VantageInternational-Live","VantageInternational-Live 3","VantageInternational-Live 4","VantageInternational-Live 5","VantageInternational-Live 6","VantageInternational-Live 7","VantageInternational-Live 8","VantageInternational-Live 10","VantageInternational-Live 11","VantageInternational-Live 12","VantageInternational-Demo"] },
-  // UK entity (FCA regulated)
-  { name:"Vantage (UK / FCA)",         servers:["VantageGlobalPrime-Live","VantageGlobalPrime-Live2","VantageGlobalPrime-Demo"] },
-
-  // ── FP Markets ────────────────────────────────────────────────────────────
-  { name:"FP Markets",                 servers:["FPMarkets-Live","FPMarkets-Live2","FPMarkets-Live3","FPMarkets-Live4","FPMarkets-Live5","FPMarkets-Demo"] },
-
-  // ── XM ───────────────────────────────────────────────────────────────────
-  { name:"XM (XMGlobal)",              servers:["XMGlobal-Real","XMGlobal-Real 2","XMGlobal-Real 3","XMGlobal-Real 4","XMGlobal-Real 5","XMGlobal-Real 6","XMGlobal-Real 7","XMGlobal-Real 8","XMGlobal-Demo"] },
-  { name:"XM (Trading Point / EU)",   servers:["TradingPoint-Real","TradingPoint-Real2","TradingPoint-Demo"] },
-
-  // ── Exness ───────────────────────────────────────────────────────────────
+  { name:"ActivTrades",                servers:["ActivTrades-Live","ActivTrades-Live2","ActivTrades-Demo"] },
+  { name:"ACY Securities",             servers:["ACY-Live","ACY-Live2","ACY-Demo"] },
+  { name:"Admirals",                   servers:["Admirals-Live","Admirals-Live2","Admirals-Live3","Admirals-Demo"] },
+  { name:"Admirals (EU)",              servers:["AdmiralsEU-Live","AdmiralsEU-Live2","AdmiralsEU-Demo"] },
+  { name:"ADSS",                         servers:["ADSS-Live","ADSS-Live2","ADSS-Demo"] },
+  { name:"Alpari",                     servers:["Alpari-ECN-Live","Alpari-Standard-Live","Alpari-Pro-Demo","Alpari-Demo"] },
+  { name:"Alpha Capital Group",          servers:["AlphaCapital-Live","AlphaCapital-Live 2","AlphaCapital-Demo"] },
+  { name:"Alvexo",                       servers:["Alvexo-Live","Alvexo-Demo"] },
+  { name:"Amana Capital",              servers:["AmanaCapital-Live","AmanaCapital-Demo"] },
+  { name:"AMarkets",                   servers:["AMarkets-Real","AMarkets-Real2","AMarkets-Demo"] },
+  { name:"Apex Trader Funding",          servers:["ApexTraderFunding-Live","ApexTraderFunding-Evaluation","ApexTraderFunding-Demo"] },
+  { name:"AquaFutures",                  servers:["AquaFutures-Live","AquaFutures-Demo"] },
+  { name:"ATC Brokers",                  servers:["ATCBrokers-Live","ATCBrokers-Demo"] },
+  { name:"ATFX",                       servers:["ATFX-Live","ATFX-Live 2","ATFX-Live 3","ATFX-Demo"] },
+  { name:"Audacity Capital",             servers:["AudacityCapital-Live","AudacityCapital-Demo"] },
+  { name:"AvaTrade",                   servers:["AvaTrade-Live","AvaTrade-Live 2","AvaTrade-Live 3","AvaTrade-Demo"] },
+  { name:"Axi",                        servers:["Axi-Live","Axi-Live 2","Axi-Live 3","Axi-Live 4","Axi-Live 5","Axi-Demo"] },
+  { name:"Axiory",                     servers:["Axiory-Live","Axiory-Live2","Axiory-Demo"] },
+  { name:"Baxia Markets",              servers:["BaxiaMarkets-Live","BaxiaMarkets-Demo"] },
+  { name:"BDSwiss",                    servers:["BDSwiss-Live","BDSwiss-Live 2","BDSwiss-Demo"] },
+  { name:"Bespoke Funding Program",      servers:["BespokeFunding-Live","BespokeFunding-Demo"] },
+  { name:"BlackBull Markets",          servers:["BlackBullMarkets-Live","BlackBullMarkets-Live 2","BlackBullMarkets-Live 3","BlackBullMarkets-Live 4","BlackBullMarkets-Demo"] },
+  { name:"Blue Guardian",                servers:["BlueGuardian-Live","BlueGuardian-Live 2","BlueGuardian-Demo"] },
+  { name:"Blueberry Funded",             servers:["Blueberry-Live","Blueberry-Live 2","Blueberry-Live 3","Blueberry-Demo"] },
+  { name:"Blueberry Markets",          servers:["Blueberry-Live","Blueberry-Live2","Blueberry-Demo"] },
+  { name:"Breakout Prop",                servers:["BreakoutProp-Live","BreakoutProp-Demo"] },
+  { name:"BrightFunded",                 servers:["BrightFunded-Live","BrightFunded-Live 2","BrightFunded-Demo"] },
+  { name:"Bullwaves Prime",              servers:["BullwavesPrime-Live","BullwavesPrime-Demo"] },
+  { name:"Capex.com",                    servers:["Capex-Live","Capex-Demo"] },
+  { name:"Capital.com",                servers:["CapitalCom-Live","CapitalCom-Live2","CapitalCom-Demo"] },
+  { name:"Capitalcore",                  servers:["Capitalcore-Live","Capitalcore-Demo"] },
+  { name:"CFI Financial",              servers:["CFI-Live","CFI-Live 2","CFI-Live 3","CFI-Demo"] },
+  { name:"City Index",                 servers:["CityIndex-Live","CityIndex-Live2","CityIndex-Demo"] },
+  { name:"City Traders Imperium",        servers:["CTI-Live","CTI-Live 2","CTI-Instant","CTI-Demo"] },
+  { name:"ClickTrades",                  servers:["ClickTrades-Live","ClickTrades-Demo"] },
+  { name:"CMC Markets",                servers:["CMCMarkets-Live","CMCMarkets-Demo"] },
+  { name:"Coinexx",                      servers:["Coinexx-Live","Coinexx-Demo"] },
+  { name:"Conotoxia",                  servers:["Conotoxia-Live","Conotoxia-Demo"] },
+  { name:"CWG Markets",                  servers:["CWGMarkets-Live","CWGMarkets-Demo"] },
+  { name:"Darwinex",                   servers:["Darwinex-Live","Darwinex-Demo"] },
+  { name:"DeltaStock",                   servers:["DeltaStock-Live","DeltaStock-Demo"] },
+  { name:"Deriv",                      servers:["Deriv-Server","Deriv-Server 2","Deriv-Server 3","Deriv-Demo"] },
+  { name:"DNA Funded",                   servers:["DNAFunded-Live","DNAFunded-Live 2","DNAFunded-Demo","DNAMarkets-Live","DNAMarkets-Demo"] },
+  { name:"Doo Prime",                    servers:["DooPrime-Live","DooPrime-Live2","DooPrime-Demo"] },
+  { name:"Dukascopy",                  servers:["Dukascopy-Live","Dukascopy-Demo"] },
+  { name:"E8 Funding",                   servers:["E8Funding-Live","E8Funding-Live 2","E8Funding-Evaluation","E8Funding-Demo"] },
+  { name:"Earn2Trade",                   servers:["Earn2Trade-Live","Earn2Trade-Gauntlet","Earn2Trade-Demo"] },
+  { name:"EasyMarkets",                servers:["easyMarkets-Live","easyMarkets-Live2","easyMarkets-Demo"] },
+  { name:"Eightcap",                   servers:["Eightcap-Live","Eightcap-Live02","Eightcap-Live03","Eightcap-Live04","Eightcap-Live05","Eightcap-Demo"] },
+  { name:"Equiti",                     servers:["Equiti-Live","Equiti-Live 2","Equiti-Demo"] },
+  { name:"Errante",                      servers:["Errante-Live","Errante-Demo"] },
+  { name:"ETO Markets",                  servers:["ETOMarkets-Live","ETOMarkets-Demo"] },
+  { name:"eToro",                      servers:["eToro-Live","eToro-Demo"] },
+  { name:"eToroX",                       servers:["eToroX-Live","eToroX-Demo"] },
+  { name:"Excentral",                    servers:["Excentral-Live","Excentral-Demo"] },
   { name:"Exness (Global)",            servers:["Exness-Real","Exness-Real2","Exness-Real3","Exness-Real4","Exness-Real6","Exness-Real7","Exness-Real8","Exness-Real9","Exness-Real11","Exness-Real12","Exness-Real14","Exness-Real15","Exness-Real23","Exness-Real24","Exness-Real25","Exness-Real26","Exness-Real27","Exness-Real28","Exness-Trial","Exness-Trial2","Exness-Trial4","Exness-Trial5","Exness-Trial6","Exness-Trial7"] },
   { name:"Exness (MT5 / Seychelles)",    servers:["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4","Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8","Exness-MT5Real9","Exness-MT5Real10","Exness-MT5Real11","Exness-MT5Real12","Exness-MT5Real13","Exness-MT5Real14","Exness-MT5Real15","Exness-MT5Real16","Exness-MT5Real17","Exness-MT5Real18","Exness-MT5Trial","Exness-MT5Trial2","Exness-MT5Trial3","Exness-MT5Trial4","Exness-MT5Trial5"] },
   { name:"Exness (BVI)",                 servers:["ExnessBV-Real3","ExnessBV-Real6","ExnessBV-Real7","ExnessBV-Real8","ExnessBV-Real9","ExnessBV-Trial4"] },
-
-  // ── HFM / HotForex ───────────────────────────────────────────────────────
-  { name:"HFM (HotForex)",             servers:["HFMarketsGlobal-Live1 Server","HFMarketsGlobal-Live2 Server","HFMarketsGlobal-Live3 Server","HFMarketsGlobal-Demo Server"] },
-  { name:"HFM (EU / Cyprus)",          servers:["HFMarketsEurope-Live1 Server","HFMarketsEurope-Demo Server"] },
-
-  // ── FxPro ─────────────────────────────────────────────────────────────────
-  { name:"FxPro",                      servers:["FxPro.com-Real","FxPro.com-Real2","FxPro.com-Real3","FxPro.com-Real4","FxPro.com-Real5","FxPro.com-Real6","FxPro.com-Demo"] },
-
-  // ── FXTM ─────────────────────────────────────────────────────────────────
-  { name:"FXTM (ForexTime)",           servers:["FXTM-Real","FXTM-Real2","FXTM-Real3","FXTM-Real4","FXTM-Real5","FXTM-Real6","FXTM-Demo"] },
-
-  // ── AvaTrade ─────────────────────────────────────────────────────────────
-  { name:"AvaTrade",                   servers:["AvaTrade-Live","AvaTrade-Live 2","AvaTrade-Live 3","AvaTrade-Demo"] },
-
-  // ── OANDA ─────────────────────────────────────────────────────────────────
-  { name:"OANDA",                      servers:["OANDA-v20 Live-1","OANDA-v20 Live-2","OANDA-v20 Live-3","OANDA-v20 Demo-1","OANDA-v20 Demo-2"] },
-
-  // ── Tickmill ─────────────────────────────────────────────────────────────
-  { name:"Tickmill",                   servers:["Tickmill-Live","Tickmill-Live2","Tickmill-Live3","Tickmill-Live4","Tickmill-Demo"] },
-  { name:"Tickmill (EU)",              servers:["TickmillEurope-Live","TickmillEurope-Live2","TickmillEurope-Demo"] },
-
-  // ── Admirals ─────────────────────────────────────────────────────────────
-  { name:"Admirals",                   servers:["Admirals-Live","Admirals-Live2","Admirals-Live3","Admirals-Demo"] },
-  { name:"Admirals (EU)",              servers:["AdmiralsEU-Live","AdmiralsEU-Live2","AdmiralsEU-Demo"] },
-
-  // ── BlackBull Markets ────────────────────────────────────────────────────
-  { name:"BlackBull Markets",          servers:["BlackBullMarkets-Live","BlackBullMarkets-Live 2","BlackBullMarkets-Live 3","BlackBullMarkets-Live 4","BlackBullMarkets-Demo"] },
-
-  // ── Eightcap ─────────────────────────────────────────────────────────────
-  { name:"Eightcap",                   servers:["Eightcap-Live","Eightcap-Live02","Eightcap-Live03","Eightcap-Live04","Eightcap-Live05","Eightcap-Demo"] },
-
-  // ── Axi ──────────────────────────────────────────────────────────────────
-  { name:"Axi",                        servers:["Axi-Live","Axi-Live 2","Axi-Live 3","Axi-Live 4","Axi-Live 5","Axi-Demo"] },
-
-  // ── Fusion Markets ───────────────────────────────────────────────────────
-  { name:"Fusion Markets",             servers:["FusionMarkets-Live","FusionMarkets-Live2","FusionMarkets-Demo"] },
-
-  // ── Global Prime ─────────────────────────────────────────────────────────
-  { name:"Global Prime",               servers:["GlobalPrime-Live","GlobalPrime-Live2","GlobalPrime-Demo"] },
-
-  // ── ThinkMarkets ─────────────────────────────────────────────────────────
-  { name:"ThinkMarkets",               servers:["ThinkMarkets-Live","ThinkMarkets-Live 2","ThinkMarkets-Demo"] },
-  { name:"ThinkMarkets (EU)",          servers:["ThinkMarketsEU-Live","ThinkMarketsEU-Demo"] },
-
-  // ── GO Markets ───────────────────────────────────────────────────────────
-  { name:"GO Markets",                 servers:["GOMarkets-Live","GOMarkets-Live 2","GOMarkets-Live 3","GOMarkets-Demo"] },
-
-  // ── Blueberry Markets ────────────────────────────────────────────────────
-  { name:"Blueberry Markets",          servers:["Blueberry-Live","Blueberry-Live2","Blueberry-Demo"] },
-
-  // ── Moneta Markets ───────────────────────────────────────────────────────
-  { name:"Moneta Markets",             servers:["MonetaMarkets-Live","MonetaMarkets-Live2","MonetaMarkets-Demo"] },
-
-  // ── VT Markets ───────────────────────────────────────────────────────────
-  { name:"VT Markets",                 servers:["VTMarkets-Live","VTMarkets-Live 2","VTMarkets-Live 3","VTMarkets-Demo"] },
-
-  // ── PU Prime ─────────────────────────────────────────────────────────────
-  { name:"PU Prime",                   servers:["PUPrime-Live","PUPrime-Live2","PUPrime-Live 4","PUPrime-Live 5","PUPrime-Live 6","PUPrime-Demo"] },
-
-  // ── ACY Securities ───────────────────────────────────────────────────────
-  { name:"ACY Securities",             servers:["ACY-Live","ACY-Live2","ACY-Demo"] },
-
-  // ── TMGM ─────────────────────────────────────────────────────────────────
-  { name:"TMGM",                       servers:["TMGM-Live","TMGM-Live 2","TMGM-Demo"] },
-
-  // ── ATFX ─────────────────────────────────────────────────────────────────
-  { name:"ATFX",                       servers:["ATFX-Live","ATFX-Live 2","ATFX-Live 3","ATFX-Demo"] },
-
-  // ── Equiti ───────────────────────────────────────────────────────────────
-  { name:"Equiti",                     servers:["Equiti-Live","Equiti-Live 2","Equiti-Demo"] },
-
-  // ── BDSwiss ──────────────────────────────────────────────────────────────
-  { name:"BDSwiss",                    servers:["BDSwiss-Live","BDSwiss-Live 2","BDSwiss-Demo"] },
-
-  // ── RoboForex ────────────────────────────────────────────────────────────
-  { name:"RoboForex",                  servers:["RoboForex-Pro","RoboForex-ECN","RoboForex-Pro-Demo","RoboForex-ECN-Demo"] },
-
-  // ── Alpari ───────────────────────────────────────────────────────────────
-  { name:"Alpari",                     servers:["Alpari-ECN-Live","Alpari-Standard-Live","Alpari-Pro-Demo","Alpari-Demo"] },
-
-  // ── LiteFinance ──────────────────────────────────────────────────────────
-  { name:"LiteFinance",                servers:["LiteFinance-Live","LiteFinance-ECN-Live","LiteFinance-Demo"] },
-
-  // ── FBS ──────────────────────────────────────────────────────────────────
+  { name:"Exness (UK/FCA)",              servers:["ExnessUK-Real","ExnessUK-Demo"] },
   { name:"FBS",                        servers:["FBS-Real","FBS-Real 2","FBS-Real 3","FBS-Demo"] },
-
-  // ── OctaFX ───────────────────────────────────────────────────────────────
-  { name:"OctaFX",                     servers:["OctaFX-Real","OctaFX-Real2","OctaFX-Demo"] },
-
-  // ── AMarkets ─────────────────────────────────────────────────────────────
-  { name:"AMarkets",                   servers:["AMarkets-Real","AMarkets-Real2","AMarkets-Demo"] },
-
-  // ── InstaForex ───────────────────────────────────────────────────────────
-  { name:"InstaForex",                 servers:["InstaForexCom-Live","InstaForexCom-Live2","InstaForexCom-Demo"] },
-
-  // ── NordFX ───────────────────────────────────────────────────────────────
-  { name:"NordFX",                     servers:["NordFX-Real","NordFX-Real 2","NordFX-Demo"] },
-
-  // ── MultiBank Group ──────────────────────────────────────────────────────
-  { name:"MultiBank Group",            servers:["MultiBank-Live","MultiBank-Live 2","MultiBank-Live 3","MultiBank-Demo"] },
-
-  // ── HYCM ─────────────────────────────────────────────────────────────────
-  { name:"HYCM",                       servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
-
-  // ── Axiory ───────────────────────────────────────────────────────────────
-  { name:"Axiory",                     servers:["Axiory-Live","Axiory-Live2","Axiory-Demo"] },
-
-  // ── Windsor Brokers ──────────────────────────────────────────────────────
-  { name:"Windsor Brokers",            servers:["WindsorBrokers-Live","WindsorBrokers-Demo"] },
-
-  // ── FXOpen ───────────────────────────────────────────────────────────────
-  { name:"FXOpen",                     servers:["FXOpen-ECN Live","FXOpen-STP Live","FXOpen-Demo"] },
-
-  // ── EasyMarkets ──────────────────────────────────────────────────────────
-  { name:"EasyMarkets",                servers:["easyMarkets-Live","easyMarkets-Live2","easyMarkets-Demo"] },
-
-  // ── Tradeview ────────────────────────────────────────────────────────────
-  { name:"Tradeview",                  servers:["Tradeview-Live","Tradeview-Demo"] },
-
-  // ── ActivTrades ──────────────────────────────────────────────────────────
-  { name:"ActivTrades",                servers:["ActivTrades-Live","ActivTrades-Live2","ActivTrades-Demo"] },
-
-  // ── Scope Markets ────────────────────────────────────────────────────────
-  { name:"Scope Markets",              servers:["ScopeMarkets-Live","ScopeMarkets-Demo"] },
-
-  // ── Valutrades ───────────────────────────────────────────────────────────
-  { name:"Valutrades",                 servers:["Valutrades-Live","Valutrades-Demo"] },
-
-  // ── Just2Trade ───────────────────────────────────────────────────────────
-  { name:"Just2Trade",                 servers:["Just2Trade-Live","Just2Trade-Demo"] },
-
-  // ── CFI Financial ────────────────────────────────────────────────────────
-  { name:"CFI Financial",              servers:["CFI-Live","CFI-Live 2","CFI-Live 3","CFI-Demo"] },
-
-  // ── Amana Capital ────────────────────────────────────────────────────────
-  { name:"Amana Capital",              servers:["AmanaCapital-Live","AmanaCapital-Demo"] },
-
-  // ── GODO Capital Markets ─────────────────────────────────────────────────
-  { name:"ScoreCM Ltd.",                servers:["ScoreCM-Live","ScoreCM-Demo"] },
-
-  // ── Swissquote ───────────────────────────────────────────────────────────
-  { name:"Swissquote",                 servers:["Swissquote-Live","Swissquote-Live2","Swissquote-Demo"] },
-
-  // ── Dukascopy ────────────────────────────────────────────────────────────
-  { name:"Dukascopy",                  servers:["Dukascopy-Live","Dukascopy-Demo"] },
-
-  // ── Saxo Bank ────────────────────────────────────────────────────────────
-  { name:"Saxo Bank",                  servers:["SaxoBank-Live","SaxoBank-Demo"] },
-
-  // ── Interactive Brokers ──────────────────────────────────────────────────
-  { name:"Interactive Brokers",        servers:["InteractiveBrokers-Live","InteractiveBrokers-Demo"] },
-
-  // ── FXCM ─────────────────────────────────────────────────────────────────
-  { name:"FXCM",                       servers:["FXCM-USDReal","FXCM-USDReal02","FXCM-GBPReal01","FXCM-USDDemo01"] },
-
-  // ── IG Markets ───────────────────────────────────────────────────────────
-  { name:"IG Markets",                 servers:["IG-LIVE","IG-LIVE2","IG-LIVE3","IG-DEMO"] },
-
-  // ── City Index ───────────────────────────────────────────────────────────
-  { name:"City Index",                 servers:["CityIndex-Live","CityIndex-Live2","CityIndex-Demo"] },
-
-  // ── CMC Markets ──────────────────────────────────────────────────────────
-  { name:"CMC Markets",                servers:["CMCMarkets-Live","CMCMarkets-Demo"] },
-
-  // ── Capital.com ──────────────────────────────────────────────────────────
-  { name:"Capital.com",                servers:["CapitalCom-Live","CapitalCom-Live2","CapitalCom-Demo"] },
-
-  // ── Libertex ─────────────────────────────────────────────────────────────
-  { name:"Libertex",                   servers:["Libertex-Real","Libertex-Real2","Libertex-Demo"] },
-
-  // ── Deriv ────────────────────────────────────────────────────────────────
-  { name:"Deriv",                      servers:["Deriv-Server","Deriv-Server 2","Deriv-Server 3","Deriv-Demo"] },
-
-  // ── XTB ──────────────────────────────────────────────────────────────────
-  { name:"XTB",                        servers:["XTB-Real","XTB-Real2","XTB-Demo"] },
-
-  // ── Grand Capital ────────────────────────────────────────────────────────
-  { name:"Grand Capital",              servers:["GrandCapital-Live","GrandCapital-Demo"] },
-
-  // ── NAGA Markets ─────────────────────────────────────────────────────────
-  { name:"NAGA Markets",               servers:["NAGA-Live","NAGA-Live2","NAGA-Demo"] },
-
-  // ── GBE Brokers ──────────────────────────────────────────────────────────
-  { name:"GBE Brokers",                servers:["GBEBrokers-Live","GBEBrokers-Demo"] },
-
-  // ── Orbex ────────────────────────────────────────────────────────────────
-  { name:"Orbex",                      servers:["Orbex-Live","Orbex-Demo"] },
-
-  // ── Conotoxia ────────────────────────────────────────────────────────────
-  { name:"Conotoxia",                  servers:["Conotoxia-Live","Conotoxia-Demo"] },
-
-  // ── ForexMart ────────────────────────────────────────────────────────────
-  { name:"ForexMart",                  servers:["ForexMart-Live","ForexMart-Demo"] },
-
-  // ── Forex4you ────────────────────────────────────────────────────────────
-  { name:"Forex4you",                  servers:["Forex4you-Pro","Forex4you-Demo"] },
-
-  // ── Forex.com ────────────────────────────────────────────────────────────
+  { name:"FIBO Group",                   servers:["FIBOGroup-Live","FIBOGroup-Demo"] },
+  { name:"Fidelcrest",                   servers:["Fidelcrest-Live","Fidelcrest-Live 2","Fidelcrest-Micro","Fidelcrest-Demo"] },
+  { name:"Finalto",                      servers:["Finalto-Live","Finalto-Demo"] },
+  { name:"Finotive Funding",             servers:["FinotiveFunding-Live","FinotiveFunding-Demo"] },
+  { name:"Fondex",                       servers:["Fondex-Live","Fondex-Demo"] },
+  { name:"For Traders",                  servers:["ForTraders-Live","ForTraders-Demo"] },
+  { name:"Forex Optimum",                servers:["ForexOptimum-Live","ForexOptimum-Demo"] },
+  { name:"Forex Prop Firm",              servers:["ForexPropFirm-Live","ForexPropFirm-Live 2","ForexPropFirm-Demo"] },
   { name:"Forex.com",                  servers:["FOREX.com-1","FOREX.com-2","FOREX.com-3","FOREX.com-Demo"] },
-
-  // ── Markets.com ──────────────────────────────────────────────────────────
-  { name:"Markets.com",                servers:["Markets.com-Live","Markets.com-Demo"] },
-
-  // ── eToro ────────────────────────────────────────────────────────────────
-  { name:"eToro",                      servers:["eToro-Live","eToro-Demo"] },
-
-  // ── Weltrade ─────────────────────────────────────────────────────────────
-  { name:"Weltrade",                   servers:["Weltrade-Live","Weltrade-Demo"] },
-
-  // ── INFINOX ──────────────────────────────────────────────────────────────
-  { name:"INFINOX",                    servers:["INFINOX-Live","INFINOX-Demo"] },
-
-  // ── Baxia Markets ────────────────────────────────────────────────────────
-  { name:"Baxia Markets",              servers:["BaxiaMarkets-Live","BaxiaMarkets-Demo"] },
-
-  // ── Hantec Markets ───────────────────────────────────────────────────────
-  { name:"Hantec Markets",             servers:["HantecMarkets-Live","HantecMarkets-Demo"] },
-
-  // ── ForexChief ───────────────────────────────────────────────────────────
+  { name:"Forex4you",                  servers:["Forex4you-Pro","Forex4you-Demo"] },
   { name:"ForexChief",                 servers:["ForexChief-MT5Live","ForexChief-MT5Live2","ForexChief-MT5Demo"] },
-
-  // ── TeleTrade ────────────────────────────────────────────────────────────
-  { name:"TeleTrade",                  servers:["TeleTrade-Live","TeleTrade-Demo"] },
-
-  // ── Gerchik and Co ───────────────────────────────────────────────────────
-  { name:"Gerchik and Co",              servers:["GerchikCo-Live","GerchikCo-Demo"] },
-
-  // ── FX Choice ────────────────────────────────────────────────────────────
-  { name:"FX Choice",                  servers:["FXChoice-Live","FXChoice-Demo"] },
-
-  // ── Darwinex ─────────────────────────────────────────────────────────────
-  { name:"Darwinex",                   servers:["Darwinex-Live","Darwinex-Demo"] },
-
-  // ── Pepperstone (Bahamas) ────────────────────────────────────────────────
-  { name:"Pepperstone (Bahamas)",      servers:["Pepperstone-Group-Live","Pepperstone-Group-Demo"] },
-
-  // ── Spreadex ─────────────────────────────────────────────────────────────
-  { name:"Spreadex",                   servers:["Spreadex-Live","Spreadex-Demo"] },
-
-  // ── Trade Nation ─────────────────────────────────────────────────────────
-  { name:"Trade Nation",               servers:["TradeNation-Live","TradeNation-Demo"] },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ── PROP FIRMS ────────────────────────────────────────────────────────────
-  // ═══════════════════════════════════════════════════════════════════════════
-  // Note: many prop firms run on a broker's MT5 infrastructure.
-  // The server name shown is what you type into MT5 login screen.
-
-  // ── FTMO ─────────────────────────────────────────────────────────────────
-  // Prague, est. 2015. Own MT5 infra. US clients use OANDA Corporation server.
+  { name:"ForexMart",                  servers:["ForexMart-Live","ForexMart-Demo"] },
+  { name:"FP Markets",                 servers:["FPMarkets-Live","FPMarkets-Live2","FPMarkets-Live3","FPMarkets-Live4","FPMarkets-Live5","FPMarkets-Demo"] },
+  { name:"FP Markets (EU)",              servers:["FPMarketsEU-Live","FPMarketsEU-Demo"] },
+  { name:"Friedberg Direct",             servers:["FriedbergDirect-Live","FriedbergDirect-Demo"] },
   { name:"FTMO",                         servers:["FTMO-Server","FTMO-Server 2","FTMO-Server 3","FTMO-Server 4","FTMO-Demo","FTMO-Evaluation"] },
   { name:"FTMO (US via OANDA)",          servers:["OANDA Corporation-Live","OANDA Corporation-Demo"] },
-
-  // ── FundedNext ───────────────────────────────────────────────────────────
-  // UAE/Bangladesh, est. 2022. Own broker FNmarkets launched May 2025.
-  { name:"FundedNext",                   servers:["FundedNext-Live","FundedNext-Live 2","FundedNext-Stellar","FundedNext-Demo","FundedNext-Evaluation","FNmarkets-Live","FNmarkets-Demo"] },
-
-  // ── The Funded Trader ────────────────────────────────────────────────────
-  { name:"The Funded Trader",            servers:["TheFundedTrader-Live","TheFundedTrader-Live 2","TheFundedTrader-Standard","TheFundedTrader-Royal","TheFundedTrader-Demo"] },
-
-  // ── E8 Funding ───────────────────────────────────────────────────────────
-  { name:"E8 Funding",                   servers:["E8Funding-Live","E8Funding-Live 2","E8Funding-Evaluation","E8Funding-Demo"] },
-
-  // ── Seacrest Funded (formerly MyFundedFX) ────────────────────────────────
-  { name:"Seacrest Funded (MyFundedFX)", servers:["SeacrestFunded-Live","SeacrestFunded-Live 2","SeacrestFunded-Demo","MyFundedFX-Live","MyFundedFX-Demo"] },
-
-  // ── True Forex Funds ─────────────────────────────────────────────────────
-  { name:"True Forex Funds",             servers:["TrueForexFunds-Live","TrueForexFunds-Live 2","TrueForexFunds-Demo"] },
-
-  // ── Alpha Capital Group ───────────────────────────────────────────────────
-  { name:"Alpha Capital Group",          servers:["AlphaCapital-Live","AlphaCapital-Live 2","AlphaCapital-Demo"] },
-
-  // ── Blue Guardian ────────────────────────────────────────────────────────
-  { name:"Blue Guardian",                servers:["BlueGuardian-Live","BlueGuardian-Live 2","BlueGuardian-Demo"] },
-
-  // ── Funding Pips ─────────────────────────────────────────────────────────
-  // Dubai, $200M+ paid out. Own MT5 infrastructure.
-  { name:"Funding Pips",                 servers:["FundingPips-Live","FundingPips-Live 2","FundingPips-Live 3","FundingPips-Demo"] },
-
-  // ── The 5%ers ────────────────────────────────────────────────────────────
-  // Israel, est. 2016. Scale to $4M. Bootcamp, Hyper, Low-Risk tracks.
-  { name:"The 5%ers",                    servers:["The5ers-Live","The5ers-Live 2","The5ers-Hyper","The5ers-Bootcamp","The5ers-Low-Risk","The5ers-Demo"] },
-
-  // ── Fidelcrest ───────────────────────────────────────────────────────────
-  { name:"Fidelcrest",                   servers:["Fidelcrest-Live","Fidelcrest-Live 2","Fidelcrest-Micro","Fidelcrest-Demo"] },
-
-  // ── Lux Trading Firm ─────────────────────────────────────────────────────
-  // UK, career traders, up to $2.5M funding.
-  { name:"Lux Trading Firm",             servers:["LuxTradingFirm-Live","LuxTradingFirm-Demo"] },
-
-  // ── City Traders Imperium ────────────────────────────────────────────────
-  // Dubai, up to $4M funding. Monthly salary payout option.
-  { name:"City Traders Imperium",        servers:["CTI-Live","CTI-Live 2","CTI-Instant","CTI-Demo"] },
-
-  // ── Apex Trader Funding ───────────────────────────────────────────────────
-  // Futures-focused.
-  { name:"Apex Trader Funding",          servers:["ApexTraderFunding-Live","ApexTraderFunding-Evaluation","ApexTraderFunding-Demo"] },
-
-  // ── TopStep ──────────────────────────────────────────────────────────────
-  // Futures-focused, Chicago-based.
-  { name:"TopStep",                      servers:["TopStep-Live","TopStep-Live 2","TopStep-Combine","TopStep-Demo"] },
-
-  // ── Earn2Trade ───────────────────────────────────────────────────────────
-  { name:"Earn2Trade",                   servers:["Earn2Trade-Live","Earn2Trade-Gauntlet","Earn2Trade-Demo"] },
-
-  // ── Smart Prop Trader ────────────────────────────────────────────────────
-  { name:"Smart Prop Trader",            servers:["SmartPropTrader-Live","SmartPropTrader-Live 2","SmartPropTrader-Demo"] },
-
-  // ── Maven Trading ────────────────────────────────────────────────────────
-  { name:"Maven Trading",                servers:["MavenTrading-Live","MavenTrading-Demo"] },
-
-  // ── Audacity Capital ─────────────────────────────────────────────────────
-  // London-based flexible funding.
-  { name:"Audacity Capital",             servers:["AudacityCapital-Live","AudacityCapital-Demo"] },
-
-  // ── The Trading Pit ──────────────────────────────────────────────────────
-  { name:"The Trading Pit",              servers:["TheTradingPit-Live","TheTradingPit-Live 2","TheTradingPit-Demo"] },
-
-  // ── Finotive Funding ─────────────────────────────────────────────────────
-  { name:"Finotive Funding",             servers:["FinotiveFunding-Live","FinotiveFunding-Demo"] },
-
-  // ── Traders With Edge ────────────────────────────────────────────────────
-  { name:"Traders With Edge",            servers:["TradersWithEdge-Live","TradersWithEdge-Demo"] },
-
-  // ── Glow Node ────────────────────────────────────────────────────────────
-  { name:"Glow Node",                    servers:["GlowNode-Live","GlowNode-Demo"] },
-
-  // ── Hola Prime ───────────────────────────────────────────────────────────
-  // Est. Aug 2024. DXTrade + MT5. Up to $4M scaling.
-  { name:"Hola Prime",                   servers:["HolaPrime-Live","HolaPrime-Live 2","HolaPrime-Demo"] },
-
-  // ── Goat Funded Trader ───────────────────────────────────────────────────
-  { name:"Goat Funded Trader",           servers:["GoatFundedTrader-Live","GoatFundedTrader-Demo"] },
-
-  // ── Forex Prop Firm ──────────────────────────────────────────────────────
-  { name:"Forex Prop Firm",              servers:["ForexPropFirm-Live","ForexPropFirm-Live 2","ForexPropFirm-Demo"] },
-
-  // ── For Traders ──────────────────────────────────────────────────────────
-  // UK-based, up to $200K scaling to $2.5M.
-  { name:"For Traders",                  servers:["ForTraders-Live","ForTraders-Demo"] },
-
-  // ── Instant Funding ──────────────────────────────────────────────────────
-  // Live-from-day-one model since 2021.
-  { name:"Instant Funding",              servers:["InstantFunding-Live","InstantFunding-Demo"] },
-
-  // ── Surge Trader ─────────────────────────────────────────────────────────
-  { name:"Surge Trader",                 servers:["SurgeTrader-Live","SurgeTrader-Demo"] },
-
-  // ── FunderPro ────────────────────────────────────────────────────────────
-  { name:"FunderPro",                    servers:["FunderPro-Live","FunderPro-Demo"] },
-
-  // ── Bespoke Funding Program ──────────────────────────────────────────────
-  { name:"Bespoke Funding Program",      servers:["BespokeFunding-Live","BespokeFunding-Demo"] },
-
-  // ── TopTier Trader ───────────────────────────────────────────────────────
-  { name:"TopTier Trader",               servers:["TopTierTrader-Live","TopTierTrader-Demo"] },
-
-  // ── DNA Funded ───────────────────────────────────────────────────────────
-  // Backed by DNA Markets broker. Rated #1 by bestpropfirms.com.
-  { name:"DNA Funded",                   servers:["DNAFunded-Live","DNAFunded-Live 2","DNAFunded-Demo","DNAMarkets-Live","DNAMarkets-Demo"] },
-
-  // ── Wall Street Funded ───────────────────────────────────────────────────
-  // Rebranded to WSFMarkets server Oct 2025.
-  { name:"Wall Street Funded",           servers:["WSFMarkets-Server","WSFMarkets-Server 2","WSFMarkets-Demo"] },
-
-  // ── Funded Trading Plus ──────────────────────────────────────────────────
-  // UK-based, 3-day payout cycle, scale to $5M.
-  { name:"Funded Trading Plus",          servers:["FundedTradingPlus-Live","FundedTradingPlus-Demo"] },
-
-  // ── BrightFunded ─────────────────────────────────────────────────────────
-  // European firm. MT5 + cTrader + DXTrade. Trade2Earn loyalty tokens.
-  { name:"BrightFunded",                 servers:["BrightFunded-Live","BrightFunded-Live 2","BrightFunded-Demo"] },
-
-  // ── FXIFY ────────────────────────────────────────────────────────────────
-  // London, est. 2022. Broker-backed via FXPIG. MT4+MT5 on FXPIG infra.
-  { name:"FXIFY",                        servers:["FXPIG-Live","FXPIG-Live 2","FXPIG-Live 3","FXPIG-Demo"] },
-
-  // ── Blueberry Funded ─────────────────────────────────────────────────────
-  // Backed by ASIC-regulated Blueberry Markets. Est. 2024.
-  { name:"Blueberry Funded",             servers:["Blueberry-Live","Blueberry-Live 2","Blueberry-Live 3","Blueberry-Demo"] },
-
-  // ── Bullwaves Prime ──────────────────────────────────────────────────────
-  { name:"Bullwaves Prime",              servers:["BullwavesPrime-Live","BullwavesPrime-Demo"] },
-
-  // ── Ment Funding ─────────────────────────────────────────────────────────
-  { name:"Ment Funding",                 servers:["MentFunding-Live","MentFunding-Demo"] },
-
-  // ── Omega Fintech ────────────────────────────────────────────────────────
-  { name:"Omega Fintech",                servers:["OmegaFintech-Live","OmegaFintech-Demo"] },
-
-  // ── My Flash Funding ─────────────────────────────────────────────────────
-  { name:"My Flash Funding",             servers:["MyFlashFunding-Live","MyFlashFunding-Demo"] },
-
-  // ── Breakout Prop ────────────────────────────────────────────────────────
-  { name:"Breakout Prop",                servers:["BreakoutProp-Live","BreakoutProp-Demo"] },
-
-  // ── Funding Traders ──────────────────────────────────────────────────────
-  // MT5 + TradeLocker. Accounts $10K-$400K scale to $2M.
-  { name:"Funding Traders",              servers:["FundingTraders-Live","FundingTraders-Demo"] },
-
-  // ── FundedX ──────────────────────────────────────────────────────────────
-  // UAE-based, est. 2024. 1-step and 2-step models.
-  { name:"FundedX",                      servers:["FundedX-Live","FundedX-Demo"] },
-
-  // ── OneFunded ────────────────────────────────────────────────────────────
-  { name:"OneFunded",                    servers:["OneFunded-Live","OneFunded-Demo"] },
-
-  // ── Hantec Trader ────────────────────────────────────────────────────────
-  // Backed by Hantec Markets broker.
-  { name:"Hantec Trader",                servers:["HantecMarkets-Live","HantecMarkets-Live 2","HantecMarkets-Demo"] },
-
-  // ── IC Funded ────────────────────────────────────────────────────────────
-  // Backed by IC Markets broker.
-  { name:"IC Funded",                    servers:["ICMarkets-Live","ICMarkets-Live02","ICMarketsSC-Live","ICMarketsSC-Demo"] },
-
-  // ── The Forex Funder ─────────────────────────────────────────────────────
-  { name:"The Forex Funder",             servers:["TheForexFunder-Live","TheForexFunder-Demo"] },
-
-  // ── FTUK ─────────────────────────────────────────────────────────────────
-  // UK-based. Instant, 1-step, 2-step programs. MT4 + MT5.
   { name:"FTUK",                         servers:["FTUK-Live","FTUK-Demo"] },
-
-  // ── AquaFutures ──────────────────────────────────────────────────────────
-  { name:"AquaFutures",                  servers:["AquaFutures-Live","AquaFutures-Demo"] },
-
-  // ── Lark Funding ─────────────────────────────────────────────────────────
-  { name:"Lark Funding",                 servers:["LarkFunding-Live","LarkFunding-Demo"] },
-
-  // ── Swift Funded ─────────────────────────────────────────────────────────
-  { name:"Swift Funded",                 servers:["SwiftFunded-Live","SwiftFunded-Demo"] },
-
-  // ── SFT (Skilled Funded Trader) ──────────────────────────────────────────
-  { name:"Skilled Funded Trader",        servers:["SkilledFundedTrader-Live","SkilledFundedTrader-Demo"] },
-
-  // ── Prop Firm Challenge ──────────────────────────────────────────────────
-  { name:"Prop Firm Challenge",          servers:["PropFirmChallenge-Live","PropFirmChallenge-Demo"] },
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // ── ADDITIONAL CFD BROKERS (missing from original list) ─────────────────
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // ── Ultima Markets ───────────────────────────────────────────────────────
-  { name:"Ultima Markets LTD",            servers:["UltimaMarkets-Live 1","UltimaMarkets-Live 2","UltimaMarkets-Live 3","UltimaMarkets-Demo"] },
-  { name:"Ultima Markets (EU / Huaprime)",servers:["Huaprime-Live","Huaprime-Live2","Huaprime-Demo"] },
-
-  // ── JustMarkets ──────────────────────────────────────────────────────────
-  { name:"JustMarkets",                  servers:["JustMarkets-Live","JustMarkets-Live2","JustMarkets-Demo"] },
-
-  // ── Octa (OctaFX rebrand) ────────────────────────────────────────────────
-  { name:"Octa",                         servers:["Octa-Real","Octa-Real 2","Octa-Demo"] },
-
-  // ── IUX Markets ──────────────────────────────────────────────────────────
-  { name:"IUX Markets",                  servers:["IUXMarkets-Live","IUXMarkets-Live2","IUXMarkets-Demo"] },
-
-  // ── Headway ──────────────────────────────────────────────────────────────
-  { name:"Headway",                      servers:["Headway-Live","Headway-Demo"] },
-
-  // ── FxGrow ───────────────────────────────────────────────────────────────
+  { name:"Funded Trading Plus",          servers:["FundedTradingPlus-Live","FundedTradingPlus-Demo"] },
+  { name:"FundedNext",                   servers:["FundedNext-Live","FundedNext-Live 2","FundedNext-Stellar","FundedNext-Demo","FundedNext-Evaluation","FNmarkets-Live","FNmarkets-Demo"] },
+  { name:"FundedX",                      servers:["FundedX-Live","FundedX-Demo"] },
+  { name:"FunderPro",                    servers:["FunderPro-Live","FunderPro-Demo"] },
+  { name:"Funding Pips",                 servers:["FundingPips-Live","FundingPips-Live 2","FundingPips-Live 3","FundingPips-Demo"] },
+  { name:"Funding Traders",              servers:["FundingTraders-Live","FundingTraders-Demo"] },
+  { name:"Fusion Markets",             servers:["FusionMarkets-Live","FusionMarkets-Live2","FusionMarkets-Demo"] },
+  { name:"FX Choice",                  servers:["FXChoice-Live","FXChoice-Demo"] },
+  { name:"FXCM",                       servers:["FXCM-USDReal","FXCM-USDReal02","FXCM-GBPReal01","FXCM-USDDemo01"] },
   { name:"FxGrow",                       servers:["FxGrow-Live","FxGrow-Demo"] },
-
-  // ── Errante ──────────────────────────────────────────────────────────────
-  { name:"Errante",                      servers:["Errante-Live","Errante-Demo"] },
-
-  // ── M4Markets ────────────────────────────────────────────────────────────
-  { name:"M4Markets",                    servers:["M4Markets-Live","M4Markets-Live2","M4Markets-Demo"] },
-
-  // ── Excentral ────────────────────────────────────────────────────────────
-  { name:"Excentral",                    servers:["Excentral-Live","Excentral-Demo"] },
-
-  // ── Key to Markets ───────────────────────────────────────────────────────
-  { name:"Key to Markets",               servers:["KeyToMarkets-Live","KeyToMarkets-Demo"] },
-
-  // ── Intertrader ──────────────────────────────────────────────────────────
-  { name:"Intertrader",                  servers:["Intertrader-Live","Intertrader-Demo"] },
-
-  // ── Purple Trading ───────────────────────────────────────────────────────
-  { name:"Purple Trading",               servers:["PurpleTrading-Live","PurpleTrading-Demo"] },
-
-  // ── Skilling ─────────────────────────────────────────────────────────────
-  { name:"Skilling",                     servers:["Skilling-Live","Skilling-Demo"] },
-
-  // ── Trading 212 ──────────────────────────────────────────────────────────
-  { name:"Trading 212",                  servers:["Trading212-Live","Trading212-Demo"] },
-
-  // ── Naga Markets ─────────────────────────────────────────────────────────
-  { name:"NAGA Markets (EU)",            servers:["NAGAmarkets-Live","NAGAmarkets-Demo"] },
-
-  // ── SquaredFinancial ─────────────────────────────────────────────────────
-  { name:"SquaredFinancial",             servers:["SquaredFinancial-Live","SquaredFinancial-Demo"] },
-
-  // ── Capex.com ────────────────────────────────────────────────────────────
-  { name:"Capex.com",                    servers:["Capex-Live","Capex-Demo"] },
-
-  // ── FIBO Group ───────────────────────────────────────────────────────────
-  { name:"FIBO Group",                   servers:["FIBOGroup-Live","FIBOGroup-Demo"] },
-
-  // ── Trade360 ─────────────────────────────────────────────────────────────
-  { name:"Trade360",                     servers:["Trade360-Live","Trade360-Demo"] },
-
-  // ── OnEquity ─────────────────────────────────────────────────────────────
-  { name:"OnEquity",                     servers:["OnEquity-Live","OnEquity-Demo"] },
-
-  // ── ProfiForex ───────────────────────────────────────────────────────────
-  { name:"ProfiForex",                   servers:["ProfiForex-Live","ProfiForex-Demo"] },
-
-  // ── LQDFXpro ─────────────────────────────────────────────────────────────
-  { name:"LQDFXpro",                     servers:["LQDFXpro-Live","LQDFXpro-Demo"] },
-
-  // ── Rakuten Securities ───────────────────────────────────────────────────
-  { name:"Rakuten Securities",           servers:["RakutenSecurities-Live","RakutenSecurities-Demo"] },
-
-  // ── GKFX ─────────────────────────────────────────────────────────────────
-  { name:"GKFX",                         servers:["GKFX-Live","GKFX-Demo"] },
-
-  // ── Squared Financial ────────────────────────────────────────────────────
-  { name:"Squared Financial (Global)",   servers:["SquaredFinancialGlobal-Live","SquaredFinancialGlobal-Demo"] },
-
-  // ── TIO Markets ──────────────────────────────────────────────────────────
-  { name:"TIO Markets",                  servers:["TIOMarkets-Live","TIOMarkets-Demo"] },
-
-  // ── Zenfinex (Taurex) ────────────────────────────────────────────────────
-  { name:"Taurex (Zenfinex)",            servers:["Taurex-Live","Taurex-Live2","Taurex-Demo"] },
-
-  // ── TrioMarkets ──────────────────────────────────────────────────────────
-  { name:"TrioMarkets",                  servers:["TrioMarkets-Live","TrioMarkets-Demo"] },
-
-  // ── Friedberg Direct ─────────────────────────────────────────────────────
-  { name:"Friedberg Direct",             servers:["FriedbergDirect-Live","FriedbergDirect-Demo"] },
-
-  // ── PrimeXBT ─────────────────────────────────────────────────────────────
-  { name:"PrimeXBT",                     servers:["PrimeXBT-Live","PrimeXBT-Demo"] },
-
-  // ── Hycm Capital ─────────────────────────────────────────────────────────
-  { name:"HYCM Capital (UK)",            servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
-
-  // ── Startrader ───────────────────────────────────────────────────────────
-  { name:"Startrader",                   servers:["Startrader-Live","Startrader-Demo"] },
-
-  // ── FxPesa ───────────────────────────────────────────────────────────────
+  { name:"FXIFY",                        servers:["FXPIG-Live","FXPIG-Live 2","FXPIG-Live 3","FXPIG-Demo"] },
+  { name:"FXOpen",                     servers:["FXOpen-ECN Live","FXOpen-STP Live","FXOpen-Demo"] },
   { name:"FxPesa",                       servers:["EGMSecurities-Live","EGMSecurities-Demo"] },
-
-  // ── Pepperstone (Kenya) ──────────────────────────────────────────────────
-  { name:"Pepperstone (CMA Kenya)",      servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
-
-  // ── Capitalcore ──────────────────────────────────────────────────────────
-  { name:"Capitalcore",                  servers:["Capitalcore-Live","Capitalcore-Demo"] },
-
-  // ── ClickTrades ──────────────────────────────────────────────────────────
-  { name:"ClickTrades",                  servers:["ClickTrades-Live","ClickTrades-Demo"] },
-
-  // ── Alvexo ───────────────────────────────────────────────────────────────
-  { name:"Alvexo",                       servers:["Alvexo-Live","Alvexo-Demo"] },
-
-  // ── CWG Markets ──────────────────────────────────────────────────────────
-  { name:"CWG Markets",                  servers:["CWGMarkets-Live","CWGMarkets-Demo"] },
-
-  // ── Switch Markets ───────────────────────────────────────────────────────
-  { name:"Switch Markets",               servers:["SwitchMarkets-Live","SwitchMarkets-Demo"] },
-
-  // ── FP Markets (EU) ──────────────────────────────────────────────────────
-  { name:"FP Markets (EU)",              servers:["FPMarketsEU-Live","FPMarketsEU-Demo"] },
-
-  // ── VantageMarkets (Australia) ───────────────────────────────────────────
-  { name:"Vantage (AU/ASIC)",            servers:["Vantage-Live","Vantage-Live2","Vantage-Demo"] },
-
-  // ── Pepperstone (DMCC Dubai) ─────────────────────────────────────────────
-  { name:"Pepperstone (DMCC UAE)",       servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
-
-  // ── IC Markets (International) ───────────────────────────────────────────
-  { name:"IC Markets (International)",   servers:["ICMarketsInternational-Live","ICMarketsInternational-Demo"] },
-
-  // ── Exness (UK) ──────────────────────────────────────────────────────────
-  { name:"Exness (UK/FCA)",              servers:["ExnessUK-Real","ExnessUK-Demo"] },
-
-  // ── ATC Brokers ──────────────────────────────────────────────────────────
-  { name:"ATC Brokers",                  servers:["ATCBrokers-Live","ATCBrokers-Demo"] },
-
-  // ── Pacific Financial Derivatives ────────────────────────────────────────
-  { name:"PFD NZ",                       servers:["PFDNZ-Live","PFDNZ-Demo"] },
-
-  // ── eToroX ───────────────────────────────────────────────────────────────
-  { name:"eToroX",                       servers:["eToroX-Live","eToroX-Demo"] },
-
-  // ── Forex Optimum ────────────────────────────────────────────────────────
-  { name:"Forex Optimum",                servers:["ForexOptimum-Live","ForexOptimum-Demo"] },
-
-  // ── WeTrade ──────────────────────────────────────────────────────────────
-  { name:"WeTrade",                      servers:["WeTrade-Live","WeTrade-Demo"] },
-
-  // ── RockGlobal ───────────────────────────────────────────────────────────
-  { name:"RockGlobal",                   servers:["RockGlobal-Live","RockGlobal-Demo"] },
-
-  // ── Doo Prime ────────────────────────────────────────────────────────────
-  { name:"Doo Prime",                    servers:["DooPrime-Live","DooPrime-Live2","DooPrime-Demo"] },
-
-  // ── Zeal Capital Market ──────────────────────────────────────────────────
-  { name:"ZFX (Zeal Capital)",           servers:["ZFX-Live","ZFX-Live2","ZFX-Demo"] },
-
-  // ── GreenFields Capital ──────────────────────────────────────────────────
-  { name:"GreenFields Capital",          servers:["GreenFieldsCapital-Live","GreenFieldsCapital-Demo"] },
-
-  // ── SuperForex ───────────────────────────────────────────────────────────
-  { name:"SuperForex",                   servers:["SuperForex-Live","SuperForex-Demo"] },
-
-  // ── FXPrimus ─────────────────────────────────────────────────────────────
   { name:"FXPrimus",                     servers:["FXPrimus-Live","FXPrimus-Live2","FXPrimus-Demo"] },
-
-  // ── DeltaStock ───────────────────────────────────────────────────────────
-  { name:"DeltaStock",                   servers:["DeltaStock-Live","DeltaStock-Demo"] },
-
-  // ── Uniglobe Markets ─────────────────────────────────────────────────────
-  { name:"Uniglobe Markets",             servers:["UniglobeMarkets-Live","UniglobeMarkets-Demo"] },
-
-  // ── Coinexx ──────────────────────────────────────────────────────────────
-  { name:"Coinexx",                      servers:["Coinexx-Live","Coinexx-Demo"] },
-
-  // ── TradingPRO ───────────────────────────────────────────────────────────
-  { name:"TradingPRO",                   servers:["TradingPRO-Live","TradingPRO-Demo"] },
-
-  // ── Raw Trading Ltd (IC Markets EU brand) ────────────────────────────────
-  { name:"Raw Trading Ltd",              servers:["ICMarketsSC-Demo","ICMarketsSC-MT5"] },
-
-  // ── Nuvei Markets ────────────────────────────────────────────────────────
-  { name:"Nuvei Markets",                servers:["NuveiMarkets-Live","NuveiMarkets-Demo"] },
-
-  // ── Finalto ──────────────────────────────────────────────────────────────
-  { name:"Finalto",                      servers:["Finalto-Live","Finalto-Demo"] },
-
-  // ── ADSSmarkets ──────────────────────────────────────────────────────────
-  { name:"ADSS",                         servers:["ADSS-Live","ADSS-Live2","ADSS-Demo"] },
-
-  // ── Khweza Capital ───────────────────────────────────────────────────────
-  { name:"Khweza Capital",               servers:["KhwezaCapital-Live","KhwezaCapital-Demo"] },
-
-  // ── ETO Markets ──────────────────────────────────────────────────────────
-  { name:"ETO Markets",                  servers:["ETOMarkets-Live","ETOMarkets-Demo"] },
-
-  // ── KVB Prime ────────────────────────────────────────────────────────────
-  { name:"KVB Prime",                    servers:["KVBPrime-Live","KVBPrime-Demo"] },
-
-  // ── Lirunex ──────────────────────────────────────────────────────────────
-  { name:"Lirunex",                      servers:["Lirunex-Live","Lirunex-Demo"] },
-
-  // ── Orient Finance ───────────────────────────────────────────────────────
-  { name:"Orient Finance",               servers:["OrientFinance-Live","OrientFinance-Demo"] },
-
-  // ── Scandinavian Capital Markets ─────────────────────────────────────────
-  { name:"Scandinavian Capital Markets", servers:["SCM-Live","SCM-Demo"] },
-
-  // ── ICM Capital ──────────────────────────────────────────────────────────
+  { name:"FxPro",                      servers:["FxPro.com-Real","FxPro.com-Real2","FxPro.com-Real3","FxPro.com-Real4","FxPro.com-Real5","FxPro.com-Real6","FxPro.com-Demo"] },
+  { name:"FXTM (ForexTime)",           servers:["FXTM-Real","FXTM-Real2","FXTM-Real3","FXTM-Real4","FXTM-Real5","FXTM-Real6","FXTM-Demo"] },
+  { name:"GBE Brokers",                servers:["GBEBrokers-Live","GBEBrokers-Demo"] },
+  { name:"Gerchik and Co",              servers:["GerchikCo-Live","GerchikCo-Demo"] },
+  { name:"GKFX",                         servers:["GKFX-Live","GKFX-Demo"] },
+  { name:"Global Prime",               servers:["GlobalPrime-Live","GlobalPrime-Live2","GlobalPrime-Demo"] },
+  { name:"Glow Node",                    servers:["GlowNode-Live","GlowNode-Demo"] },
+  { name:"GO Markets",                 servers:["GOMarkets-Live","GOMarkets-Live 2","GOMarkets-Live 3","GOMarkets-Demo"] },
+  { name:"Goat Funded Trader",           servers:["GoatFundedTrader-Live","GoatFundedTrader-Demo"] },
+  { name:"Grand Capital",              servers:["GrandCapital-Live","GrandCapital-Demo"] },
+  { name:"GreenFields Capital",          servers:["GreenFieldsCapital-Live","GreenFieldsCapital-Demo"] },
+  { name:"Hantec Markets",             servers:["HantecMarkets-Live","HantecMarkets-Demo"] },
+  { name:"Hantec Trader",                servers:["HantecMarkets-Live","HantecMarkets-Live 2","HantecMarkets-Demo"] },
+  { name:"Headway",                      servers:["Headway-Live","Headway-Demo"] },
+  { name:"HFM (HotForex)",             servers:["HFMarketsGlobal-Live1 Server","HFMarketsGlobal-Live2 Server","HFMarketsGlobal-Live3 Server","HFMarketsGlobal-Demo Server"] },
+  { name:"HFM (EU / Cyprus)",          servers:["HFMarketsEurope-Live1 Server","HFMarketsEurope-Demo Server"] },
+  { name:"Hola Prime",                   servers:["HolaPrime-Live","HolaPrime-Live 2","HolaPrime-Demo"] },
+  { name:"HYCM",                       servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
+  { name:"HYCM Capital (UK)",            servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
+  { name:"IC Funded",                    servers:["ICMarkets-Live","ICMarkets-Live02","ICMarketsSC-Live","ICMarketsSC-Demo"] },
+  { name:"IC Markets (Global)",        servers:["ICMarkets-Live","ICMarkets-Live02","ICMarkets-Live03","ICMarkets-Live04","ICMarkets-Live05","ICMarkets-Live06","ICMarkets-Demo"] },
+  { name:"IC Markets (SC)",            servers:["ICMarketsSC-Live","ICMarketsSC-Live01","ICMarketsSC-Live02","ICMarketsSC-Live03","ICMarketsSC-Live04","ICMarketsSC-Live05","ICMarketsSC-Live06","ICMarketsSC-Live07","ICMarketsSC-Live08","ICMarketsSC-Live09","ICMarketsSC-Live10","ICMarketsSC-Live11","ICMarketsSC-Live12","ICMarketsSC-Live13","ICMarketsSC-Live14","ICMarketsSC-Live15","ICMarketsSC-Live16","ICMarketsSC-Live17","ICMarketsSC-Live18","ICMarketsSC-Live19","ICMarketsSC-Live20","ICMarketsSC-Live21","ICMarketsSC-Live22","ICMarketsSC-Live23","ICMarketsSC-Live24","ICMarketsSC-Live25","ICMarketsSC-Live26","ICMarketsSC-Demo"] },
+  { name:"IC Markets (EU / Raw Trading Ltd)", servers:["ICMarketsEU-Live","ICMarketsEU-Live2","ICMarketsEU-Live3","ICMarketsEU-Demo"] },
+  { name:"IC Markets (International)",   servers:["ICMarketsInternational-Live","ICMarketsInternational-Demo"] },
   { name:"ICM Capital",                  servers:["ICMCapital-Live","ICMCapital-Demo"] },
-
-  // ── R1investing ──────────────────────────────────────────────────────────
+  { name:"IG Markets",                 servers:["IG-LIVE","IG-LIVE2","IG-LIVE3","IG-DEMO"] },
+  { name:"INFINOX",                    servers:["INFINOX-Live","INFINOX-Demo"] },
+  { name:"InstaForex",                 servers:["InstaForexCom-Live","InstaForexCom-Live2","InstaForexCom-Demo"] },
+  { name:"Instant Funding",              servers:["InstantFunding-Live","InstantFunding-Demo"] },
+  { name:"Interactive Brokers",        servers:["InteractiveBrokers-Live","InteractiveBrokers-Demo"] },
+  { name:"Intertrader",                  servers:["Intertrader-Live","Intertrader-Demo"] },
+  { name:"IUX Markets",                  servers:["IUXMarkets-Live","IUXMarkets-Live2","IUXMarkets-Demo"] },
+  { name:"Just2Trade",                 servers:["Just2Trade-Live","Just2Trade-Demo"] },
+  { name:"JustMarkets",                  servers:["JustMarkets-Live","JustMarkets-Live2","JustMarkets-Demo"] },
+  { name:"Key to Markets",               servers:["KeyToMarkets-Live","KeyToMarkets-Demo"] },
+  { name:"Khweza Capital",               servers:["KhwezaCapital-Live","KhwezaCapital-Demo"] },
+  { name:"KVB Prime",                    servers:["KVBPrime-Live","KVBPrime-Demo"] },
+  { name:"Lark Funding",                 servers:["LarkFunding-Live","LarkFunding-Demo"] },
+  { name:"Libertex",                   servers:["Libertex-Real","Libertex-Real2","Libertex-Demo"] },
+  { name:"Lirunex",                      servers:["Lirunex-Live","Lirunex-Demo"] },
+  { name:"LiteFinance",                servers:["LiteFinance-Live","LiteFinance-ECN-Live","LiteFinance-Demo"] },
+  { name:"LQDFXpro",                     servers:["LQDFXpro-Live","LQDFXpro-Demo"] },
+  { name:"Lux Trading Firm",             servers:["LuxTradingFirm-Live","LuxTradingFirm-Demo"] },
+  { name:"M4Markets",                    servers:["M4Markets-Live","M4Markets-Live2","M4Markets-Demo"] },
+  { name:"Markets.com",                servers:["Markets.com-Live","Markets.com-Demo"] },
+  { name:"Maven Trading",                servers:["MavenTrading-Live","MavenTrading-Demo"] },
+  { name:"Ment Funding",                 servers:["MentFunding-Live","MentFunding-Demo"] },
+  { name:"Moneta Markets",             servers:["MonetaMarkets-Live","MonetaMarkets-Live2","MonetaMarkets-Demo"] },
+  { name:"MultiBank Group",            servers:["MultiBank-Live","MultiBank-Live 2","MultiBank-Live 3","MultiBank-Demo"] },
+  { name:"My Flash Funding",             servers:["MyFlashFunding-Live","MyFlashFunding-Demo"] },
+  { name:"NAGA Markets",               servers:["NAGA-Live","NAGA-Live2","NAGA-Demo"] },
+  { name:"NAGA Markets (EU)",            servers:["NAGAmarkets-Live","NAGAmarkets-Demo"] },
+  { name:"NordFX",                     servers:["NordFX-Real","NordFX-Real 2","NordFX-Demo"] },
+  { name:"Nuvei Markets",                servers:["NuveiMarkets-Live","NuveiMarkets-Demo"] },
+  { name:"OANDA",                      servers:["OANDA-v20 Live-1","OANDA-v20 Live-2","OANDA-v20 Live-3","OANDA-v20 Demo-1","OANDA-v20 Demo-2"] },
+  { name:"Octa",                         servers:["Octa-Real","Octa-Real 2","Octa-Demo"] },
+  { name:"OctaFX",                     servers:["OctaFX-Real","OctaFX-Real2","OctaFX-Demo"] },
+  { name:"Omega Fintech",                servers:["OmegaFintech-Live","OmegaFintech-Demo"] },
+  { name:"OneFunded",                    servers:["OneFunded-Live","OneFunded-Demo"] },
+  { name:"OnEquity",                     servers:["OnEquity-Live","OnEquity-Demo"] },
+  { name:"Orbex",                      servers:["Orbex-Live","Orbex-Demo"] },
+  { name:"Orient Finance",               servers:["OrientFinance-Live","OrientFinance-Demo"] },
+  { name:"Pepperstone",                servers:["Pepperstone-MT5-Live01","Pepperstone-MT5-Live02","Pepperstone-MT5-Live03","Pepperstone-MT5-Live04","Pepperstone-MT5-Live05","Pepperstone-Demo"] },
+  { name:"Pepperstone (UK/EU)",        servers:["PepperstoneUK-Live","PepperstoneUK-Live2","PepperstoneUK-Live3","PepperstoneUK-Demo"] },
+  { name:"Pepperstone (Bahamas)",      servers:["Pepperstone-Group-Live","Pepperstone-Group-Demo"] },
+  { name:"Pepperstone (CMA Kenya)",      servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
+  { name:"Pepperstone (DMCC UAE)",       servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
+  { name:"PFD NZ",                       servers:["PFDNZ-Live","PFDNZ-Demo"] },
+  { name:"PrimeXBT",                     servers:["PrimeXBT-Live","PrimeXBT-Demo"] },
+  { name:"ProfiForex",                   servers:["ProfiForex-Live","ProfiForex-Demo"] },
+  { name:"Prop Firm Challenge",          servers:["PropFirmChallenge-Live","PropFirmChallenge-Demo"] },
+  { name:"PU Prime",                   servers:["PUPrime-Live","PUPrime-Live2","PUPrime-Live 4","PUPrime-Live 5","PUPrime-Live 6","PUPrime-Demo"] },
+  { name:"Purple Trading",               servers:["PurpleTrading-Live","PurpleTrading-Demo"] },
   { name:"R1investing",                  servers:["R1investing-Live","R1investing-Demo"] },
-
-  // ── Fondex ───────────────────────────────────────────────────────────────
-  { name:"Fondex",                       servers:["Fondex-Live","Fondex-Demo"] }
-
+  { name:"Rakuten Securities",           servers:["RakutenSecurities-Live","RakutenSecurities-Demo"] },
+  { name:"Raw Trading Ltd",              servers:["ICMarketsSC-Demo","ICMarketsSC-MT5"] },
+  { name:"RoboForex",                  servers:["RoboForex-Pro","RoboForex-ECN","RoboForex-Pro-Demo","RoboForex-ECN-Demo"] },
+  { name:"RockGlobal",                   servers:["RockGlobal-Live","RockGlobal-Demo"] },
+  { name:"Saxo Bank",                  servers:["SaxoBank-Live","SaxoBank-Demo"] },
+  { name:"Scandinavian Capital Markets", servers:["SCM-Live","SCM-Demo"] },
+  { name:"Scope Markets",              servers:["ScopeMarkets-Live","ScopeMarkets-Demo"] },
+  { name:"ScoreCM Ltd.",                servers:["ScoreCM-Live","ScoreCM-Demo"] },
+  { name:"Seacrest Funded (MyFundedFX)", servers:["SeacrestFunded-Live","SeacrestFunded-Live 2","SeacrestFunded-Demo","MyFundedFX-Live","MyFundedFX-Demo"] },
+  { name:"Skilled Funded Trader",        servers:["SkilledFundedTrader-Live","SkilledFundedTrader-Demo"] },
+  { name:"Skilling",                     servers:["Skilling-Live","Skilling-Demo"] },
+  { name:"Smart Prop Trader",            servers:["SmartPropTrader-Live","SmartPropTrader-Live 2","SmartPropTrader-Demo"] },
+  { name:"Spreadex",                   servers:["Spreadex-Live","Spreadex-Demo"] },
+  { name:"Squared Financial (Global)",   servers:["SquaredFinancialGlobal-Live","SquaredFinancialGlobal-Demo"] },
+  { name:"SquaredFinancial",             servers:["SquaredFinancial-Live","SquaredFinancial-Demo"] },
+  { name:"Startrader",                   servers:["Startrader-Live","Startrader-Demo"] },
+  { name:"SuperForex",                   servers:["SuperForex-Live","SuperForex-Demo"] },
+  { name:"Surge Trader",                 servers:["SurgeTrader-Live","SurgeTrader-Demo"] },
+  { name:"Swift Funded",                 servers:["SwiftFunded-Live","SwiftFunded-Demo"] },
+  { name:"Swissquote",                 servers:["Swissquote-Live","Swissquote-Live2","Swissquote-Demo"] },
+  { name:"Switch Markets",               servers:["SwitchMarkets-Live","SwitchMarkets-Demo"] },
+  { name:"Taurex (Zenfinex)",            servers:["Taurex-Live","Taurex-Live2","Taurex-Demo"] },
+  { name:"TeleTrade",                  servers:["TeleTrade-Live","TeleTrade-Demo"] },
+  { name:"The 5%ers",                    servers:["The5ers-Live","The5ers-Live 2","The5ers-Hyper","The5ers-Bootcamp","The5ers-Low-Risk","The5ers-Demo"] },
+  { name:"The Forex Funder",             servers:["TheForexFunder-Live","TheForexFunder-Demo"] },
+  { name:"The Funded Trader",            servers:["TheFundedTrader-Live","TheFundedTrader-Live 2","TheFundedTrader-Standard","TheFundedTrader-Royal","TheFundedTrader-Demo"] },
+  { name:"The Trading Pit",              servers:["TheTradingPit-Live","TheTradingPit-Live 2","TheTradingPit-Demo"] },
+  { name:"ThinkMarkets",               servers:["ThinkMarkets-Live","ThinkMarkets-Live 2","ThinkMarkets-Demo"] },
+  { name:"ThinkMarkets (EU)",          servers:["ThinkMarketsEU-Live","ThinkMarketsEU-Demo"] },
+  { name:"Tickmill",                   servers:["Tickmill-Live","Tickmill-Live2","Tickmill-Live3","Tickmill-Live4","Tickmill-Demo"] },
+  { name:"Tickmill (EU)",              servers:["TickmillEurope-Live","TickmillEurope-Live2","TickmillEurope-Demo"] },
+  { name:"TIO Markets",                  servers:["TIOMarkets-Live","TIOMarkets-Demo"] },
+  { name:"TMGM",                       servers:["TMGM-Live","TMGM-Live 2","TMGM-Demo"] },
+  { name:"TopStep",                      servers:["TopStep-Live","TopStep-Live 2","TopStep-Combine","TopStep-Demo"] },
+  { name:"TopTier Trader",               servers:["TopTierTrader-Live","TopTierTrader-Demo"] },
+  { name:"Trade Nation",               servers:["TradeNation-Live","TradeNation-Demo"] },
+  { name:"Trade360",                     servers:["Trade360-Live","Trade360-Demo"] },
+  { name:"Traders With Edge",            servers:["TradersWithEdge-Live","TradersWithEdge-Demo"] },
+  { name:"Tradeview",                  servers:["Tradeview-Live","Tradeview-Demo"] },
+  { name:"Trading 212",                  servers:["Trading212-Live","Trading212-Demo"] },
+  { name:"TradingPRO",                   servers:["TradingPRO-Live","TradingPRO-Demo"] },
+  { name:"TrioMarkets",                  servers:["TrioMarkets-Live","TrioMarkets-Demo"] },
+  { name:"True Forex Funds",             servers:["TrueForexFunds-Live","TrueForexFunds-Live 2","TrueForexFunds-Demo"] },
+  { name:"Ultima Markets (EU / Huaprime)",servers:["Huaprime-Live","Huaprime-Live2","Huaprime-Demo"] },
+  { name:"Ultima Markets LTD",            servers:["UltimaMarkets-Live 1","UltimaMarkets-Live 2","UltimaMarkets-Live 3","UltimaMarkets-Demo"] },
+  { name:"Uniglobe Markets",             servers:["UniglobeMarkets-Live","UniglobeMarkets-Demo"] },
+  { name:"Valutrades",                 servers:["Valutrades-Live","Valutrades-Demo"] },
+  { name:"Vantage (International)",    servers:["VantageInternational-Live","VantageInternational-Live 3","VantageInternational-Live 4","VantageInternational-Live 5","VantageInternational-Live 6","VantageInternational-Live 7","VantageInternational-Live 8","VantageInternational-Live 10","VantageInternational-Live 11","VantageInternational-Live 12","VantageInternational-Demo"] },
+  { name:"Vantage (UK / FCA)",         servers:["VantageGlobalPrime-Live","VantageGlobalPrime-Live2","VantageGlobalPrime-Demo"] },
+  { name:"Vantage (AU/ASIC)",            servers:["Vantage-Live","Vantage-Live2","Vantage-Demo"] },
+  { name:"VT Markets",                 servers:["VTMarkets-Live","VTMarkets-Live 2","VTMarkets-Live 3","VTMarkets-Demo"] },
+  { name:"Wall Street Funded",           servers:["WSFMarkets-Server","WSFMarkets-Server 2","WSFMarkets-Demo"] },
+  { name:"Weltrade",                   servers:["Weltrade-Live","Weltrade-Demo"] },
+  { name:"WeTrade",                      servers:["WeTrade-Live","WeTrade-Demo"] },
+  { name:"Windsor Brokers",            servers:["WindsorBrokers-Live","WindsorBrokers-Demo"] },
+  { name:"XM (XMGlobal)",              servers:["XMGlobal-Real","XMGlobal-Real 2","XMGlobal-Real 3","XMGlobal-Real 4","XMGlobal-Real 5","XMGlobal-Real 6","XMGlobal-Real 7","XMGlobal-Real 8","XMGlobal-Demo"] },
+  { name:"XM (Trading Point / EU)",   servers:["TradingPoint-Real","TradingPoint-Real2","TradingPoint-Demo"] },
+  { name:"XTB",                        servers:["XTB-Real","XTB-Real2","XTB-Demo"] },
+  { name:"ZFX (Zeal Capital)",           servers:["ZFX-Live","ZFX-Live2","ZFX-Demo"] }
 ];
-
 function populateBrokers(){
   const sel = document.getElementById('mt5-broker');
   if(!sel) return;
@@ -3194,25 +2733,60 @@ function initLivePrices(){
   ws.onclose=()=>setTimeout(initLivePrices,5000);
 }
 
-// ── News ticker ───────────────────────────────────────────
-// ── News ticker uses server-side /api/news ───────────────
+// ── News ticker — JS-driven smooth scroll, never resets ──
+let _ntItems=[], _ntX=0, _ntSpeed=0.4, _ntRaf=null, _ntPaused=false, _ntHalfW=0;
+
+function _ntBuildHTML(items){
+  const catCls=c=>({crypto:'nc-crypto',forex:'nc-forex',commodity:'nc-commodity',
+    geopolitical:'nc-geo',macro:'nc-macro'}[c]||'nc-macro');
+  const catLbl=c=>({crypto:'Crypto',forex:'Forex',commodity:'Commodity',
+    geopolitical:'Geo',macro:'Macro'}[c]||'Macro');
+  return items.map(item=>
+    '<a class="nt-item" href="'+(item.link||'#')+'" target="_blank" rel="noopener">'+
+    '<span class="nt-cat '+catCls(item.category||'macro')+'">'+catLbl(item.category||'macro')+'</span>'+
+    '<span class="nt-sep"></span>'+
+    ((item.title||'').length>100?(item.title||'').slice(0,100)+'…':(item.title||''))+
+    '</a>'
+  ).join('');
+}
+
+function _ntLoop(){
+  const scroll=document.getElementById('nt-scroll');
+  if(!scroll){ _ntRaf=null; return; }
+  if(!_ntPaused){
+    _ntX -= _ntSpeed;
+    if(_ntHalfW>0 && -_ntX >= _ntHalfW) _ntX += _ntHalfW; // seamless wrap
+    scroll.style.transform='translateX('+_ntX+'px)';
+  }
+  _ntRaf=requestAnimationFrame(_ntLoop);
+}
+
 async function loadNewsTicker(){
   try{
     const r=await fetch('/api/news');
     if(!r.ok) return;
     const items=await r.json();
     if(!items||items.length<2) return;
-    const catCls=cat=>cat==='crypto'?'nc-crypto':cat==='forex'?'nc-forex':cat==='commodity'?'nc-commodity':'nc-macro';
-    const catLbl=cat=>cat==='crypto'?'Crypto':cat==='forex'?'Forex':cat==='commodity'?'Commodity':'Macro';
-    const doubled=[...items,...items];
+    _ntItems=items;
     const scroll=document.getElementById('nt-scroll');
     if(!scroll) return;
-    scroll.innerHTML=doubled.map(item=>'<a class="nt-item" href="'+(item.link||'#')+'" target="_blank" rel="noopener">'+
-      '<span class="nt-cat '+catCls(item.category||'macro')+'">'+catLbl(item.category||'macro')+'</span>'+
-      ((item.title||'').length>95?(item.title||'').slice(0,95)+'…':(item.title||''))+
-    '</a>').join('');
-    const spd=Math.max(60,Math.min(180,items.length*9));
-    scroll.style.animationDuration=spd+'s';
+    const track=scroll.parentElement;
+    // Build doubled content for seamless loop
+    const html=_ntBuildHTML(items);
+    scroll.innerHTML=html+html;
+    // Measure half width after render
+    requestAnimationFrame(()=>{
+      _ntHalfW=scroll.scrollWidth/2;
+      _ntSpeed=Math.max(0.3,Math.min(0.6,items.length*0.015));
+    });
+    // Pause on hover
+    const ticker=document.getElementById('news-ticker');
+    if(ticker){
+      ticker.onmouseenter=()=>_ntPaused=true;
+      ticker.onmouseleave=()=>_ntPaused=false;
+    }
+    // Start loop if not running
+    if(!_ntRaf) _ntRaf=requestAnimationFrame(_ntLoop);
   }catch(e){ console.warn('News ticker:',e); }
 }
 
@@ -4681,7 +4255,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- LIVE NEWS TICKER -->
 <div class="news-ticker" id="news-ticker">
-  <div class="nt-label" data-i18n="liveNews">Live News</div>
+  <div class="nt-label"><div class="nt-live-dot"></div>LIVE NEWS</div>
   <div class="nt-track">
     <div class="nt-scroll" id="nt-scroll">
       <span class="nt-loading">Fetching live market news...</span>
