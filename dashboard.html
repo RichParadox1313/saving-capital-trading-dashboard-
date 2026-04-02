@@ -921,6 +921,56 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 @media(max-width:480px){.lang-btn{font-size:8px;padding:3px 6px}}
 
 @media(max-width:768px){.hero{padding-top:96px}.jrnl-hero{padding-top:100px}}
+/* ── Quant Score Panel ───────────────────────────────────────────────────── */
+.qs-panel{background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:16px 18px;position:relative}
+.qs-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.qs-title{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace}
+.qs-info-btn{width:18px;height:18px;border-radius:50%;border:1px solid var(--br2);background:transparent;color:var(--t4);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'DM Mono',monospace;font-weight:700;flex-shrink:0}
+.qs-info-btn:hover{border-color:var(--g);color:var(--g);background:rgba(34,197,94,0.08)}
+.qs-score-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.qs-score-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1;letter-spacing:2px}
+.qs-score-num.sb{color:#4ade80}.qs-score-num.b{color:#86efac}.qs-score-num.n{color:var(--t3)}.qs-score-num.s{color:#fca5a5}.qs-score-num.ss{color:#f87171}
+.qs-score-right{flex:1}
+.qs-signal{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:6px}
+.qs-signal.sb{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+.qs-signal.b{background:rgba(134,239,172,.1);color:#86efac;border:1px solid rgba(134,239,172,.2)}
+.qs-signal.n{background:rgba(255,255,255,.05);color:var(--t3);border:1px solid var(--br)}
+.qs-signal.s{background:rgba(252,165,165,.1);color:#fca5a5;border:1px solid rgba(252,165,165,.2)}
+.qs-signal.ss{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.25)}
+.qs-bar-wrap{display:flex;align-items:center;gap:8px;font-size:9px;color:var(--t4);font-family:'DM Mono',monospace}
+.qs-bar{flex:1;height:4px;border-radius:2px;background:var(--br);overflow:hidden}
+.qs-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width .6s ease}
+.qs-factors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qs-factor{background:var(--bg);border:1px solid var(--br);border-radius:6px;padding:8px 10px}
+.qs-factor-name{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:4px}
+.qs-factor-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--t1)}
+.qs-factor-bar{height:3px;border-radius:2px;background:var(--br);margin-top:5px;overflow:hidden}
+.qs-factor-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.qs-data-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--br)}
+.qs-badge{font-size:8px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:3px;border:1px solid var(--br);color:var(--t4);white-space:nowrap}
+.qs-badge.green{border-color:rgba(74,222,128,.2);color:#4ade80;background:rgba(74,222,128,.06)}
+.qs-badge.red{border-color:rgba(248,113,113,.2);color:#f87171;background:rgba(248,113,113,.06)}
+.qs-badge.yellow{border-color:rgba(251,191,36,.2);color:#fbbf24;background:rgba(251,191,36,.06)}
+/* Info modal */
+.qs-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:90000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.qs-modal-bg.open{display:flex}
+.qs-modal{background:var(--s1);border:1px solid var(--br);border-radius:14px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:24px}
+.qs-modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--g);margin-bottom:4px}
+.qs-modal-sub{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:20px}
+.qs-modal-section{margin-bottom:18px}
+.qs-modal-section-title{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--br)}
+.qs-modal-factor{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:start;margin-bottom:10px}
+.qs-modal-factor-name{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--t1);white-space:nowrap}
+.qs-modal-factor-desc{font-size:11px;color:var(--t3);line-height:1.6}
+.qs-modal-signal-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.qs-modal-range{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;min-width:80px}
+.qs-modal-range-desc{font-size:11px;color:var(--t3)}
+.qs-modal-source{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.qs-modal-source-icon{width:24px;height:24px;border-radius:4px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.qs-modal-source-info{flex:1}
+.qs-modal-source-name{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--t1)}
+.qs-modal-source-desc{font-size:10px;color:var(--t4);line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -2657,10 +2707,78 @@ function loadingState(name){
     '</div></div>';
 }
 
+function qScoreClass(sig){
+  if(!sig) return 'n';
+  const s=sig.toUpperCase();
+  if(s.includes('STRONG BUY')) return 'sb';
+  if(s.includes('BUY')) return 'b';
+  if(s.includes('STRONG SELL')) return 'ss';
+  if(s.includes('SELL')) return 's';
+  return 'n';
+}
+
+function buildQuantPanel(d){
+  const q=d.quant||{};
+  const raw=parseInt(q.score)||0;
+  // Map score -10..+10 to 0..100
+  const pct=Math.round((raw+10)/20*100);
+  const sig=q.conviction==='High'&&raw>0?'STRONG BUY':q.conviction==='High'&&raw<0?'STRONG SELL':raw>3?'BUY':raw<-3?'SELL':'NEUTRAL';
+  const cls=qScoreClass(sig);
+  const barColor=raw>3?'#4ade80':raw<-3?'#f87171':'#94a3b8';
+
+  // Factor breakdown from drivers array
+  const factors=[
+    {name:'Momentum',icon:'⚡',desc:q.momentum||'—'},
+    {name:'Mean Reversion',icon:'↩',desc:q.meanReversion||'—'},
+    {name:'Macro Regime',icon:'🌍',desc:q.macroRegime||'—'},
+    {name:'Vol Regime',icon:'📊',desc:q.volRegime||'—'},
+  ];
+
+  const factorsHtml=factors.map(f=>
+    '<div class="qs-factor">'+
+    '<div class="qs-factor-name">'+f.icon+' '+f.name+'</div>'+
+    '<div class="qs-factor-val">'+f.desc.split('—')[0].trim()+'</div>'+
+    '</div>'
+  ).join('');
+
+  // Extra data badges from drivers
+  const badges=(d.drivers||[]).slice(0,5).map(dr=>{
+    const txt=dr.substring(0,50);
+    const col=txt.toLowerCase().includes('bull')||txt.toLowerCase().includes('long')||txt.toLowerCase().includes('buy')?'green':
+               txt.toLowerCase().includes('bear')||txt.toLowerCase().includes('short')||txt.toLowerCase().includes('sell')?'red':'yellow';
+    return '<span class="qs-badge '+col+'">'+txt+'</span>';
+  }).join('');
+
+  return '<div class="qs-panel">'+
+    '<div class="qs-header">'+
+      '<span class="qs-title">Quant Intelligence Score</span>'+
+      '<button class="qs-info-btn" onclick="document.getElementById(\'qs-info-modal\').classList.add(\'open\')">ⓘ</button>'+
+    '</div>'+
+    '<div class="qs-score-row">'+
+      '<div class="qs-score-num '+cls+'">'+(raw>0?'+':'')+raw+'</div>'+
+      '<div class="qs-score-right">'+
+        '<div class="qs-signal '+cls+'">'+sig+'</div>'+
+        '<div class="qs-bar-wrap">'+
+          '<span>−10</span>'+
+          '<div class="qs-bar"><div class="qs-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
+          '<span>+10</span>'+
+        '</div>'+
+        '<div style="font-size:9px;color:var(--t4);font-family:DM Mono,monospace;margin-top:4px">'+
+          'Conviction: <span style="color:var(--t2);font-weight:600">'+(q.conviction||'—')+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="qs-factors">'+factorsHtml+'</div>'+
+    (badges?'<div class="qs-data-row">'+badges+'</div>':'')+
+  '</div>';
+}
+
 function analysisBlocks(d,id,tab){
   const pc=d.assetPhase?.includes('Uptrend')||d.assetPhase?.includes('Bull')?'ptbull':d.assetPhase?.includes('Down')||d.assetPhase?.includes('Bear')?'ptbear':'ptneut';
   const drvHtml=(d.drivers||[]).map((dr,i)=>'<div class="drv"><div class="drvn">'+(i+1)+'</div><div class="drvt">'+dr+'</div></div>').join('');
+  const quantPanel=d.quant?buildQuantPanel(d):'';
   return '<div class="abody">'+
+    quantPanel+
     '<div class="as acc"><div class="dptag '+pc+'" style="margin-bottom:10px;display:inline-flex;">'+(d.assetPhase||'—')+' · '+(d.generatedAt||TODAY)+'</div>'+
     '<div class="albl">'+t('execSummary')+'</div><div class="atxt">'+(d.exec||'—')+'</div></div>'+
     '<div class="as hg"><div><div class="albl">'+t('nearTerm')+'</div><div class="atxt">'+(d.shortTerm||'—')+'</div></div>'+
@@ -4239,6 +4357,91 @@ setLang(localStorage.getItem('sc_lang')||'en');
   </div>
 </div>
 
+<!-- Quant Score Info Modal -->
+<div class="qs-modal-bg" id="qs-info-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="qs-modal">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="qs-modal-title">Quant Intelligence Score</div>
+        <div class="qs-modal-sub">Institutional-grade multi-factor analysis framework</div>
+      </div>
+      <button onclick="document.getElementById('qs-info-modal').classList.remove('open')" style="background:none;border:1px solid var(--br);color:var(--t4);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
+    </div>
+
+    <div class="qs-modal-section">
+      <div class="qs-modal-section-title">What is the Score?</div>
+      <div style="font-size:12px;color:var(--t3);line-height:1.7">
+        The Quant Intelligence Score combines 5 institutional factors into a single reading from <strong style="color:var(--t1)">−10 to +10</strong>. 
+        This is the same multi-factor approach used by quantitative hedge funds to score assets across momentum, trend, volatility, and relative strength dimensions simultaneously — rather than relying on a single indicator.
+      </div>
+    </div>
+
+    <div class="qs-modal-section">
+      <div class="qs-modal-section-title">Signal Levels</div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#4ade80">+7 to +10</span><span class="qs-modal-range-desc">STRONG BUY — All factors aligned bullish, high conviction</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#86efac">+3 to +6</span><span class="qs-modal-range-desc">BUY — Majority of factors confirm upside bias</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:var(--t3)">−2 to +2</span><span class="qs-modal-range-desc">NEUTRAL — Mixed signals, no clear directional edge</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#fca5a5">−3 to −6</span><span class="qs-modal-range-desc">SELL — Majority of factors confirm downside bias</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#f87171">−7 to −10</span><span class="qs-modal-range-desc">STRONG SELL — All factors aligned bearish, high conviction</span></div>
+    </div>
+
+    <div class="qs-modal-section">
+      <div class="qs-modal-section-title">The 4 Analysis Factors</div>
+      <div class="qs-modal-factor">
+        <div class="qs-modal-factor-name">⚡ Momentum</div>
+        <div class="qs-modal-factor-desc">Measures directional velocity across multiple timeframes (1h and 24h). Detects whether short-term and medium-term momentum are aligned or diverging — a divergence often signals a reversal.</div>
+      </div>
+      <div class="qs-modal-factor">
+        <div class="qs-modal-factor-name">↩ Mean Reversion</div>
+        <div class="qs-modal-factor-desc">Identifies overbought or oversold conditions using Fear & Greed index and funding rate extremes. When positioning is crowded, the model flags squeeze risk in the opposite direction.</div>
+      </div>
+      <div class="qs-modal-factor">
+        <div class="qs-modal-factor-name">🌍 Macro Regime</div>
+        <div class="qs-modal-factor-desc">Classifies the current market environment as Risk-On, Risk-Off, or Neutral using cross-asset behaviour (DXY, Gold, Crypto, Bonds). Each asset class has a different expected behaviour per regime.</div>
+      </div>
+      <div class="qs-modal-factor">
+        <div class="qs-modal-factor-name">📊 Vol Regime</div>
+        <div class="qs-modal-factor-desc">Assesses whether current volatility is low (accumulation phase), medium (trending phase), high (momentum phase), or extreme (risk phase). High volatility does not always mean bearish — context matters.</div>
+      </div>
+    </div>
+
+    <div class="qs-modal-section">
+      <div class="qs-modal-section-title">Live Data Sources</div>
+      <div class="qs-modal-source">
+        <div class="qs-modal-source-icon">📋</div>
+        <div class="qs-modal-source-info">
+          <div class="qs-modal-source-name">CFTC COT Report</div>
+          <div class="qs-modal-source-desc">Weekly Commitment of Traders data from the US Commodity Futures Trading Commission. Shows net long/short positioning of hedge funds, commercials, and retail across Gold, Oil, EUR/USD, GBP/USD, and Bitcoin futures.</div>
+        </div>
+      </div>
+      <div class="qs-modal-source">
+        <div class="qs-modal-source-icon">💸</div>
+        <div class="qs-modal-source-info">
+          <div class="qs-modal-source-name">Perpetual Funding Rates</div>
+          <div class="qs-modal-source-desc">Real-time funding rates from Binance futures for BTC, ETH, SOL, XRP. Positive = longs are crowded and paying shorts (squeeze risk up). Negative = shorts crowded (squeeze risk down).</div>
+        </div>
+      </div>
+      <div class="qs-modal-source">
+        <div class="qs-modal-source-icon">😨</div>
+        <div class="qs-modal-source-info">
+          <div class="qs-modal-source-name">Crypto Fear & Greed Index</div>
+          <div class="qs-modal-source-desc">Composite sentiment index 0–100. Below 25 = extreme fear (historically a buy zone). Above 75 = extreme greed (historically a sell zone). Used as a contrarian signal in the mean reversion factor.</div>
+        </div>
+      </div>
+      <div class="qs-modal-source">
+        <div class="qs-modal-source-icon">🔗</div>
+        <div class="qs-modal-source-info">
+          <div class="qs-modal-source-name">Cross-Asset Correlations</div>
+          <div class="qs-modal-source-desc">Live Pearson correlation computed from rolling price history across key pairs: Gold/DXY, Gold/BTC, BTC/ETH, DXY/EUR. Correlation breakdowns signal regime shifts before they appear in price alone.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:9px;color:var(--t4);font-family:DM Mono,monospace;text-align:center;padding-top:12px;border-top:1px solid var(--br)">
+      Saving Capital Quant Engine · Institutional frameworks · Not financial advice
+    </div>
+  </div>
+</div>
 
 <!-- GLOBAL BOTTOM STRIP (fixed, shows on all pages) -->
 <div class="hp-strip" id="global-strip">
