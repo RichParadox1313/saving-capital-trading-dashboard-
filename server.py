@@ -18,7 +18,6 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 COINGECKO_API_KEY = os.environ.get("COINGECKO_API_KEY", "")
 PORT              = int(os.environ.get("PORT", 8000))
 DASHBOARD_PATH    = Path(__file__).parent / "dashboard.html"
-
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -242,8 +241,7 @@ async def fetch_coingecko() -> dict:
                             result[cid] = {
                                 "usd":            coin.get("current_price"),
                                 "usd_24h_change": coin.get("price_change_percentage_24h") or 0,
-                                "usd_7d_change":  coin.get("price_change_percentage_7d_in_currency") or
-                                                  coin.get("price_change_percentage_7d") or 0,
+                                "usd_7d_change":  coin.get("price_change_percentage_7d_in_currency") or coin.get("price_change_percentage_7d") or 0,
                                 "usd_market_cap": coin.get("market_cap"),
                                 "sparkline":      [float(f"{p:.8g}") for p in spark_prices if p is not None],
                             }
@@ -297,7 +295,6 @@ async def yahoo_get_crumb(session: aiohttp.ClientSession) -> str:
     except Exception:
         pass
     return ""
-
 async def fetch_yahoo_chart(session: aiohttp.ClientSession, symbol: str) -> dict:
     """Fetch Yahoo Finance chart data with full browser simulation."""
     for base in ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"]:
@@ -607,18 +604,15 @@ def asset_phase(c, c5) -> str:
     if c < 0 and c5 > 2:   return "Pullback in Uptrend"
     if abs(c) < 0.5:        return "Tight Consolidation"
     return "Neutral Drift"
-
 def fmt_p(p) -> str:
     if not p: return "N/A"
     if p > 10000: return f"${p:,.0f}"
     if p > 100:   return f"${p:,.2f}"
     if p > 1:     return f"${p:.4f}"
     return f"${p:.8f}"
-
 def fmt_c(c) -> str:
     if c is None: return "N/A"
     return f"{'+' if c>=0 else ''}{c:.2f}%"
-
 # ─── News (server-side RSS proxy) ─────────────────────────────────────────────
 
 NEWS_FEEDS = [
@@ -718,8 +712,7 @@ async def api_crypto_live():
                         if not cid or not price:
                             continue
                         chg24  = coin.get("price_change_percentage_24h") or 0
-                        chg7d  = coin.get("price_change_percentage_7d_in_currency") or \
-                                 coin.get("price_change_percentage_7d") or 0
+                        chg7d  = coin.get("price_change_percentage_7d_in_currency") or coin.get("price_change_percentage_7d") or 0
                         result[cid] = {
                             "price":    round(float(price), 8),
                             "change":   round(float(chg24), 3),
@@ -823,6 +816,258 @@ async def polygon_sparkline():
                 pass
     raise HTTPException(502, "All Polygon data sources failed")
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUANT ENGINE — Institutional-grade data layers for dashboard analysis
+# ═══════════════════════════════════════════════════════════════════════════════
+import math as _qmath
+
+# ── Price history for correlations ───────────────────────────────────────────
+_q_price_history: dict = {}
+_Q_HIST_MAX = 48
+
+def _q_update_history(prices: dict):
+    ts = time.time()
+    for name, data in prices.items():
+        p = data.get("price", 0)
+        if not p: continue
+        if name not in _q_price_history:
+            _q_price_history[name] = []
+        _q_price_history[name].append((ts, p))
+        if len(_q_price_history[name]) > _Q_HIST_MAX:
+            _q_price_history[name].pop(0)
+
+# ── Layer 1: COT Data ─────────────────────────────────────────────────────────
+_q_cot_cache: dict = {"data": {}, "ts": 0}
+
+async def _q_fetch_cot() -> dict:
+    if time.time() - _q_cot_cache["ts"] < 86400 and _q_cot_cache["data"]:
+        return _q_cot_cache["data"]
+    result = {}
+    try:
+        url = "https://publicreporting.cftc.gov/api/explore/dataset/com_disagg_fut_only_txt_2024/exports/json/?limit=100"
+        async with aiohttp.ClientSession() as s:
+            async with s.get(url, timeout=aiohttp.ClientTimeout(total=15)) as r:
+                if r.status == 200:
+                    rows = await r.json()
+                    rows = rows if isinstance(rows, list) else rows.get("results", [])
+                    assets = {"Gold":"088691","Crude Oil":"067651","EUR/USD":"099741","GBP/USD":"096742","Bitcoin":"133741"}
+                    for row in rows:
+                        mkt = str(row.get("market_and_exchange_names",""))
+                        for asset, code in assets.items():
+                            if code in mkt:
+                                lg = int(row.get("noncomm_positions_long_all",0) or 0)
+                                sh = int(row.get("noncomm_positions_short_all",0) or 0)
+                                tot = lg + sh
+                                net = lg - sh
+                                pct = round(lg/tot*100,1) if tot else 50
+                                result[asset] = {"net":net,"pct_long":pct,
+                                    "bias":"LONG" if net>0 else "SHORT",
+                                    "strength":"strong" if abs(pct-50)>15 else "moderate" if abs(pct-50)>7 else "neutral"}
+                                break
+        if result:
+            _q_cot_cache["data"] = result
+            _q_cot_cache["ts"] = time.time()
+    except Exception as e:
+        print(f"  COT fetch: {e}")
+    return _q_cot_cache["data"] or {}
+
+# ── Layer 2: Multi-Factor Scoring ─────────────────────────────────────────────
+def _q_score_asset(name: str, data: dict, all_prices: dict) -> dict:
+    chg_24h = data.get("change", 0) or 0
+    chg_5d  = data.get("change5d", 0) or 0
+    atype   = data.get("tab", "")
+
+    # Momentum (0-20)
+    if chg_24h>2:    mom=18
+    elif chg_24h>1:  mom=14
+    elif chg_24h>0:  mom=10
+    elif chg_24h>-1: mom=8
+    elif chg_24h>-2: mom=5
+    else:            mom=2
+
+    # Trend (0-20) — 5d confirms 24h direction
+    if chg_24h>0 and chg_5d>0:   trend=18
+    elif chg_24h<0 and chg_5d<0: trend=16
+    elif abs(chg_24h)>3:         trend=14
+    elif abs(chg_24h)>1:         trend=10
+    else:                        trend=6
+
+    # Volatility (0-20)
+    a24=abs(chg_24h)
+    if 0.5<a24<3:    vol=18
+    elif a24<0.5:    vol=8
+    elif a24<5:      vol=14
+    else:            vol=5
+
+    # Relative strength vs peers (0-20)
+    peers=[d2.get("change",0) or 0 for n2,d2 in all_prices.items() if d2.get("tab")==atype and n2!=name]
+    if peers:
+        avg=sum(peers)/len(peers)
+        out=chg_24h-avg
+        if out>3:    rel=20
+        elif out>1:  rel=16
+        elif out>0:  rel=12
+        elif out>-1: rel=8
+        else:        rel=4
+    else:
+        rel=10
+
+    # 5d momentum (0-20)
+    if chg_5d>5:    d5=20
+    elif chg_5d>2:  d5=16
+    elif chg_5d>0:  d5=12
+    elif chg_5d>-2: d5=8
+    else:           d5=4
+
+    total=mom+trend+vol+rel+d5
+    if total>=80:   sig="STRONG BUY"
+    elif total>=65: sig="BUY"
+    elif total>=50: sig="NEUTRAL"
+    elif total>=35: sig="SELL"
+    else:           sig="STRONG SELL"
+    return {"momentum":mom,"trend":trend,"volatility":vol,"rel_strength":rel,"d5_momentum":d5,
+            "total":total,"signal":sig}
+
+# ── Layer 3: Correlations ─────────────────────────────────────────────────────
+def _q_pearson(xs, ys):
+    n=min(len(xs),len(ys))
+    if n<5: return 0.0
+    xs,ys=xs[-n:],ys[-n:]
+    rx=[xs[i]/xs[i-1]-1 for i in range(1,n)]
+    ry=[ys[i]/ys[i-1]-1 for i in range(1,n)]
+    mx,my=sum(rx)/len(rx),sum(ry)/len(ry)
+    num=sum((x-mx)*(y-my) for x,y in zip(rx,ry))
+    dx=_qmath.sqrt(sum((x-mx)**2 for x in rx))
+    dy=_qmath.sqrt(sum((y-my)**2 for y in ry))
+    return round(num/(dx*dy),3) if dx*dy>0 else 0.0
+
+def _q_get_correlations(asset_name: str) -> dict:
+    PAIRS=[("Gold","DXY"),("Gold","Bitcoin"),("Bitcoin","Ethereum"),("DXY","EUR/USD")]
+    result={}
+    for a,b in PAIRS:
+        if asset_name not in (a,b): continue
+        ha=[p for _,p in _q_price_history.get(a,[])]
+        hb=[p for _,p in _q_price_history.get(b,[])]
+        if len(ha)>=5 and len(hb)>=5:
+            r=_q_pearson(ha,hb)
+            lbl="strong +" if r>0.7 else "mod +" if r>0.4 else "strong -" if r<-0.7 else "mod -" if r<-0.4 else "neutral"
+            result[f"{a}/{b}"]={"r":r,"label":lbl}
+    return result
+
+# ── Layer 4: Funding Rates + Fear & Greed ─────────────────────────────────────
+_q_funding_cache: dict = {"data":{},"ts":0}
+_q_fg_cache: dict = {"data":{},"ts":0}
+
+async def _q_fetch_funding() -> dict:
+    if time.time()-_q_funding_cache["ts"]<300 and _q_funding_cache["data"]:
+        return _q_funding_cache["data"]
+    result={}
+    try:
+        syms=["BTCUSDT","ETHUSDT","SOLUSDT","XRPUSDT"]
+        async with aiohttp.ClientSession() as s:
+            for sym in syms:
+                async with s.get(f"https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}",
+                                  timeout=aiohttp.ClientTimeout(total=5)) as r:
+                    if r.status==200:
+                        d=await r.json()
+                        rate=float(d.get("lastFundingRate",0))*100
+                        result[sym.replace("USDT","")]={"rate":round(rate,5),"ann":round(rate*3*365,1),
+                            "sentiment":"CROWDED LONGS" if rate>0.01 else "CROWDED SHORTS" if rate<-0.01 else "balanced"}
+        if result: _q_funding_cache["data"]=result; _q_funding_cache["ts"]=time.time()
+    except Exception as e: print(f"  Funding: {e}")
+    return _q_funding_cache["data"] or {}
+
+async def _q_fetch_fg() -> dict:
+    if time.time()-_q_fg_cache["ts"]<3600 and _q_fg_cache["data"]: return _q_fg_cache["data"]
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get("https://api.alternative.me/fng/",timeout=aiohttp.ClientTimeout(total=5)) as r:
+                if r.status==200:
+                    d=await r.json()
+                    val=int(d["data"][0]["value"]); lbl=d["data"][0]["value_classification"]
+                    result={"value":val,"label":lbl,"signal":"EUPHORIA/SELL ZONE" if val>75 else "CAPITULATION/BUY ZONE" if val<25 else "neutral"}
+                    _q_fg_cache["data"]=result; _q_fg_cache["ts"]=time.time()
+                    return result
+    except Exception as e: print(f"  F&G: {e}")
+    return _q_fg_cache["data"] or {}
+
+# ── Layer 5: Macro Sensitivity ────────────────────────────────────────────────
+MACRO_SENS={
+    "Gold":{"cpi":1,"inflation":1,"rate cut":1,"war":1,"crisis":1,"recession":1,"rate hike":-1,"strong dollar":-1},
+    "Bitcoin":{"rate cut":1,"liquidity":1,"etf":1,"rate hike":-1,"regulation":-1,"hack":-1,"risk-off":-1},
+    "EUR/USD":{"ecb hike":1,"fed cut":1,"fed hike":-1,"ecb cut":-1,"recession":-1},
+    "Crude Oil":{"opec cut":1,"war":1,"sanctions":1,"recession":-1,"surplus":-1},
+}
+
+def _q_macro_impact(asset_name: str, news_ctx: str = "") -> str:
+    if not news_ctx: return ""
+    text=news_ctx.lower()
+    sens=MACRO_SENS.get(asset_name,{})
+    hits=[kw for kw in sens if kw in text]
+    if not hits: return ""
+    score=sum(sens[kw] for kw in hits)
+    impact="BULLISH" if score>0 else "BEARISH" if score<0 else "NEUTRAL"
+    conf=min(abs(score)*25,100)
+    return f"Macro model: {impact} {conf}% confidence (triggers: {', '.join(hits)})"
+# ── Main builder ──────────────────────────────────────────────────────────────
+async def build_dashboard_quant_context(asset_name: str, asset_data: dict, all_prices: dict) -> str:
+    """Build full quant context for dashboard analysis prompt."""
+    _q_update_history(all_prices)
+    sections = []
+
+    # Scores for this asset + top assets
+    scores = {n:_q_score_asset(n,d,all_prices) for n,d in all_prices.items() if d.get("price",0)>0}
+    if asset_name in scores:
+        s=scores[asset_name]
+        bar="█"*(s["total"]//10)+"░"*(10-s["total"]//10)
+        sections.append(
+            "MULTI-FACTOR SCORE \u2014 " + asset_name + ": " + str(s["total"]) + "/100 [" + bar + "] \u2192 " + s["signal"] + "\n" + "  Breakdown: Momentum=" + str(s["momentum"]) + " | Trend=" + str(s["trend"]) + " | Vol=" + str(s["volatility"]) + " | RelStr=" + str(s["rel_strength"]) + " | 5d=" + str(s["d5_momentum"])
+        )
+
+    # Top 5 assets by score across all markets
+    top5=sorted(scores.items(),key=lambda x:x[1]["total"],reverse=True)[:5]
+    top5_str=", ".join(f"{n}:{s['total']}({s['signal']})" for n,s in top5)
+    sections.append(f"MARKET LEADERS (top 5 by quant score): {top5_str}")
+
+    # Correlations for this asset
+    corrs=_q_get_correlations(asset_name)
+    if corrs:
+        corr_lines=["CROSS-ASSET CORRELATIONS (live):"]
+        for pair,d in corrs.items():
+            corr_lines.append(f"  {pair}: {'+' if d['r']>=0 else ''}{d['r']:.2f} ({d['label']})")
+        sections.append("\n".join(corr_lines))
+
+    # Funding + F&G (for crypto assets)
+    atype=asset_data.get("tab","")
+    try:
+        funding, fg = await asyncio.gather(_q_fetch_funding(), _q_fetch_fg())
+        if fg:
+            val=fg.get("value",50); bar="█"*(val//10)+"░"*(10-val//10)
+            sections.append(f"CRYPTO FEAR & GREED: {val}/100 [{bar}] — {fg.get('label','')} ({fg.get('signal','')})")
+        if funding and atype=="crypto":
+            fund_lines=["PERPETUAL FUNDING RATES:"]
+            for coin,d in funding.items():
+                fund_lines.append(f"  {coin}: {d['rate']*100:+.4f}% ({d['ann']:+.1f}%/yr) — {d['sentiment']}")
+            sections.append("\n".join(fund_lines))
+    except Exception as e:
+        print(f"  Quant L4: {e}")
+
+    # COT data
+    try:
+        cot=await _q_fetch_cot()
+        if cot:
+            cot_lines=["CFTC COT — SMART MONEY POSITIONING:"]
+            for ast,d in cot.items():
+                bar="█"*int(d["pct_long"]/10)+"░"*(10-int(d["pct_long"]/10))
+                cot_lines.append(f"  {ast}: {d['bias']} ({d['pct_long']}% long) [{bar}] — {d['strength']} conviction | Net: {d['net']:+,}")
+            sections.append("\n".join(cot_lines))
+    except Exception as e:
+        print(f"  Quant COT: {e}")
+
+    return "\n".join(sections)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+
 class AnalysisRequest(BaseModel):
     asset_id: str
     lang: str = "en"  # en, bg, he
@@ -866,8 +1111,12 @@ async def api_analysis(req: AnalysisRequest):
         lang_instruction = "IMPORTANT: Write ALL text fields in Bulgarian (Български). Only keep financial symbols, numbers, and technical indicators in English."
     elif lang == "he":
         lang_instruction = "IMPORTANT: Write ALL text fields in Hebrew (עברית). Only keep financial symbols, numbers, and technical indicators in English."
+    # Build institutional quant context
+    quant_ctx = await build_dashboard_quant_context(a.get("name",req.asset_id), a, prices)
 
-    prompt = f"""You are a senior quantitative analyst combining frameworks from the world's top hedge funds and quant trading desks including macro debt-cycle analysis, statistical momentum and mean-reversion signals, multi-strategy risk-adjusted positioning, factor decomposition (momentum, carry, value, quality), and institutional flow analysis.
+    prompt = f"""You are a senior quantitative analyst combining frameworks from the world's top hedge funds and quant trading desks: Bridgewater macro debt-cycle analysis, RenTech statistical momentum and mean-reversion, Citadel multi-strategy risk-adjusted positioning, Two Sigma factor decomposition (momentum, carry, value, quality), and Goldman institutional flow analysis.
+
+You now also have access to LIVE INSTITUTIONAL DATA LAYERS that real quant firms use. Integrate ALL of them into your analysis.
 
 {lang_instruction}
 
@@ -875,8 +1124,18 @@ LIVE DATA — {datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}:
 Asset: {a['name']} ({a['sym']}) | Price: {ps} | 24h: {cs} | 5d: {c5s} | Phase: {aph}
 Global: {ph['phase']} | {ph['regime']} | {ph['risk']} risk | {ph['bullPct']}% positive | avg {ph['avg']}%
 
+{quant_ctx}
+
+INSTRUCTIONS:
+- Reference the multi-factor score and signal explicitly in your quant section
+- Use COT data to explain institutional positioning (smart money vs retail divergence)
+- Use funding rates to assess leverage and squeeze risk
+- Use Fear & Greed as a contrarian indicator
+- Use correlations to explain cross-asset dynamics
+- Every field must reference specific numbers from the data above
+
 Return ONLY valid JSON no markdown:
-{{"quant":{{"momentum":"[Long/Short/Neutral] — signal","meanReversion":"[Overbought/Oversold/Neutral] — signal","macroRegime":"[Risk-On/Risk-Off/Neutral] — context","volRegime":"[Low/Medium/High/Extreme] Vol","conviction":"[High/Medium/Low]","score":"[-10 to +10]"}},"exec":"3 sentences referencing {ps}, phase {aph}, clear directional view.","shortTerm":"3-4 sentences with specific levels near {ps}.","longTerm":"3-4 sentences macro structural view.","narrative":"3-4 sentences on {ph['phase']} phase and {ph['regime']} regime impact.","drivers":["Macro Factor: driver","Momentum: signal","Risk: levels","Factor Model: exposure","Flow: positioning"],"positioning":"3 sentences with conviction, entry zone near {ps}, what invalidates thesis.","assetPhase":"{aph}","globalPhase":"{ph['phase']}","generatedAt":"{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"}}"""
+{{"quant":{{"momentum":"[Long/Short/Neutral] — reference momentum score and 24h/5d alignment","meanReversion":"[Overbought/Oversold/Neutral] — reference Fear&Greed or funding rate","macroRegime":"[Risk-On/Risk-Off/Neutral] — reference COT and correlation data","volRegime":"[Low/Medium/High/Extreme] Vol — reference volatility score","conviction":"[High/Medium/Low] — derive from total quant score /100","score":"[-10 to +10] — map from 0-100 quant score"}},"exec":"3 sentences referencing {ps}, quant score, COT positioning, and directional view.","shortTerm":"3-4 sentences with specific levels near {ps} and funding rate / squeeze risk context.","longTerm":"3-4 sentences macro structural view using COT and correlation breakdown.","narrative":"3-4 sentences on {ph['phase']} phase, {ph['regime']} regime, and how the quant layers confirm or contradict.","drivers":["COT: [institutional positioning from COT data]","Momentum: [score and signal from factor model]","Funding/Sentiment: [funding rate + F&G reading]","Correlations: [key correlation and what it signals]","Macro Regime: [risk-on/off read with evidence]"],"positioning":"3 sentences: conviction level from score, specific entry zone near {ps}, what data point would invalidate the thesis.","assetPhase":"{aph}","globalPhase":"{ph['phase']}","generatedAt":"{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"}}"""
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     last_error = None
     for attempt in range(4):
@@ -1161,10 +1420,8 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
             profit = 0.0
             if exit_deal:
                 profit = round(
-                    (exit_deal.get("profit",0) or 0) +
-                    (exit_deal.get("swap",0) or 0) +
-                    (exit_deal.get("commission",0) or 0) +
-                    (entry_deal.get("commission",0) if entry_deal else 0),
+                    (exit_deal.get("profit",0) or 0) + (exit_deal.get("swap",0) or 0) +
+                    (exit_deal.get("commission",0) or 0) + (entry_deal.get("commission",0) if entry_deal else 0),
                     2
                 )
 
@@ -1173,7 +1430,6 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
             tp, sl = parse_tp_sl(comment)
 
             status = "CLOSED" if exit_deal else "OPEN"
-
             trade = {
                 "id": trade_id, "asset": sym, "symbol": sym, "direction": direction,
                 "entry": entry_price, "exit": exit_price,
@@ -1353,7 +1609,6 @@ async def analyse_trade(req: TradeAnalysisRequest):
     exit_str  = f"${float(exit_p):,.4g}" if exit_p else "Still open"
     size_str  = f"${float(size):,.0f}" if size else "N/A"
     psych_str = ", ".join(psych_tags) if psych_tags else "None tagged"
-
     prompt = f"""You are a senior quantitative analyst and trading coach at Saving Capital, a professional trading academy.
 Analyse this trade using the same institutional frameworks (Bridgewater macro, RenTech momentum, Citadel risk management, Two Sigma factor models) used in our market intelligence system.
 
@@ -1388,8 +1643,7 @@ Return ONLY valid JSON (no markdown, no backticks):
   "risk_management": "Assessment of the risk management: position sizing relative to account, SL placement, RR ratio quality. Be direct — good RR or not?",
   "psychology": "{f'The trader tagged: {psych_str}. ' if psych_tags else ''}Assess the psychological state during this trade and how it likely affected decision-making.",
   "lesson": "Single most important lesson from this trade — one punchy sentence that the trader should remember.",
-  "generated_at": "{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"
-}}"""
+  "generated_at": "{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"\n}}"""
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     for attempt in range(3):
@@ -1730,7 +1984,6 @@ async def serve_img(filename: str):
 
 # Load dashboard HTML at startup into memory so it survives if file gets wiped
 _DASHBOARD_HTML: str = ""
-
 @app.on_event("startup")
 async def load_dashboard():
     global _DASHBOARD_HTML
@@ -1740,7 +1993,6 @@ async def load_dashboard():
     except Exception as e:
         print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
         _DASHBOARD_HTML = ""
-
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     if _DASHBOARD_HTML:
