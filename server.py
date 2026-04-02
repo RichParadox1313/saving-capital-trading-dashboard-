@@ -1111,8 +1111,15 @@ async def api_analysis(req: AnalysisRequest):
         lang_instruction = "IMPORTANT: Write ALL text fields in Bulgarian (Български). Only keep financial symbols, numbers, and technical indicators in English."
     elif lang == "he":
         lang_instruction = "IMPORTANT: Write ALL text fields in Hebrew (עברית). Only keep financial symbols, numbers, and technical indicators in English."
-    # Build institutional quant context
-    quant_ctx = await build_dashboard_quant_context(a.get("name",req.asset_id), a, prices)
+    # Build institutional quant context (non-blocking — if it fails, analysis still runs)
+    try:
+        quant_ctx = await asyncio.wait_for(
+            build_dashboard_quant_context(a.get("name",req.asset_id), a, prices),
+            timeout=15.0
+        )
+    except Exception as qe:
+        print(f"  Quant context failed (non-fatal): {qe}")
+        quant_ctx = ""
 
     prompt = f"""You are a senior quantitative analyst combining frameworks from the world's top hedge funds and quant trading desks: Bridgewater macro debt-cycle analysis, RenTech statistical momentum and mean-reversion, Citadel multi-strategy risk-adjusted positioning, Two Sigma factor decomposition (momentum, carry, value, quality), and Goldman institutional flow analysis.
 
@@ -1156,7 +1163,11 @@ Return ONLY valid JSON no markdown:
                 continue
             raise HTTPException(500, f"Analysis error: {e}")
         except Exception as e:
-            raise HTTPException(500, f"Analysis error: {e}")
+            import traceback
+            tb = traceback.format_exc()
+            print(f"  Analysis exception: {type(e).__name__}: {e}")
+            print(f"  Traceback: {tb}")
+            raise HTTPException(500, f"Analysis error: {type(e).__name__}: {e}")
     raise HTTPException(503, f"Anthropic API overloaded — please try again in a moment")
 
 
