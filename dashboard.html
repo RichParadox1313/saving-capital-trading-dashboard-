@@ -37,7 +37,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .live{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);font-family:'DM Mono',monospace}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--g)}50%{opacity:.4;box-shadow:none}}
-.clk{font-size:10px;font-family:'DM Mono',monospace;color:var(--t4)}
+.clk{font-size:9px;font-family:'DM Mono',monospace;color:var(--t4);white-space:nowrap;letter-spacing:.3px}
 .tz-wrap{display:flex;align-items:center;gap:6px}
 .tz-sel{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;outline:none;padding:2px 4px;border-radius:4px;max-width:110px;appearance:none;-webkit-appearance:none;letter-spacing:.5px}
 .tz-sel:hover{color:var(--g)}
@@ -308,13 +308,16 @@ h1 i{color:var(--g);font-style:normal;display:block}
 @keyframes bounce{0%,100%{transform:rotate(45deg)}50%{transform:rotate(45deg) translateY(4px)}}
 
 /* MAIN */
-.main{max-width:1280px;margin:0 auto;padding:24px 24px 80px}
+.main{max-width:1280px;margin:0 auto;padding:24px clamp(16px,2.5vw,40px) 80px}
 
 /* TABS */
-.tabs{display:flex;border-bottom:1px solid var(--br);margin-bottom:28px;overflow-x:auto;scrollbar-width:none}
+.tabs{display:flex;gap:6px;margin-bottom:28px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .tabs::-webkit-scrollbar{display:none}
-.tab{font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:12px 20px;background:transparent;border:none;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;white-space:nowrap;position:relative;bottom:-1px;border-bottom:2px solid transparent}
-.tab:hover{color:var(--t2)}.tab.on{color:var(--g);border-bottom-color:var(--g)}
+.tab-icon{font-size:13px;line-height:1}
+.tab{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;transition:all .18s;white-space:nowrap}
+.tab:hover{color:var(--t1);border-color:var(--br2);background:var(--s1);transform:translateY(-1px)}
+.tab.on{color:var(--g);border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.07);box-shadow:0 0 12px rgba(34,197,94,0.08)}
+.tab.on .tab-icon{filter:drop-shadow(0 0 4px rgba(34,197,94,0.5))}
 .sec{display:none}.sec.on{display:block}
 
 /* GRID */
@@ -789,7 +792,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .main{padding:28px 12px 60px}
 
   /* Tabs — horizontally scrollable, no wrap */
-  .tabs{margin-bottom:16px;gap:0}
+  .tabs{margin-bottom:16px;gap:4px;flex-wrap:nowrap}
   .tab{font-size:9px;padding:10px 12px;letter-spacing:1px}
 
   /* Asset grid — 2 columns on tablet */
@@ -879,6 +882,27 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 }
 
 /* ── Mobile: Very small (≤360px) ─────────────────────────── */
+/* ── MacBook / Large screens (1024px–1440px) ─────────────── */
+@media(min-width:1024px) and (max-width:1440px){
+  .main{max-width:1200px;margin:0 auto;padding:28px 32px 80px}
+  .agrid{grid-template-columns:repeat(4,1fr)}
+  .dh{grid-template-columns:1fr 1fr;gap:20px}
+  .as.hg{grid-template-columns:1fr 1fr}
+  .mrow{grid-template-columns:repeat(5,1fr)}
+  .qs-factors{grid-template-columns:1fr 1fr}
+  .jstats{grid-template-columns:repeat(6,1fr)}
+  .jcal-grid{font-size:11px}
+}
+/* ── Wide screens (>1440px) ──────────────────────────────── */
+@media(min-width:1441px){
+  .main{max-width:1400px;margin:0 auto;padding:32px 40px 80px}
+  .agrid{grid-template-columns:repeat(5,1fr)}
+  .as.hg{grid-template-columns:1fr 1fr}
+  .mrow{grid-template-columns:repeat(6,1fr)}
+  .jstats{grid-template-columns:repeat(6,1fr)}
+  nav{padding:0 40px}
+}
+
 @media(max-width:360px){
   .npbtn{font-size:7px;padding:3px 6px}
   .agrid{gap:6px}
@@ -1149,11 +1173,21 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <div class="main z">
   <div class="tabs">
-    <button class="tab on" onclick="swTab('crypto',this)" data-i18n="cryptoTab">Crypto Top 30</button>
-    <button class="tab" onclick="swTab('forex',this)" data-i18n="forexTab">Forex</button>
-    <button class="tab" onclick="swTab('oil',this)" data-i18n="goldTab">Gold & Commodities</button>
-    <button class="tab" onclick="swTab('indexes',this)" data-i18n="indexesTab">Global Indexes</button>
-    <button class="tab" onclick="swTab('stocks',this)" data-i18n="stocksTab">Top 30 Stocks</button>
+    <button class="tab on" onclick="swTab('crypto',this)" data-i18n="cryptoTab">
+      <span class="tab-icon">₿</span><span>Crypto Top 30</span>
+    </button>
+    <button class="tab" onclick="swTab('forex',this)" data-i18n="forexTab">
+      <span class="tab-icon">💱</span><span>Forex</span>
+    </button>
+    <button class="tab" onclick="swTab('oil',this)" data-i18n="goldTab">
+      <span class="tab-icon">🟡</span><span>Gold & Commodities</span>
+    </button>
+    <button class="tab" onclick="swTab('indexes',this)" data-i18n="indexesTab">
+      <span class="tab-icon">📈</span><span>Global Indexes</span>
+    </button>
+    <button class="tab" onclick="swTab('stocks',this)" data-i18n="stocksTab">
+      <span class="tab-icon">🏢</span><span>Top 30 Stocks</span>
+    </button>
   </div>
   <div id="s-gold" class="sec"></div>
   <div id="s-crypto" class="sec on"></div>
@@ -1183,10 +1217,13 @@ function setTz(tz){
 }
 function tick(){
   try{
-    const t = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    const now = new Date();
+    const t = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
+    const dateStr = new Intl.DateTimeFormat('en-GB',{timeZone:_tz,day:'2-digit',month:'short',year:'numeric'}).format(now);
     const lbl = _tzLabels[_tz] || 'UTC';
-    const el = document.getElementById('clk');  if(el)  el.textContent  = t+' '+lbl;
-    const el2= document.getElementById('clk2'); if(el2) el2.textContent = t+' '+lbl;
+    const display = dateStr + ' · ' + t + ' ' + lbl;
+    const el = document.getElementById('clk');  if(el)  el.textContent  = display;
+    const el2= document.getElementById('clk2'); if(el2) el2.textContent = display;
   }catch(e){}
 }
 tick();
