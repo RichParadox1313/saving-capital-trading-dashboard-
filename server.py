@@ -18,7 +18,10 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 COINGECKO_API_KEY = os.environ.get("COINGECKO_API_KEY", "")
 PORT              = int(os.environ.get("PORT", 8000))
 DASHBOARD_PATH    = Path(__file__).parent / "dashboard.html"
+from fastapi.middleware.gzip import GZipMiddleware
+
 app = FastAPI()
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 @app.on_event("startup")
@@ -36,8 +39,27 @@ async def startup_event():
 price_cache    = {"data": {}, "ts": 0.0}
 news_cache     = {"data": [], "ts": 0.0}
 analysis_cache = {}
+# Per-IP rate limiting for expensive endpoints
+_rate_limits: dict = {}  # ip -> {count, window_start}
+RATE_LIMIT_ANALYSIS = 5   # max 5 analyses per hour per IP
+RATE_LIMIT_WINDOW   = 3600
 
-PRICE_TTL    = 300
+def check_rate_limit(ip: str) -> bool:
+    """Returns True if request is allowed, False if rate limited."""
+    now = time.time()
+    if ip not in _rate_limits:
+        _rate_limits[ip] = {"count": 1, "window_start": now}
+        return True
+    entry = _rate_limits[ip]
+    if now - entry["window_start"] > RATE_LIMIT_WINDOW:
+        _rate_limits[ip] = {"count": 1, "window_start": now}
+        return True
+    if entry["count"] >= RATE_LIMIT_ANALYSIS:
+        return False
+    entry["count"] += 1
+    return True
+
+PRICE_TTL    = 900  # 15 min — reduces Yahoo auth failures
 NEWS_TTL     = 600
 ANALYSIS_TTL = 21600
 
@@ -296,15 +318,19 @@ async def yahoo_get_crumb(session: aiohttp.ClientSession) -> str:
         pass
     return ""
 async def fetch_yahoo_chart(session: aiohttp.ClientSession, symbol: str) -> dict:
-    """Fetch Yahoo Finance chart data with full browser simulation."""
+    """Fetch Yahoo Finance chart data — tries v8 chart API with crumb, falls back to Stooq."""
+    # Try Yahoo Finance v8 chart (works when cookies are set from warmup)
     for base in ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"]:
         try:
             async with session.get(
                 f"{base}/v8/finance/chart/{symbol}",
-                params={"interval": "1d", "range": "20d", "includePrePost": "false"},
+                params={"interval": "1d", "range": "30d", "includePrePost": "false"},
                 headers=YAHOO_HEADERS,
                 timeout=TIMEOUT_SLOW,
             ) as r:
+                if r.status == 401 or r.status == 403:
+                    print(f"    Yahoo {symbol}: HTTP {r.status} (auth blocked)")
+                    break  # try Stooq fallback
                 if r.status != 200:
                     print(f"    Yahoo {symbol}: HTTP {r.status}")
                     continue
@@ -327,7 +353,55 @@ async def fetch_yahoo_chart(session: aiohttp.ClientSession, symbol: str) -> dict
                 }
         except Exception as e:
             print(f"    Yahoo {symbol} error: {e}")
+
+    # Fallback: Stooq CSV (free, no auth, works from Railway)
+    stooq_sym = _yahoo_to_stooq(symbol)
+    if stooq_sym:
+        try:
+            from datetime import datetime as _dt, timedelta as _td
+            d2 = _dt.utcnow().strftime("%Y%m%d")
+            d1 = (_dt.utcnow() - _td(days=40)).strftime("%Y%m%d")
+            url = f"https://stooq.com/q/d/l/?s={stooq_sym}&d1={d1}&d2={d2}&i=d"
+            async with session.get(url, headers={"User-Agent": "Mozilla/5.0"},
+                                   timeout=aiohttp.ClientTimeout(total=10)) as r:
+                if r.status == 200:
+                    text = await r.text()
+                    lines = [l.split(",") for l in text.strip().split("\n")[1:] if l and "N/D" not in l]
+                    closes = [float(l[4]) for l in lines if len(l) >= 5 and l[4]]
+                    if len(closes) >= 2:
+                        cur, prev = closes[-1], closes[-2]
+                        w5 = closes[-5] if len(closes) >= 5 else closes[0]
+                        print(f"    Stooq {stooq_sym}: ${cur:,.4f}")
+                        return {
+                            "price":    round(cur, 6),
+                            "change":   round(((cur - prev) / prev) * 100, 3),
+                            "change5d": round(((cur - w5) / w5) * 100, 3),
+                            "closes":   [float(f"{c:.8g}") for c in closes[-20:]],
+                        }
+        except Exception as e:
+            print(f"    Stooq {stooq_sym} error: {e}")
+
     return {}
+
+def _yahoo_to_stooq(yahoo_sym: str) -> str:
+    """Convert Yahoo Finance symbol to Stooq symbol."""
+    # Forex: EURUSD=X -> eurusd
+    if yahoo_sym.endswith("=X"):
+        return yahoo_sym[:-2].lower()
+    # Commodities/Futures: GC=F -> gc.f
+    if yahoo_sym.endswith("=F"):
+        return yahoo_sym[:-2].lower() + ".f"
+    # Indexes: ^GSPC -> ^spx, ^DJI -> ^dji
+    idx_map = {"^GSPC":"^spx","^DJI":"^dji","^IXIC":"^ndq","^RUT":"^rut",
+               "^VIX":"^vix","^FTSE":"^ftx","^GDAXI":"^dax","^FCHI":"^cac",
+               "^N225":"^nkx","^HSI":"^hsi","^AXJO":"^axjo","^STOXX50E":"^sx5e",
+               "DX-Y.NYB":"dxy"}
+    if yahoo_sym in idx_map:
+        return idx_map[yahoo_sym]
+    # Stocks: AAPL -> aapl.us
+    if yahoo_sym.isalpha() and yahoo_sym.isupper():
+        return yahoo_sym.lower() + ".us"
+    return ""
 
 # ─── Master Price Loader ──────────────────────────────────────────────────────
 
@@ -745,14 +819,40 @@ async def api_crypto_live():
     print(f"  /crypto/live: {len(result)} assets returned")
     return JSONResponse(result)
 
+_price_refresh_lock = asyncio.Lock()
+
 @app.get("/api/prices")
 async def api_prices():
     now = time.time()
-    if now - price_cache["ts"] < PRICE_TTL and price_cache["data"]:
+    # Always return cached data immediately if we have it
+    if price_cache["data"]:
+        # Refresh in background if stale — don't block the response
+        if now - price_cache["ts"] >= PRICE_TTL:
+            asyncio.create_task(_background_price_refresh())
         return JSONResponse(price_cache["data"])
+    # No cache at all — must wait for first load
     data = await load_all_prices()
     price_cache.update({"data": data, "ts": time.time()})
     return JSONResponse(data)
+
+async def _background_price_refresh():
+    """Refresh prices in background — never blocks API responses."""
+    if _price_refresh_lock.locked():
+        return  # already refreshing
+    async with _price_refresh_lock:
+        try:
+            data = await load_all_prices()
+            # Only update assets that loaded successfully — preserve stale data for failed ones
+            for k, v in data.items():
+                if v.get("price"):
+                    price_cache["data"][k] = v
+                elif k not in price_cache["data"]:
+                    price_cache["data"][k] = v
+            price_cache["ts"] = time.time()
+            loaded = sum(1 for v in price_cache["data"].values() if v.get("price"))
+            print(f"  Background price refresh done — {loaded} assets")
+        except Exception as e:
+            print(f"  Background price refresh failed: {e}")
 
 @app.get("/api/phase")
 async def api_phase():
@@ -1073,9 +1173,13 @@ class AnalysisRequest(BaseModel):
     lang: str = "en"  # en, bg, he
 
 @app.post("/api/analysis")
-async def api_analysis(req: AnalysisRequest):
+async def api_analysis(req: AnalysisRequest, request: Request):
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
+    # Rate limit: 5 analyses per IP per hour
+    client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
+    if not check_rate_limit(client_ip):
+        raise HTTPException(429, "Rate limit exceeded — max 5 analyses per hour. Please try again later.")
     today     = datetime.utcnow().strftime("%Y-%m-%d")
     lang      = req.lang if req.lang in ("en","bg","he") else "en"
     cache_key = f"{req.asset_id}_{today}_{lang}"
@@ -1151,9 +1255,61 @@ Return ONLY valid JSON no markdown:
                 wait = [0, 10, 20, 40][attempt]
                 print(f"  Anthropic retry {attempt}/3 after {wait}s...")
                 await asyncio.sleep(wait)
-            msg    = client.messages.create(model="claude-sonnet-4-20250514", max_tokens=1600,
+            msg    = client.messages.create(model="claude-sonnet-4-20250514", max_tokens=2400,
                                              messages=[{"role":"user","content":prompt}])
-            parsed = json.loads(msg.content[0].text.strip().replace("```json","").replace("```","").strip())
+            raw_text = msg.content[0].text.strip()
+            # Clean markdown fences
+            raw_text = raw_text.replace("```json","").replace("```","").strip()
+            # Try direct parse first
+            try:
+                parsed = json.loads(raw_text)
+            except json.JSONDecodeError:
+                # Attempt to repair truncated JSON — find last complete key-value pair
+                print(f"  JSON parse failed, attempting repair. Raw length: {len(raw_text)}")
+                # Try to close open JSON by finding the last complete field
+                repaired = raw_text
+                # Count braces to find truncation point
+                depth = 0
+                last_good = 0
+                in_string = False
+                escape_next = False
+                for i, ch in enumerate(repaired):
+                    if escape_next:
+                        escape_next = False
+                        continue
+                    if ch == '\\' and in_string:
+                        escape_next = True
+                        continue
+                    if ch == '"' and not escape_next:
+                        in_string = not in_string
+                    if not in_string:
+                        if ch == '{': depth += 1
+                        elif ch == '}':
+                            depth -= 1
+                            if depth == 0:
+                                last_good = i + 1
+                # If we found a complete object, use it
+                if last_good > 0:
+                    try:
+                        parsed = json.loads(repaired[:last_good])
+                        print(f"  JSON repaired at char {last_good}")
+                    except:
+                        # Last resort: close all open structures
+                        fixed = repaired.rstrip().rstrip(',')
+                        # Count unclosed braces
+                        opens = fixed.count('{') - fixed.count('}')
+                        arrays = fixed.count('[') - fixed.count(']')
+                        if arrays > 0:
+                            fixed += '"...' + ']' * arrays
+                        if opens > 0:
+                            fixed += '}' * opens
+                        try:
+                            parsed = json.loads(fixed)
+                            print("  JSON force-closed")
+                        except:
+                            raise HTTPException(500, "Analysis error: JSON could not be parsed even after repair")
+                else:
+                    raise HTTPException(500, "Analysis error: Response was truncated — please try again")
             analysis_cache[cache_key] = {"data":parsed,"ts":time.time()}
             return JSONResponse(parsed)
         except anthropic.APIStatusError as e:
@@ -1301,7 +1457,7 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
 
 
 @app.get("/api/mt5/sync/{account_id}")
-async def mt5_sync(account_id: str, login: str = "", server: str = ""):
+async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: str = ""):
     """Re-sync trades for an already connected MetaAPI account."""
     if not META_API_TOKEN:
         raise HTTPException(500, "META_API_TOKEN not configured")
@@ -1370,7 +1526,7 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
             ) as r:
                 positions = await r.json() if r.status == 200 else []
 
-        trades = load_journal()
+        trades = load_user_journal(user_id)
         existing_ids = {t.get("id") for t in trades}
         new_count = 0
 
@@ -1482,7 +1638,7 @@ async def mt5_sync(account_id: str, login: str = "", server: str = ""):
                         t["exit"] = pos.get("currentPrice")
                         t["pnl"]  = pnl
 
-        save_journal(trades)
+        save_user_journal(trades, user_id)
         print(f"  MT5 sync: {new_count} new trades, {len(positions)} open positions")
         return JSONResponse({
             "ok": True,
@@ -1544,21 +1700,49 @@ class TradeEntry(BaseModel):
     createdAt: str
 
 @app.get("/api/journal")
-async def get_journal():
+async def get_journal(user_id: str = ""):
+    """Load journal for a specific user. Falls back to shared journal if no user_id."""
+    if user_id and len(user_id) >= 8:
+        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
+        try:
+            if user_file.exists():
+                return JSONResponse(_json.loads(user_file.read_text()))
+        except Exception:
+            pass
+        return JSONResponse([])
     return JSONResponse(load_journal())
 
+def load_user_journal(user_id: str) -> list:
+    if user_id and len(user_id) >= 8:
+        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
+        try:
+            if user_file.exists():
+                return _json.loads(user_file.read_text())
+        except Exception:
+            pass
+    return load_journal()
+
+def save_user_journal(trades: list, user_id: str):
+    if user_id and len(user_id) >= 8:
+        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
+        try:
+            user_file.write_text(_json.dumps(trades, indent=2))
+            return
+        except Exception as e:
+            print(f"  User journal save error: {e}")
+    save_journal(trades)
+
 @app.post("/api/journal")
-async def add_trade(trade: TradeEntry, request: Request):
+async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
     if not check_journal_key(request):
         raise HTTPException(401, "Invalid journal API key")
-    trades = load_journal()
-    # Update existing trade if same ID (e.g. position update from MT5)
+    trades = load_user_journal(user_id)
     existing = next((i for i,t in enumerate(trades) if t.get("id")==trade.id), None)
     if existing is not None:
         trades[existing] = trade.dict()
     else:
         trades.insert(0, trade.dict())
-    save_journal(trades)
+    save_user_journal(trades, user_id)
     return JSONResponse({"ok": True})
 
 @app.put("/api/journal/{trade_id}")
@@ -1682,8 +1866,8 @@ Return ONLY valid JSON (no markdown, no backticks):
 
 
 @app.delete("/api/journal/{trade_id}")
-async def delete_trade(trade_id: str):
-    trades = load_journal()
+async def delete_trade(trade_id: str, user_id: str = ""):
+    trades = load_user_journal(user_id)
     trades = [t for t in trades if t["id"] != trade_id]
     save_journal(trades)
     return JSONResponse({"ok": True})
