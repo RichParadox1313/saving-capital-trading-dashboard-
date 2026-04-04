@@ -1470,7 +1470,7 @@ async function syncMT5(){
 
   try{
     log('Calling /api/mt5/sync — resolving account & fetching deals...');
-    const r = await fetch(`/api/mt5/sync/${info.accountId}?login=${encodeURIComponent(info.login||'')}&server=${encodeURIComponent(info.server||'')}`);
+    const r = await fetch(`/api/mt5/sync/${info.accountId}?login=${encodeURIComponent(info.login||'')}&server=${encodeURIComponent(info.server||'')}&user_id=${encodeURIComponent(SC_USER_ID)}`);
     const data = await r.json().catch(()=>({}));
 
     if(r.ok){
@@ -1524,9 +1524,21 @@ function disconnectMT5(){
 let jTrades = [];
 let jEditId = null;
 
+// Persistent user ID — generated once, stored in localStorage
+// This isolates each user's journal data on the server
+function getUserId(){
+  let uid = localStorage.getItem('sc_uid');
+  if(!uid){
+    uid = 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    localStorage.setItem('sc_uid', uid);
+  }
+  return uid;
+}
+const SC_USER_ID = getUserId();
+
 async function loadJournal(){
   try{
-    const r = await fetch('/api/journal');
+    const r = await fetch('/api/journal?user_id='+encodeURIComponent(SC_USER_ID));
     if(r.ok){ jTrades = await r.json(); }
   }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
   renderJournal();
@@ -1999,10 +2011,10 @@ async function saveJTrade(){
 
   try{
     if(jEditId){
-      await fetch('/api/journal/'+jEditId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
+      await fetch('/api/journal/'+jEditId+'?user_id='+encodeURIComponent(SC_USER_ID),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
       jTrades = jTrades.map(tr=>tr.id===jEditId?trade:tr);
     } else {
-      await fetch('/api/journal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
+      await fetch('/api/journal?user_id='+encodeURIComponent(SC_USER_ID),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(trade)});
       jTrades.unshift(trade);
     }
   }catch(e){
@@ -2016,7 +2028,7 @@ async function saveJTrade(){
 
 async function deleteJTrade(id){
   if(!confirm('Delete this trade?')) return;
-  try{ await fetch('/api/journal/'+id,{method:'DELETE'}); }catch(e){}
+  try{ await fetch('/api/journal/'+id+'?user_id='+encodeURIComponent(SC_USER_ID),{method:'DELETE'}); }catch(e){}
   jTrades = jTrades.filter(tr=>tr.id!==id);
   localStorage.setItem('sc_journal', JSON.stringify(jTrades));
   renderJournal();
@@ -2720,57 +2732,95 @@ function qScoreClass(sig){
 function buildQuantPanel(d){
   const q=d.quant||{};
   const raw=parseInt(q.score)||0;
-  // Map score -10..+10 to 0..100
-  const pct=Math.round((raw+10)/20*100);
-  const sig=q.conviction==='High'&&raw>0?'STRONG BUY':q.conviction==='High'&&raw<0?'STRONG SELL':raw>3?'BUY':raw<-3?'SELL':'NEUTRAL';
-  const cls=qScoreClass(sig);
-  const barColor=raw>3?'#4ade80':raw<-3?'#f87171':'#94a3b8';
 
-  // Factor breakdown from drivers array
-  const factors=[
-    {name:'Momentum',icon:'⚡',desc:q.momentum||'—'},
-    {name:'Mean Reversion',icon:'↩',desc:q.meanReversion||'—'},
-    {name:'Macro Regime',icon:'🌍',desc:q.macroRegime||'—'},
-    {name:'Vol Regime',icon:'📊',desc:q.volRegime||'—'},
-  ];
+  // Convert -10..+10 to confidence 1..100
+  // Confidence = how strong the signal is regardless of direction
+  // Score ±10 = 100 confidence, score 0 = 1 confidence
+  const absScore = Math.abs(raw);
+  const confidence = Math.max(1, Math.round(absScore / 10 * 100));
 
-  const factorsHtml=factors.map(f=>
-    '<div class="qs-factor">'+
-    '<div class="qs-factor-name">'+f.icon+' '+f.name+'</div>'+
-    '<div class="qs-factor-val">'+f.desc.split('—')[0].trim()+'</div>'+
-    '</div>'
-  ).join('');
+  // Direction
+  const bullish = raw > 0;
+  const bearish  = raw < 0;
+  const neutral  = raw === 0;
 
-  // Extra data badges from drivers
-  const badges=(d.drivers||[]).slice(0,5).map(dr=>{
-    const txt=dr.substring(0,50);
-    const col=txt.toLowerCase().includes('bull')||txt.toLowerCase().includes('long')||txt.toLowerCase().includes('buy')?'green':
-               txt.toLowerCase().includes('bear')||txt.toLowerCase().includes('short')||txt.toLowerCase().includes('sell')?'red':'yellow';
-    return '<span class="qs-badge '+col+'">'+txt+'</span>';
+  // Signal label based on confidence + direction
+  let sig, sigCls, sigColor;
+  if(neutral || confidence < 20){
+    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8';
+  } else if(bullish){
+    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; }
+    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; }
+    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; }
+  } else {
+    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
+    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; }
+    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; }
+  }
+
+  // Confidence arc — SVG circular gauge
+  const r=38, cx=50, cy=50;
+  const arcLen=2*Math.PI*r;
+  const filled=arcLen*(confidence/100);
+  const dash=`${filled} ${arcLen-filled}`;
+  const rotation=-90; // start from top
+
+  const gaugeColor=confidence>=75?sigColor:confidence>=45?sigColor:'#94a3b8';
+  const trackColor='rgba(255,255,255,0.06)';
+
+  const gaugeSvg=`<svg viewBox="0 0 100 100" width="100" height="100" style="transform:rotate(${rotation}deg)">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="8"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}" stroke-width="8"
+      stroke-dasharray="${dash}" stroke-linecap="round"
+      style="transition:stroke-dasharray .8s ease,stroke .4s ease"/>
+  </svg>`;
+
+  // Factor pills
+  const factorMap={
+    momentum:    {icon:'⚡',label:'Momentum'},
+    meanReversion:{icon:'↩',label:'Mean Rev.'},
+    macroRegime: {icon:'🌍',label:'Macro'},
+    volRegime:   {icon:'📊',label:'Volatility'},
+  };
+  const factorPills=Object.entries(factorMap).map(([key,{icon,label}])=>{
+    const val=(q[key]||'').split('—')[0].split('–')[0].split('.')[0].trim().slice(0,18)||'—';
+    const fc=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy')?'green':
+              val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell')?'red':'';
+    return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+      <span style="font-size:13px">${icon}</span>
+      <div>
+        <div class="qs-factor-name">${label}</div>
+        <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${val}</div>
+      </div>
+    </div>`;
   }).join('');
 
-  return '<div class="qs-panel">'+
-    '<div class="qs-header">'+
-      '<span class="qs-title">Quant Intelligence Score</span>'+
-      '<button class="qs-info-btn" onclick="document.getElementById(\'qs-info-modal\').classList.add(\'open\')">ⓘ</button>'+
-    '</div>'+
-    '<div class="qs-score-row">'+
-      '<div class="qs-score-num '+cls+'">'+(raw>0?'+':'')+raw+'</div>'+
-      '<div class="qs-score-right">'+
-        '<div class="qs-signal '+cls+'">'+sig+'</div>'+
-        '<div class="qs-bar-wrap">'+
-          '<span>−10</span>'+
-          '<div class="qs-bar"><div class="qs-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
-          '<span>+10</span>'+
-        '</div>'+
-        '<div style="font-size:9px;color:var(--t4);font-family:DM Mono,monospace;margin-top:4px">'+
-          'Conviction: <span style="color:var(--t2);font-weight:600">'+(q.conviction||'—')+'</span>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="qs-factors">'+factorsHtml+'</div>'+
-    (badges?'<div class="qs-data-row">'+badges+'</div>':'')+
-  '</div>';
+  return `<div class="qs-panel">
+    <div class="qs-header">
+      <span class="qs-title">Confidence Score</span>
+      <button class="qs-info-btn" onclick="document.getElementById('qs-info-modal').classList.add('open')">ⓘ</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">
+      <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+        ${gaugeSvg}
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;line-height:1;color:${gaugeColor}">${confidence}</div>
+          <div style="font-size:7px;letter-spacing:1.5px;color:var(--t4);font-family:'DM Mono',monospace">/ 100</div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="qs-signal ${sigCls}" style="margin-bottom:8px">${sig}</div>
+        <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;line-height:1.6">
+          Direction: <span style="color:${sigColor};font-weight:700">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
+          Quant score: <span style="color:var(--t2)">${raw>0?'+':''}${raw}/10</span>
+        </div>
+        <div style="margin-top:8px;height:4px;border-radius:2px;background:var(--br);overflow:hidden">
+          <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}88,${gaugeColor});border-radius:2px;transition:width .8s ease"></div>
+        </div>
+      </div>
+    </div>
+    <div class="qs-factors" style="grid-template-columns:1fr 1fr">${factorPills}</div>
+  </div>`;
 }
 
 function analysisBlocks(d,id,tab){
@@ -4362,8 +4412,8 @@ setLang(localStorage.getItem('sc_lang')||'en');
   <div class="qs-modal">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
       <div>
-        <div class="qs-modal-title">Quant Intelligence Score</div>
-        <div class="qs-modal-sub">Institutional-grade multi-factor analysis framework</div>
+        <div class="qs-modal-title">Confidence Score</div>
+        <div class="qs-modal-sub">How strong is the current analysis signal? (1–100)</div>
       </div>
       <button onclick="document.getElementById('qs-info-modal').classList.remove('open')" style="background:none;border:1px solid var(--br);color:var(--t4);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
     </div>
