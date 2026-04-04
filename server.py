@@ -2170,7 +2170,7 @@ async def journal_debug():
 @app.get("/img/{filename}")
 async def serve_img(filename: str):
     import re
-    if not re.match(r'^[\w\-]+\.(jpg|png|webp)$', filename):
+    if not re.match(r'^[\w\-]+\.(jpg|png|webp|mp4|webm)$', filename):
         raise HTTPException(404, "Not found")
     p = Path(__file__).parent / filename
     if not p.exists():
