@@ -134,30 +134,60 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .hp-num strong{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--g);letter-spacing:1px;line-height:1}
 .hp-num span{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,243,208,.35);font-family:'DM Mono',monospace;line-height:1.4}
 .hp-ndiv{display:none}
-.hp-firms{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.hp-fl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(167,243,208,.18);font-family:'DM Mono',monospace;margin-right:4px}
-.hp-firms span:not(.hp-fl):not(.hp-fd){font-size:10px;color:rgba(167,243,208,.22);font-family:'DM Mono',monospace}
-.hp-fd{color:rgba(34,197,94,.18);font-size:14px}
+.hp-firms{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.hp-fl{font-size:7px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,243,208,.25);font-family:'DM Mono',monospace;margin-right:6px}
+.hp-firm{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:rgba(167,243,208,.28);transition:color .2s}
+.hp-firm:hover{color:rgba(167,243,208,.55)}
+.hp-fd{color:rgba(34,197,94,.2);font-size:8px;margin:0 2px}
 
 /* RIGHT: holographic charts visual */
 .hp-right{position:relative;display:flex;align-items:center;justify-content:center;height:580px}
 .hp-visual-wrap{position:relative;width:560px;height:560px;display:flex;align-items:center;justify-content:center;overflow:visible}
 
-/* Glow behind the image */
-.hp-visual-glow{display:none}
-
-/* The hero image */
-.hp-visual-img{
-  width:520px;height:520px;object-fit:contain;
-  position:relative;z-index:2;
-  mix-blend-mode:screen;
-  filter:drop-shadow(0 0 80px rgba(34,197,94,.4)) drop-shadow(0 0 160px rgba(34,197,94,.2)) brightness(1.1) saturate(1.15);
-  animation:vfloat 6s ease-in-out infinite;
-  transition:transform .12s linear;
+/* Ambient glow behind the panels */
+.hp-visual-glow{
+  display:block;
+  position:absolute;inset:-20%;z-index:1;
+  background:radial-gradient(ellipse 70% 70% at 55% 50%, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.06) 50%, transparent 75%);
+  filter:blur(30px);
+  animation:glow-pulse 4s ease-in-out infinite;
 }
-@keyframes vfloat{
-  0%,100%{transform:translateY(0) perspective(1200px) rotateY(-4deg) rotateX(2deg)}
-  50%{transform:translateY(-18px) perspective(1200px) rotateY(4deg) rotateX(-1deg)}
+@keyframes glow-pulse{
+  0%,100%{opacity:.7;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.08)}
+}
+
+/* The hero image — 3D floating glass charts */
+.hp-visual-img{
+  width:530px;height:530px;object-fit:contain;
+  position:relative;z-index:2;
+  filter:
+    drop-shadow(0 0 40px rgba(34,197,94,.5))
+    drop-shadow(0 20px 60px rgba(0,0,0,.8))
+    drop-shadow(0 0 120px rgba(34,197,94,.2))
+    brightness(1.05) saturate(1.1) contrast(1.05);
+  animation:panel-float 7s ease-in-out infinite;
+  transform-origin:center center;
+}
+.hp-visual-img:is(video){
+  animation:panel-float 7s ease-in-out infinite;
+}
+@keyframes panel-float{
+  0%  {transform:translateY(0px)   translateX(0px)   rotate(-1deg) scale(1)}
+  25% {transform:translateY(-12px) translateX(4px)   rotate(0.5deg) scale(1.01)}
+  50% {transform:translateY(-20px) translateX(0px)   rotate(1deg)  scale(1.015)}
+  75% {transform:translateY(-10px) translateX(-4px)  rotate(0deg)  scale(1.005)}
+  100%{transform:translateY(0px)   translateX(0px)   rotate(-1deg) scale(1)}
+}
+/* Subtle shimmer on hover */
+.hp-visual-img:hover{
+  filter:
+    drop-shadow(0 0 60px rgba(34,197,94,.7))
+    drop-shadow(0 20px 60px rgba(0,0,0,.8))
+    drop-shadow(0 0 150px rgba(34,197,94,.35))
+    brightness(1.1) saturate(1.2) contrast(1.05);
+  transform:translateY(-14px) scale(1.02);
+  transition:filter .3s ease, transform .4s ease;
 }
 
 
@@ -1069,7 +1099,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <span class="hp-h1-g">Market<br>Intelligence</span>
     </h1>
 
-    <p class="hp-body">120+ assets. 5 institutional frameworks — Bridgewater, RenTech, Citadel, Two Sigma, Goldman Sachs. Professional-grade quantitative analysis in real time.</p>
+    <p class="hp-body">120+ assets. Institutional-grade quantitative analysis powered by Bridgewater, RenTech and Citadel frameworks — running in real time.</p>
 
     <div class="hp-actions">
       <button class="hp-cta" onclick="goPage('markets')">
@@ -1088,11 +1118,11 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
     <div class="hp-firms">
       <span class="hp-fl">Powered by</span>
-      <span>Bridgewater</span><span class="hp-fd">·</span>
-      <span>RenTech</span><span class="hp-fd">·</span>
-      <span>Citadel</span><span class="hp-fd">·</span>
-      <span>Two Sigma</span><span class="hp-fd">·</span>
-      <span>Goldman Sachs</span>
+      <span class="hp-firm">Bridgewater</span>
+      <span class="hp-fd">✦</span>
+      <span class="hp-firm">RenTech</span>
+      <span class="hp-fd">✦</span>
+      <span class="hp-firm">Citadel</span>
     </div>
   </div>
 
@@ -1102,7 +1132,10 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <!-- Glow behind the image -->
       <div class="hp-visual-glow"></div>
       <!-- The hero image -->
-      <img class="hp-visual-img" src="/img/img_hero.jpg" id="hp-hero-img" />
+      <video class="hp-visual-img" id="hp-hero-img" autoplay loop muted playsinline
+        style="object-fit:contain;border-radius:12px">
+        <source src="/img/hero.mp4" type="video/mp4">
+      </video>
       <!-- Animated chart overlay -->
       <canvas id="hero-chart-canvas" class="hero-chart-canvas"></canvas>
       <!-- Live price pills -->
