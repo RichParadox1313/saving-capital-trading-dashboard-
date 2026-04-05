@@ -117,8 +117,12 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 
 /* LEFT */
 .hp-left{display:flex;flex-direction:column;gap:0}
-.hp-eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(34,197,94,.5);font-family:'DM Mono',monospace;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.hp-eyebrow{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(34,197,94,.45);font-family:'DM Mono',monospace;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hp-eyebrow-line{display:inline-block;width:22px;height:1px;background:rgba(34,197,94,.4);flex-shrink:0}
+.hp-eyebrow-dot{color:rgba(34,197,94,.3);font-size:7px}
+.hp-tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;margin-top:-8px}
+.hp-tag-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.18);border-radius:100px;font-size:10px;letter-spacing:1px;color:rgba(167,243,208,.65);font-family:'DM Mono',monospace;text-transform:uppercase;transition:all .2s}
+.hp-tag-pill:hover{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.35);color:rgba(167,243,208,.9)}
 .hp-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3.5rem,7.5vw,7.8rem);line-height:.9;letter-spacing:-3px;color:rgba(255,255,255,.9);margin-bottom:24px}
 .hp-h1-g{display:block;background:linear-gradient(140deg,#fff 0%,#a7f3d0 28%,#22c55e 52%,#86efac 72%,#f0fdf4 100%);background-size:250% 250%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:hpg 6s ease infinite;filter:drop-shadow(0 0 40px rgba(34,197,94,.2))}
 @keyframes hpg{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
@@ -1092,7 +1096,14 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
   <!-- LEFT: text -->
   <div class="hp-left">
-    <p class="hp-eyebrow"><span class="hp-eyebrow-line"></span>Wall Street Intelligence · AI-Powered · Real-Time</p>
+    <div class="hp-eyebrow">
+      <span class="hp-eyebrow-line"></span>
+      <span>Saving Capital</span>
+      <span class="hp-eyebrow-dot">|</span>
+      <span>Wall Street Intelligence</span>
+      <span class="hp-eyebrow-dot">|</span>
+      <span>AI-Powered</span>
+    </div>
 
     <h1 class="hp-h1">
       <span data-i18n="heroLine1">The Future of</span><br>
@@ -1109,6 +1120,12 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <button class="hp-cta2" onclick="goPage('journal-page')" data-i18n="journalBtn">Trading Journal</button>
     </div>
 
+    <div class="hp-tag-row">
+      <div class="hp-tag-pill">Next-Gen Trading</div>
+      <div class="hp-tag-pill">Quant Algorithmic</div>
+      <div class="hp-tag-pill">Real-Time Edge</div>
+    </div>
+
     <div class="hp-nums">
       <div class="hp-num"><strong>120+</strong><span>Assets<br>Tracked</span></div>
       <div class="hp-num"><strong>5</strong><span>Wall Street<br>Frameworks</span></div>
@@ -1119,9 +1136,9 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <div class="hp-firms">
       <span class="hp-fl">Powered by</span>
       <span class="hp-firm">Bridgewater</span>
-      <span class="hp-fd">✦</span>
+      <span class="hp-fd">·</span>
       <span class="hp-firm">RenTech</span>
-      <span class="hp-fd">✦</span>
+      <span class="hp-fd">·</span>
       <span class="hp-firm">Citadel</span>
     </div>
   </div>
