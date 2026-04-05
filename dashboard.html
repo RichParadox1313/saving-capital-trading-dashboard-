@@ -3175,75 +3175,201 @@ function runMatrix(canvas){
 // ── Journal Knowledge Background ─────────────────────────────────────────────
 function runJournalBg(canvas){
   const ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
 
-  // Floating "trade log" lines — mimic a journal/ledger
-  const lines = [
-    'BUY  XAUUSD  @2,345.20  SL:2,310  TP:2,390  +2.4R',
-    'SELL EURUSD  @1.0842    SL:1.0870 TP:1.0780  WIN',
-    'BUY  BTCUSDT @84,200    SL:82,000 TP:88,000  OPEN',
-    'SELL GBPUSD  @1.2650    SL:1.2700 TP:1.2550  LOSS',
-    'BUY  WTI     @71.40     SL:69.80  TP:74.50   +1.8R',
-    'SELL USDJPY  @151.20    SL:152.00 TP:149.50  WIN',
-    'BUY  SOLUSDT @145.80    SL:138.00 TP:158.00  OPEN',
-    'SELL XAUUSD  @2,410.00  SL:2,430  TP:2,365   WIN',
-    'BUY  NVDA    @875.00    SL:840.00 TP:920.00  +2.1R',
-    'SELL AAPL    @189.40    SL:192.00 TP:184.00  LOSS',
-    'P&L: +$4,280 | W:7 L:3 | WR:70% | Avg R:R 1:2.1',
-    'RISK: 1% per trade | MAX DD: 5% | DAILY LIMIT: 2%',
-    'DISCIPLINE: Followed rules | EMOTION: Neutral',
-    '--- SESSION LOG: London Open ---',
-    'EMA21 > EMA50 | RSI:58 | Vol: High | Phase: Bullish',
-    'POSITION SIZE: 0.5% equity | STOP: ATR×1.5',
-    'SETUP: Break & Retest | TF: H4 | Confirmation: H1',
-    '--- WEEKLY REVIEW ---',
-    'Best trade: XAUUSD +$820 | Worst: GBPUSD -$210',
-    'Avg hold time: 4.2h | Most traded: XAUUSD,BTCUSDT',
+  const W = ()=>canvas.width, H = ()=>canvas.height;
+  const G = 'rgba(34,197,94,';
+  const M = 'rgba(167,243,208,';
+
+  // ── 1. Floating trading study cards ────────────────────────────────────────
+  const CARDS = [
+    { lines:['Risk:Reward','R:R = 2.5 : 1','Win Rate > 45%'], tag:'RULE' },
+    { lines:['EMA Strategy','21 / 50 / 200','Trend Alignment'], tag:'SETUP' },
+    { lines:['Sharpe Ratio','E[R] / σ = 1.82','Portfolio Risk'], tag:'QUANT' },
+    { lines:['Max Drawdown','−8.4% Monthly','Recovery Plan'], tag:'RISK' },
+    { lines:['Bull Flag','Break + Retest','Volume Confirm'], tag:'PATTERN' },
+    { lines:['Kelly Criterion','f = W − L/R','Position Size'], tag:'MATH' },
+    { lines:['Session: London','High Liquidity','08:00–12:00 UTC'], tag:'TIME' },
+    { lines:['Trade Review','Sunday Analysis','Weekly Journal'], tag:'HABIT' },
   ];
 
-  // Each "stream" is a column of these lines scrolling upward
-  const streamCount = Math.floor(canvas.width / 380);
-  const streams = Array.from({length: streamCount}, (_, i)=>({
-    x:      80 + i*(canvas.width/streamCount) + (Math.random()-0.5)*40,
-    y:      Math.random() * canvas.height,
-    speed:  0.25 + Math.random()*0.2,
-    lineIdx:Math.floor(Math.random()*lines.length),
-    gap:    28 + Math.floor(Math.random()*8),
+  const cards = Array.from({length: Math.min(6, Math.floor(W()/200))}, (_,i) => ({
+    x: (W()/(Math.min(6,Math.floor(W()/200)))) * i + Math.random()*80,
+    y: H()*0.1 + Math.random() * H()*0.7,
+    vy: -(0.08 + Math.random()*0.12),
+    vx: (Math.random()-0.5)*0.05,
+    alpha: 0,
+    targetAlpha: 0.06 + Math.random()*0.08,
+    card: CARDS[i % CARDS.length],
+    w: 140, h: 72,
+    phase: Math.random()*Math.PI*2,
+    speed: 0.004 + Math.random()*0.003,
   }));
+
+  // ── 2. Floating text particles ─────────────────────────────────────────────
+  const WORDS = [
+    'discipline','patience','process','review','backtest','journal',
+    'R multiple','drawdown','edge','consistency','psychology','system',
+    'confluence','structure','momentum','breakout','liquidity','bias',
+  ];
+  const particles = Array.from({length:40}, () => mkParticle());
+  function mkParticle(){ return {
+    x: Math.random()*W(), y: Math.random()*H(),
+    vy: -(0.1+Math.random()*0.2), vx: (Math.random()-.5)*0.06,
+    word: WORDS[Math.floor(Math.random()*WORDS.length)],
+    alpha: 0.03+Math.random()*0.07, size: 9+Math.random()*4,
+    life: Math.random(), lifeDir: Math.random()>.5?1:-1,
+  };}
+
+  // ── 3. Mini candlestick charts drifting through space ─────────────────────
+  const CANDLES = Array.from({length:8}, () => mkCandle());
+  function mkCandle(){ return {
+    x: Math.random()*W(), y: Math.random()*H(),
+    vy: -(0.06+Math.random()*0.1), vx: (Math.random()-.5)*0.04,
+    alpha: 0.04+Math.random()*0.06,
+    bars: Array.from({length:7}, (_,i)=>({
+      open: 0.3+Math.random()*0.4,
+      close: 0.3+Math.random()*0.4,
+      high: 0.7+Math.random()*0.25,
+      low:  0.05+Math.random()*0.15,
+      bull: Math.random()>.45,
+    })),
+    scale: 18+Math.random()*14,
+  };}
+
+  // ── 4. Subtle horizontal notebook lines ───────────────────────────────────
+  let lineOff = 0;
+
+  // ── 5. Connection web between nearby particles ─────────────────────────────
+  function drawWeb(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.strokeStyle=G+(1-d/120)*0.03+')';
+          ctx.lineWidth=0.4;
+          ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function drawCandleChart(c){
+    const {x,y,bars,scale,alpha} = c;
+    const bw = scale*0.55, gap = scale*0.7;
+    ctx.globalAlpha = alpha;
+    bars.forEach((b,i)=>{
+      const bx = x + i*gap;
+      const topBody = y - Math.max(b.open,b.close)*scale;
+      const botBody = y - Math.min(b.open,b.close)*scale;
+      const bh = Math.max(2, botBody-topBody);
+      // Wick
+      ctx.strokeStyle = b.bull ? '#4ade80' : '#f87171';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(bx+bw/2, y-b.high*scale);
+      ctx.lineTo(bx+bw/2, y-b.low*scale);
+      ctx.stroke();
+      // Body
+      ctx.fillStyle = b.bull ? G+'0.5)' : 'rgba(248,113,113,0.4)';
+      ctx.fillRect(bx, topBody, bw, bh);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawCard(c){
+    const {x,y,w,h,card,alpha,phase,speed} = c;
+    const floatY = y + Math.sin(phase)*6;
+    ctx.globalAlpha = alpha;
+    // Card background
+    ctx.fillStyle = 'rgba(3,10,3,0.6)';
+    ctx.strokeStyle = G+'0.15)';
+    ctx.lineWidth = 0.8;
+    roundRect(ctx, x, floatY, w, h, 6);
+    ctx.fill(); ctx.stroke();
+    // Tag
+    ctx.fillStyle = G+'0.5)';
+    ctx.font = '700 7px "DM Mono",monospace';
+    ctx.fillText(card.tag, x+10, floatY+13);
+    // Lines
+    ctx.fillStyle = M+'0.45)';
+    ctx.font = '10px "DM Mono",monospace';
+    card.lines.forEach((l,i)=>{
+      ctx.globalAlpha = alpha * (i===0?0.9:0.55);
+      ctx.fillText(l, x+10, floatY+26+i*14);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+    ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r);
+    ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h);
+    ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r);
+    ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+  }
 
   function draw(){
     if(!_journalRaf && document.getElementById('page-journal-page')?.style.display==='none') return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.font = '11px "DM Mono",monospace';
+    ctx.clearRect(0,0,W(),H());
 
-    streams.forEach(s=>{
-      // Draw a stack of lines from this stream's position upward
-      for(let i=0;i<30;i++){
-        const lineY = s.y - i*s.gap;
-        if(lineY < -30 || lineY > canvas.height+30) continue;
-        const idx = ((s.lineIdx + i) % lines.length + lines.length) % lines.length;
-        const line = lines[idx];
-        // Fade: brightest near top of stream, fades out going up
-        const fade = 1 - (i/30);
-        const isHeader = line.startsWith('---') || line.startsWith('P&L');
-        ctx.globalAlpha = fade * (isHeader ? 0.7 : 0.35);
-        ctx.fillStyle = isHeader ? '#4ade80' : '#22c55e';
-        ctx.fillText(line, s.x, lineY);
-      }
-      ctx.globalAlpha = 1;
-      s.y -= s.speed;
-      if(s.y < -s.gap*30){
-        s.y = canvas.height + s.gap*5;
-        s.lineIdx = Math.floor(Math.random()*lines.length);
-      }
+    // Notebook lines
+    lineOff=(lineOff+0.12)%(H()/14);
+    for(let i=0;i<16;i++){
+      const ly=(i*H()/14)+lineOff;
+      const g=ctx.createLinearGradient(0,ly,W(),ly);
+      g.addColorStop(0,G+'0)'); g.addColorStop(0.15,G+'0.018)');
+      g.addColorStop(0.85,G+'0.018)'); g.addColorStop(1,G+'0)');
+      ctx.strokeStyle=g; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W(),ly); ctx.stroke();
+    }
+
+    // Web
+    drawWeb();
+
+    // Candlestick charts
+    CANDLES.forEach(c=>{
+      drawCandleChart(c);
+      c.x+=c.vx; c.y+=c.vy;
+      if(c.y<-80){ Object.assign(c,mkCandle()); c.y=H()+20; }
+      if(c.x<-200) c.x=W()+10;
+      if(c.x>W()+200) c.x=-10;
     });
+
+    // Floating word particles
+    particles.forEach(p=>{
+      p.life+=0.003*p.lifeDir;
+      if(p.life>1||p.life<0){ p.lifeDir*=-1; }
+      const pulse=0.5+0.5*Math.sin(p.life*Math.PI);
+      ctx.globalAlpha=p.alpha*pulse;
+      ctx.font=`${p.size}px "DM Mono",monospace`;
+      ctx.fillStyle='#4ade80';
+      ctx.fillText(p.word, p.x, p.y);
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<-20){ Object.assign(p,mkParticle()); p.y=H()+10; }
+      if(p.x<-150) p.x=W()+10;
+      if(p.x>W()+150) p.x=-10;
+    });
+    ctx.globalAlpha=1;
+
+    // Floating study cards
+    cards.forEach(c=>{
+      c.phase+=c.speed;
+      c.alpha=Math.min(c.alpha+0.001, c.targetAlpha);
+      drawCard(c);
+      c.x+=c.vx; c.y+=c.vy;
+      if(c.y<-100){ c.y=H()+10; c.x=Math.random()*W(); c.alpha=0; c.card=CARDS[Math.floor(Math.random()*CARDS.length)]; }
+    });
+
     _journalRaf = requestAnimationFrame(draw);
   }
   draw();
 }
-
 
 // ── Hero chart animation — overlays on photo's chart area ────────────────────
 (function(){
@@ -4299,7 +4425,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
-<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.055;display:none"></canvas>
+<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.7;display:none"></canvas>
   <!-- Journal Hero Intro -->
   <div class="jrnl-hero z">
     <div class="jrnl-hero-inner">
