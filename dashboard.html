@@ -3706,20 +3706,16 @@ function getOptPriceData(){
   return null;
 }
 
-// ── Call Claude API with the tool prompt ─────────────────────────────────────
-async function callOptClaude(prompt){
-  const r = await fetch('https://api.anthropic.com/v1/messages',{
+// ── Call tool analysis via server endpoint (API key stays server-side) ─────────
+async function callOptTool(tool, params){
+  const r = await fetch('/api/tools/analyse',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:1500,
-      messages:[{role:'user',content:prompt}]
-    })
+    body:JSON.stringify({tool, params, lang: currentLang||'en'})
   });
-  if(!r.ok) throw new Error('API '+r.status);
+  if(!r.ok) throw new Error('Server '+r.status);
   const j = await r.json();
-  return j.content?.[0]?.text||'';
+  return j.interpretation||'';
 }
 
 function optParseJSON(text){
@@ -3801,8 +3797,8 @@ Write a 3-sentence professional interpretation:
 2. What are the key risks? Reference drawdown and risk of ruin.
 3. What should the trader do? Concrete actionable advice.
 Be concise, quantitative, no fluff. Professional tone.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-mc').textContent=resp.trim();
+    const resp=await callOptTool("monte_carlo",{bal,risk:risk*100,wr:wr*100,rr,trades,sims,mean,med,dd:avgDD,ruin:ruinPct,prof});
+    document.getElementById('oins-mc').textContent=resp;
   }catch(e){
     document.getElementById('oins-mc').textContent=`${prof}% of simulations profitable. Mean $${mean.toLocaleString()} vs median $${med.toLocaleString()} — ${mean>med?'positive skew':'negative skew'}. Avg drawdown ${avgDD}%, ruin risk ${ruinPct}% — ${ruinPct>20?'reduce position size urgently':'within acceptable bounds'}.`;
   }
@@ -3866,8 +3862,8 @@ Write 3 sentences:
 2. Is current volatility high or low? What does the forecast suggest?
 3. Actionable trading advice: position sizing and stop loss implications.
 Quantitative, concise, professional.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-garch').textContent=resp.trim();
+    const resp=await callOptTool("garch",{sym,model,fh,omega:+omega,alpha:+alpha,beta:+beta,persist:+persist,ann_vol:+annVol,vol_trend:fv[fv.length-1]>lastH?"increasing":"decreasing"});
+    document.getElementById('oins-garch').textContent=resp;
   }catch(e){
     document.getElementById('oins-garch').textContent=`${model} on ${sym}. Persistence ${persist} — ${+persist>0.95?'near-integrated, shocks decay very slowly':'mean-reverting, volatility normalises quickly'}. Annualised vol ${annVol}% — ${+annVol>20?'high volatility regime, reduce position size and widen stops':'moderate volatility, standard sizing applies'}.`;
   }
@@ -3934,8 +3930,8 @@ Write 3 sentences:
 2. Current position in channel: overbought/oversold/neutral — mean reversion risk?
 3. Practical trading application: entry logic, targets, what invalidates the trend.
 Quantitative, direct, no fluff.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-linreg').textContent=resp.trim();
+    const resp=await callOptTool("linreg",{sym,type,fh,bw,slope:+slope.toFixed(6),r2:+r2,pos,target:+fc[fc.length-1]});
+    document.getElementById('oins-linreg').textContent=resp;
   }catch(e){
     document.getElementById('oins-linreg').textContent=`${sym} ${slope>0?'uptrend':'downtrend'} with R²=${r2} — ${+r2>0.7?'strong directional bias':'weak trend, ranging conditions likely'}. Price ${pos.toLowerCase()} — ${pos==='Overbought'?'mean reversion risk, consider fading toward mid-channel':pos==='Oversold'?'bounce potential, watch for reversal signals':'trend continuation favoured'}. ${fh}-period target: ${fc[fc.length-1].toFixed(4)}.`;
   }
@@ -4001,8 +3997,8 @@ Write 3 sentences:
 2. What does the ${bullish?'bullish':'bearish'} signal mean for this timeframe?
 3. Key risks: overfitting, regime change, what would invalidate the prediction.
 Structured, precise, no fluff.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-nn').textContent=resp.trim();
+    const resp=await callOptTool("neural_net",{sym,model,seq,fh,feat,acc,mae,rmse,signal:bullish?"Bullish":"Bearish",conf,move_pct:((pred[pred.length-1]-lastPrice)/lastPrice*100)});
+    document.getElementById('oins-nn').textContent=resp;
   }catch(e){
     document.getElementById('oins-nn').textContent=`${model} on ${sym}: direction accuracy ${acc}% — ${acc>65?'reliable for signal confirmation':'use as secondary indicator only'}. Confidence ${conf} — ${bullish?'bullish bias, predicted '+fh+'-period gain':'bearish bias, predicted downside over '+fh+' periods'}. Risk: model trained on historical regime; validate with current market context before trading.`;
   }
@@ -4064,8 +4060,8 @@ Write 3 sentences:
 2. Forecast direction and reliability — what does the ${dir.toLowerCase()} bias mean?
 3. Practical use case and key limitation of ARIMA for this asset.
 Statistical, concise, actionable.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-arima').textContent=resp.trim();
+    const resp=await callOptTool("arima",{sym,p_val:p,d_val:dv,q_val:q,fh,aic:+aic,bic:+bic,direction:dir,reliability:rel,target:+fc[fc.length-1],ci_width:+(std*fh*0.5)});
+    document.getElementById('oins-arima').textContent=resp;
   }catch(e){
     document.getElementById('oins-arima').textContent=`ARIMA(${p},${dv},${q}) on ${sym}. AIC=${aic} — ${aic<250?'reasonable fit':'consider simpler model'}. ${fh}-period ${dir.toLowerCase()} forecast to ${fc[fc.length-1].toFixed(4)} with reliability ${rel}. Note: ARIMA assumes linear structure and struggles with volatility clustering — complement with GARCH for risk estimation.`;
   }
@@ -4125,8 +4121,9 @@ Write 3 sentences:
 2. Is the market stable or transitioning? What does ${Math.round(stability*100)}% stability mean?
 3. What strategy is best suited for the current regime? Be specific.
 Structured, clear, actionable.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-hmm').textContent=resp.trim();
+    const regimeDist=statePcts.map(s=>`- ${s.label}: ${s.pct}%`).join("\n");
+    const resp=await callOptTool("hmm",{sym,states,regime_dist:regimeDist,current_regime:stateLabels[currentState],stability:Math.round(stability*100)});
+    document.getElementById('oins-hmm').textContent=resp;
   }catch(e){
     document.getElementById('oins-hmm').textContent=`${sym} — ${states}-state HMM. Current: ${stateLabels[currentState]} regime (${statePcts[currentState].pct}% historical frequency). Regime stability ${Math.round(stability*100)}% — ${stability>0.7?'high persistence, trend-following strategies favoured':'frequent transitions, mean-reversion or neutral strategies preferred'}. ${currentState===0?'Bull regime: momentum longs, trail stops wide.':currentState===stateLabels.length-1?'Bear regime: reduce exposure, hedge downside.':'Neutral/mixed regime: range strategies, tighter risk management.'}`;
   }
@@ -4191,8 +4188,8 @@ Write 3 sentences:
 2. What does the ${trending?'trending':'choppy'} market condition mean for entry timing?
 3. Specific entry logic based on filtered signal vs raw price divergence.
 Quantitative, practical, no fluff.`;
-    const resp=await callOptClaude(prompt);
-    document.getElementById('oins-kalman').textContent=resp.trim();
+    const resp=await callOptTool("kalman",{sym,model,Q,R,fh,snr:+snr,lag,trend:lastSlope>closes[n-1]*0.001?"Up":lastSlope<-closes[n-1]*0.001?"Down":"Flat",condition:trending?"Trending":"Choppy",target:+fc[fc.length-1]});
+    document.getElementById('oins-kalman').textContent=resp;
   }catch(e){
     document.getElementById('oins-kalman').textContent=`Kalman filter (Q=${Q}, R=${R}) on ${sym}. SNR=${snr} — ${+snr>2?'strong signal, filter reliable':'noisy market, treat signal with caution'}. ${trending?'Trending conditions: enter on filtered signal with lag '+lag+' bars acknowledged.':'Choppy market: wait for filtered signal to establish clear direction before entry.'} ${fh}-period filtered forecast: ${fc[fc.length-1].toFixed(4)}.`;
   }
