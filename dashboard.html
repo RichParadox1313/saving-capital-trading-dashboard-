@@ -590,116 +590,6 @@ h1 i{color:var(--g);font-style:normal;display:block}
   .rr-display{grid-template-columns:repeat(3,1fr)}
 }
 
-/* ── Backtesting Page ───────────────────────────────────────────────────────────── */
-.bt-wrap{display:flex;flex-direction:column;min-height:100vh;background:var(--bg)}
-.bt-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;padding-top:72px;background:var(--s1);border-bottom:1px solid var(--br);flex-shrink:0;flex-wrap:nowrap;overflow-x:auto}
-.bt-bar::-webkit-scrollbar{height:0}
-.bt-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--g);white-space:nowrap;margin-right:4px}
-.bt-sep{width:1px;height:20px;background:var(--br);flex-shrink:0}
-
-/* Asset button */
-.bt-asset-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--t1);cursor:pointer;padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;transition:border-color .15s;white-space:nowrap;min-width:130px}
-.bt-asset-btn:hover,.bt-asset-btn.open{border-color:var(--g)}
-.bt-asset-btn svg{flex-shrink:0}
-.bt-asset-tag{font-size:7px;letter-spacing:1px;padding:1px 5px;border-radius:3px;text-transform:uppercase;font-weight:700}
-.tag-crypto{background:rgba(34,197,94,.12);color:#4ade80}
-.tag-forex{background:rgba(59,130,246,.12);color:#60a5fa}
-.tag-commodity{background:rgba(245,158,11,.12);color:#fbbf24}
-.tag-index{background:rgba(167,139,250,.12);color:#a78bfa}
-.tag-stock{background:rgba(251,113,133,.12);color:#fb7185}
-
-/* Asset dropdown */
-.bt-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;width:280px;background:var(--s1);border:1px solid var(--br);border-radius:10px;z-index:700;box-shadow:0 16px 48px rgba(0,0,0,.6);overflow:hidden}
-.bt-dropdown.show{display:block}
-.bt-dd-search{width:100%;background:var(--s2);border:none;border-bottom:1px solid var(--br);color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;padding:10px 12px;outline:none}
-.bt-dd-list{max-height:300px;overflow-y:auto}
-.bt-dd-cat{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px;font-family:'DM Mono',monospace;background:var(--s1);position:sticky;top:0}
-.bt-dd-item{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;cursor:pointer;font-family:'DM Mono',monospace;transition:background .1s}
-.bt-dd-item:hover{background:var(--s2)}
-.bt-dd-item.active{background:var(--gdim)}
-.bt-dd-sym{font-size:11px;font-weight:600;color:var(--t1)}
-.bt-dd-name{font-size:9px;color:var(--t4)}
-
-/* Timeframe */
-.bt-tfs{display:flex;gap:2px;background:var(--s2);border:1px solid var(--br);border-radius:5px;padding:2px;flex-shrink:0}
-.bt-tf{font-size:9px;letter-spacing:.5px;padding:3px 7px;border:none;border-radius:3px;background:transparent;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;transition:all .12s;white-space:nowrap}
-.bt-tf:hover{color:var(--t1)}
-.bt-tf.on{background:var(--g);color:#030704;font-weight:700}
-
-/* Date inputs */
-.bt-date{background:var(--s2);border:1px solid var(--br);border-radius:5px;color:var(--t1);font-family:'DM Mono',monospace;font-size:10px;padding:4px 7px;outline:none;width:108px;flex-shrink:0}
-.bt-date::-webkit-calendar-picker-indicator{filter:invert(.4)}
-
-/* Chart style */
-.bt-styles{display:flex;gap:2px;background:var(--s2);border:1px solid var(--br);border-radius:5px;padding:2px;flex-shrink:0}
-
-/* Body */
-.bt-body{display:flex;flex:1;min-height:0;overflow:hidden}
-
-/* Left toolbar */
-.bt-toolbar{width:42px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--br);display:flex;flex-direction:column;align-items:center;padding:6px 4px;gap:2px;overflow-y:auto}
-.bt-toolbar::-webkit-scrollbar{width:0}
-.bt-tool-lbl{font-size:5.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-top:4px;text-align:center}
-.bt-tool{width:32px;height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--t4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
-.bt-tool:hover{border-color:var(--br2);color:var(--t1);background:var(--s2)}
-.bt-tool.on{background:var(--gdim);border-color:var(--g);color:var(--g)}
-.bt-tool-div{width:28px;height:1px;background:var(--br);margin:2px 0;flex-shrink:0}
-.bt-color{width:26px;height:22px;border:1px solid var(--br);border-radius:4px;cursor:pointer;padding:0;background:transparent}
-
-/* Center */
-.bt-center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
-.bt-chart-area{flex:1;position:relative;background:#040a04;min-height:0}
-#bt-chart{width:100%;height:100%;position:absolute;inset:0}
-.bt-canvas{position:absolute;inset:0;pointer-events:none;z-index:5}
-.bt-ohlc{position:absolute;top:6px;left:8px;font-family:'DM Mono',monospace;font-size:10px;pointer-events:none;z-index:6;display:none}
-.bt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--t4)}
-.bt-empty-icon{opacity:.3}
-.bt-empty-title{font-size:14px;color:var(--t2)}
-.bt-empty-sub{font-size:10px;font-family:'DM Mono',monospace}
-.bt-spinner{width:24px;height:24px;border:2px solid var(--br);border-top-color:var(--g);border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.bt-loading-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--g)}
-
-/* Replay bar */
-.bt-replay{display:none;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--s1);border-top:1px solid var(--br);flex-shrink:0;gap:10px}
-.bt-rbtn{width:30px;height:28px;background:var(--s2);border:1px solid var(--br);border-radius:4px;color:var(--t1);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s}
-.bt-rbtn:hover{border-color:var(--g);color:var(--g)}
-.bt-play{width:34px;height:34px;font-size:16px;background:var(--g);color:#030704;border:none;border-radius:5px}
-.bt-play:hover{opacity:.85}
-.bt-play.playing{background:#f59e0b}
-.bt-speed-wrap{display:flex;align-items:center;gap:5px}
-.bt-speed-lbl{font-size:8px;color:var(--t4);font-family:'DM Mono',monospace}
-.bt-speed-sl{width:70px;accent-color:var(--g);cursor:pointer}
-.bt-speed-v{font-size:10px;color:var(--g);font-family:'DM Mono',monospace;min-width:20px}
-.bt-rep-info{font-family:'DM Mono',monospace;font-size:10px;color:var(--t2)}
-
-/* Right panel */
-.bt-panel{width:210px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--br);display:flex;flex-direction:column;overflow-y:auto}
-.bt-panel::-webkit-scrollbar{width:4px}
-.bt-panel::-webkit-scrollbar-thumb{background:var(--br2);border-radius:2px}
-.bt-pcard{padding:11px 13px;border-bottom:1px solid var(--br)}
-.bt-pcard-title{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:9px}
-.bt-bal{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--t1);letter-spacing:1px}
-.bt-pnl{font-family:'DM Mono',monospace;font-size:10px;margin-top:2px}
-.bt-field{margin-bottom:7px}
-.bt-field label{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;display:block;margin-bottom:3px}
-.bt-inp{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:4px;color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;padding:5px 7px;outline:none;box-sizing:border-box}
-.bt-inp:focus{border-color:var(--g)}
-.bt-trade-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
-.bt-buy{padding:7px;border-radius:5px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25);transition:background .15s}
-.bt-buy:hover{background:rgba(34,197,94,.22)}
-.bt-sell{padding:7px;border-radius:5px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25);transition:background .15s}
-.bt-sell:hover{background:rgba(239,68,68,.18)}
-.bt-open-trade{font-size:9px;font-family:'DM Mono',monospace;padding:5px 7px;background:var(--s2);border-radius:4px;margin-bottom:3px;border:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
-.bt-xt{background:transparent;border:none;color:var(--r);cursor:pointer;font-size:11px;padding:0 2px}
-.bt-stat-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--br);font-size:9px;font-family:'DM Mono',monospace;color:var(--t3)}
-.bt-stat-row:last-child{border:none}
-.bt-log{max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
-.bt-log-item{font-size:8px;font-family:'DM Mono',monospace;padding:5px 7px;border-radius:4px;display:flex;flex-direction:column;gap:2px}
-.bt-log-b{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15)}
-.bt-log-s{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15)}
-
-
 /* ── Trading Journal ─────────────────────────────────────────────────────── */
 /* ── Trading Calendar ───────────────────────────────────────────────────── */
 .jcal-wrap{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-bottom:16px}
@@ -1560,7 +1450,7 @@ function goPage(page){
   if(_journalRaf){ cancelAnimationFrame(_journalRaf); _journalRaf=null; }
   const jcanvas = document.getElementById('journal-canvas');
   if(jcanvas) jcanvas.style.display='none';
-  // Explicitly ensure backtest fixed page is hidden when not active
+  // Ensure quant page is hidden when not active
   const btp = document.getElementById('page-quant');
   if(btp && page !== 'quant'){ btp.style.display='none'; btp.style.pointerEvents='none'; }
   const el = document.getElementById('page-'+page);
@@ -3338,7 +3228,7 @@ function runJournalBg(canvas){
   // 1. Rotating 3D knowledge graph — nodes connected in space
   const LABELS = [
     'Risk:Reward','Kelly Criterion','Sharpe Ratio','Max Drawdown',
-    'EMA 21/50','Bull Flag','Journal','Backtesting',
+    'EMA 21/50','Bull Flag','Journal','Quant Tools',
     'Discipline','Liquidity','Position Size','MACD Cross',
     'Support','Resistance','FVG','Break & Retest',
     'Psychology','Confluence','Momentum','Structure',
@@ -4424,30 +4314,6 @@ let btCvs=null, btCtx=null;
 let btInited=false;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-function btPageInit(){
-  if(btInited) return;
-  btInited=true;
-  // Set default dates (2 years ago → today)
-  const today = new Date();
-  const ago   = new Date(); ago.setFullYear(ago.getFullYear()-2);
-  document.getElementById('bt-d1').value = ago.toISOString().slice(0,10);
-  document.getElementById('bt-d2').value = today.toISOString().slice(0,10);
-  // Timeframe buttons
-  document.querySelectorAll('#bt-tfs .bt-tf').forEach(b=>{
-    b.addEventListener('click',()=>{
-      document.querySelectorAll('#bt-tfs .bt-tf').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on'); btTf=b.dataset.tf;
-      if(btAsset) btLoadData();
-    });
-  });
-  // Build dropdown
-  btBuildDd('');
-  document.getElementById('bt-dd-search').addEventListener('input',e=>btBuildDd(e.target.value));
-  document.addEventListener('click',e=>{
-    if(!e.target.closest('[id="bt-asset-btn"]')&&!e.target.closest('#bt-dd'))
-      document.getElementById('bt-dd').classList.remove('show');
-  });
-}
 
 // ── Asset dropdown ─────────────────────────────────────────────────────────────
 function btToggleDd(){
