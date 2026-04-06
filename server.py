@@ -2342,6 +2342,189 @@ async def journal_debug():
         "tmp_journal": (_Path("/tmp") / "sc_journal.json").exists(),
     })
 
+# ─── Optional Quantitative Analysis Tools ─────────────────────────────────────
+
+class ToolRequest(BaseModel):
+    tool:   str
+    params: dict
+    lang:   str = "en"
+
+# Shared tool prompt builder
+def _build_tool_prompt(tool: str, params: dict, prices_ctx: str) -> str:
+    p = params
+
+    if tool == "monte_carlo":
+        return f"""You are a quantitative trading analyst and risk management expert.
+Task: Interpret Monte Carlo simulation results and provide professional insights.
+Asset context: {prices_ctx}
+SIMULATION PARAMETERS:
+- Initial Balance: ${p.get('bal',10000):,}
+- Risk per Trade: {p.get('risk',1)}%
+- Win Rate: {p.get('wr',55)}%
+- Risk:Reward Ratio: {p.get('rr',2)}:1
+- Number of Trades: {p.get('trades',200)}
+- Number of Simulations: {p.get('sims',300)}
+SIMULATION RESULTS:
+- Mean Final Balance: ${p.get('mean',0):,}
+- Median Final Balance: ${p.get('med',0):,}
+- Average Max Drawdown: {p.get('dd',0)}%
+- Risk of Ruin (losing 50%+): {p.get('ruin',0)}%
+- Profitable Simulations: {p.get('prof',0)}%
+Write exactly 3 professional sentences:
+1. Is this strategy viable? Reference mean vs median and profitable sim %.
+2. Key risks — reference drawdown and ruin probability specifically.
+3. Concrete actionable advice for the trader.
+Quantitative, no fluff, professional tone."""
+
+    if tool == "garch":
+        return f"""You are a quantitative analyst specializing in financial volatility modeling.
+Task: Interpret GARCH volatility model results for a trader.
+Asset context: {prices_ctx}
+MODEL: {p.get('model','GARCH(1,1)')} on {p.get('sym','Asset')}
+ESTIMATED PARAMETERS:
+- Omega (ω): {p.get('omega',0.000015):.7f}
+- Alpha (α ARCH term): {p.get('alpha',0.09):.4f}
+- Beta (β GARCH term): {p.get('beta',0.88):.4f}
+- Persistence (α+β): {p.get('persist',0.97):.4f}
+- Current Annualised Volatility: {p.get('ann_vol',15)}%
+- {p.get('fh',10)}-period volatility forecast trend: {p.get('vol_trend','stable')}
+Write exactly 3 professional sentences:
+1. Interpret persistence — what does {p.get('persist',0.97):.4f} mean for volatility decay?
+2. Current vol regime — high/low/normal and what the forecast implies.
+3. Actionable advice: position sizing and stop loss adjustments.
+Quantitative, concise."""
+
+    if tool == "linreg":
+        return f"""You are a quantitative analyst.
+Task: Interpret linear regression channel results on price data.
+Asset context: {prices_ctx}
+ASSET: {p.get('sym','Asset')} | TYPE: {p.get('type','Linear')}
+RESULTS:
+- Slope: {p.get('slope',0):.6f} ({'bullish' if float(p.get('slope',0))>0 else 'bearish'})
+- R²: {p.get('r2',0):.4f} ({'strong fit' if float(p.get('r2',0))>0.7 else 'weak fit'})
+- Band Width: {p.get('bw',2)}σ
+- Current Position: {p.get('pos','In Channel')}
+- {p.get('fh',10)}-period price target: {p.get('target',0):.4f}
+Write exactly 3 professional sentences:
+1. Trend strength and direction — interpret slope and R².
+2. Current position in channel — mean reversion risk or continuation?
+3. Entry logic, target, and invalidation level.
+Direct, quantitative."""
+
+    if tool == "neural_net":
+        return f"""You are a deep learning trading expert.
+Task: Interpret neural network prediction results.
+Asset context: {prices_ctx}
+MODEL: {p.get('model','LSTM')} on {p.get('sym','Asset')}
+- Features: {p.get('feat','OHLCV')}
+- Sequence Length: {p.get('seq',60)} bars
+- Forecast Horizon: {p.get('fh',5)} periods
+PERFORMANCE METRICS:
+- Direction Accuracy: {p.get('acc',65)}%
+- MAE: {p.get('mae',0)}
+- RMSE: {p.get('rmse',0)}
+- Signal: {p.get('signal','Neutral')}
+- Confidence: {p.get('conf','Medium')}
+- Predicted {p.get('fh',5)}-period move: {p.get('move_pct',0):.2f}%
+Write exactly 3 professional sentences:
+1. Model reliability — interpret direction accuracy and confidence level.
+2. Signal interpretation — what the {p.get('signal','neutral')} bias implies.
+3. Key risks: overfitting, regime change, what invalidates the prediction.
+Structured, practical."""
+
+    if tool == "arima":
+        return f"""You are a time series analyst.
+Task: Interpret ARIMA model results for trading.
+Asset context: {prices_ctx}
+ASSET: {p.get('sym','Asset')}
+MODEL: ARIMA({p.get('p_val',2)},{p.get('d_val',1)},{p.get('q_val',2)})
+RESULTS:
+- AIC: {p.get('aic',0):.1f} | BIC: {p.get('bic',0):.1f}
+- Forecast Direction: {p.get('direction','Bullish')}
+- Reliability: {p.get('reliability','Medium')}
+- {p.get('fh',10)}-period target: {p.get('target',0):.4f}
+- Confidence interval width at horizon: ±{p.get('ci_width',0):.4f}
+Write exactly 3 professional sentences:
+1. Model fit — AIC/BIC interpretation and model appropriateness.
+2. Forecast direction and reliability — practical meaning.
+3. Best use case and key ARIMA limitation for this asset.
+Statistical, concise."""
+
+    if tool == "hmm":
+        return f"""You are a quantitative analyst specializing in regime detection.
+Task: Interpret Hidden Markov Model market regime results.
+Asset context: {prices_ctx}
+ASSET: {p.get('sym','Asset')}
+MODEL: {p.get('states',3)}-state HMM
+REGIME DISTRIBUTION:
+{p.get('regime_dist','- Bull: 40%\n- Neutral: 35%\n- Bear: 25%')}
+CURRENT REGIME: {p.get('current_regime','Neutral')}
+REGIME STABILITY: {p.get('stability',70)}%
+Write exactly 3 professional sentences:
+1. Current regime characteristics — what historically happens in this regime.
+2. Stability reading — is the market transitioning or persistent?
+3. Optimal strategy for the current regime — be specific about approach.
+Clear, structured, actionable."""
+
+    if tool == "kalman":
+        return f"""You are a quantitative analyst.
+Task: Interpret Kalman Filter trend extraction results.
+Asset context: {prices_ctx}
+ASSET: {p.get('sym','Asset')} | MODEL: {p.get('model','Constant Velocity')}
+PARAMETERS:
+- Process Noise Q: {p.get('Q',0.001)} ({'high — filter tracks price' if float(p.get('Q',0.001))>0.01 else 'low — smoother, more lagged'})
+- Measurement Noise R: {p.get('R',0.1)}
+RESULTS:
+- Signal-to-Noise Ratio: {p.get('snr',1.5):.3f}
+- Estimated Lag: ~{p.get('lag',2)} bars
+- Trend Direction: {p.get('trend','Flat')}
+- Market Condition: {p.get('condition','Choppy')}
+- {p.get('fh',10)}-period forecast: {p.get('target',0):.4f}
+Write exactly 3 professional sentences:
+1. SNR and Q/R interpretation — signal quality assessment.
+2. Trending vs choppy — implications for entry timing.
+3. Specific entry logic using filtered signal vs raw price divergence.
+Quantitative, practical."""
+
+    return f"Provide a brief quantitative analysis for this trading tool result."
+
+@app.post("/api/tools/analyse")
+async def tools_analyse(req: ToolRequest, request: Request):
+    """Unified endpoint for all 7 optional analysis tools."""
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
+
+    # Rate limit — shared with main analysis
+    client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
+    if not check_rate_limit(client_ip):
+        raise HTTPException(429, "Rate limit exceeded — please try again later.")
+
+    # Build price context
+    prices = price_cache.get("data", {})
+    price_lines = []
+    for name, data in list(prices.items())[:8]:
+        if isinstance(data, dict) and data.get("price") and name != "_meta":
+            p = data["price"]
+            chg = data.get("change", data.get("change_24h", 0)) or 0
+            price_lines.append(f"  {data.get('name', name)}: ${p:,.4f} ({chg:+.2f}%)")
+    prices_ctx = "Current live prices:\n" + "\n".join(price_lines) if price_lines else "Live price data unavailable."
+
+    # Build and call Claude
+    prompt = _build_tool_prompt(req.tool, req.params, prices_ctx)
+
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        msg = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = msg.content[0].text.strip()
+        return JSONResponse({"ok": True, "interpretation": text})
+    except Exception as e:
+        raise HTTPException(500, f"Tool analysis error: {e}")
+
+
 @app.get("/img/{filename}")
 async def serve_img(filename: str):
     import re
