@@ -277,7 +277,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 @keyframes shimmer{to{transform:translateX(100%)}}
 .skl{height:11px;background:var(--br);border-radius:3px;margin-bottom:9px}.w60{width:60%}.w80{width:80%}.w40{width:40%}
 .skc{height:42px;background:var(--br);border-radius:3px;margin:14px 0}
-.detail{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-top:8px;max-height:90vh;overflow-y:auto;scroll-behavior:smooth}
+.detail{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:visible;margin-top:8px}
 .dh{background:var(--s2);padding:24px;border-bottom:1px solid var(--br);display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
 .dname{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;line-height:.95;color:var(--t1)}
 .dsym{font-family:'DM Mono',monospace;font-size:11px;color:var(--g);letter-spacing:2px;margin-top:6px}
@@ -404,7 +404,7 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .skc{height:42px;background:var(--br);border-radius:3px;margin:14px 0}
 
 /* DETAIL */
-.detail{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-top:8px}
+.detail{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden;margin-top:8px;position:relative}
 .dh{background:var(--s2);padding:28px;border-bottom:1px solid var(--br);display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
 .dname{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:3px;line-height:.95}
 .dsym{font-family:'DM Mono',monospace;font-size:11px;color:var(--g);letter-spacing:2px;margin-top:6px}
@@ -871,7 +871,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .mb{padding:10px 12px}
   .ml{font-size:8px}
   .mv{font-size:12px}
-  .abody{padding:14px;gap:12px}
+  .abody{padding:14px;gap:12px;overflow:visible}
   .as{padding:14px}
   .as.hg{grid-template-columns:1fr}
   .albl{font-size:9px;margin-bottom:8px}
@@ -880,7 +880,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .gsftr{padding:12px 14px;flex-direction:column;align-items:flex-start}
   .gsm{font-size:8px}
   .rgbtn{font-size:10px;padding:8px 16px;width:100%;text-align:center}
-  .detail{max-height:none;overflow-y:visible}
+
 
   /* Journal */
   .jstats{grid-template-columns:repeat(3,1fr)}
