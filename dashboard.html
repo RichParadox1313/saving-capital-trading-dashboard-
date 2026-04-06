@@ -211,6 +211,21 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .pdp{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.4);animation-delay:1.5s}
 .hp-plab{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,.3);font-family:'DM Mono',monospace;margin-bottom:2px}
 .hp-pval{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--t1);line-height:1}
+/* New ticker design */
+.hp-ticker{position:absolute;z-index:10;display:flex;flex-direction:column;gap:0;background:rgba(2,8,2,0.75);backdrop-filter:blur(16px);border:1px solid rgba(34,197,94,0.15);border-radius:12px;overflow:hidden;min-width:130px}
+.hp-ticker-l{left:-20px;top:50%;transform:translateY(-50%);animation:tickfloat 5s ease-in-out infinite}
+.hp-ticker-r{right:-20px;top:50%;transform:translateY(-50%);animation:tickfloat 5s ease-in-out infinite 2.5s}
+@keyframes tickfloat{0%,100%{transform:translateY(-50%) translateY(0px)}50%{transform:translateY(-50%) translateY(-8px)}}
+.hp-tick-item{padding:12px 14px}
+.hp-tick-div{height:1px;background:rgba(34,197,94,0.1);margin:0 10px}
+.hp-tick-top{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.hp-tick-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:hpdot 2.5s infinite}
+.hp-tick-sym{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,.4);font-family:'DM Mono',monospace}
+.hp-tick-price{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:rgba(255,255,255,.9);line-height:1;margin-bottom:3px}
+.hp-tick-chg{font-family:'DM Mono',monospace;font-size:9px;font-weight:500}
+.hp-tick-chg.up{color:#4ade80}.hp-tick-chg.dn{color:#f87171}.hp-tick-chg.flat{color:var(--t4)}
+.hp-live-badge{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;background:rgba(2,8,2,0.8);border:1px solid rgba(34,197,94,0.2);border-radius:20px;padding:4px 12px;font-size:8px;letter-spacing:2px;color:rgba(34,197,94,0.7);font-family:'DM Mono',monospace;backdrop-filter:blur(8px)}
+.hp-live-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:hpdot 1.5s infinite}
 .hp-pchg{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap}
 .hp-ptl{top:5%;left:-2%;animation:hpf1 5s ease-in-out infinite}
 .hp-ptr{top:5%;right:-2%;animation:hpf2 6.5s 1s ease-in-out infinite}
@@ -1153,6 +1168,54 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <video class="hp-visual-img" id="hp-hero-img" autoplay loop muted playsinline>
         <source src="/img/hero_v2.mp4" type="video/mp4">
       </video>
+
+      <!-- Price ticker — left side -->
+      <div class="hp-ticker hp-ticker-l">
+        <div class="hp-tick-item">
+          <div class="hp-tick-top">
+            <span class="hp-tick-dot" style="background:#f59e0b"></span>
+            <span class="hp-tick-sym">XAU/USD</span>
+          </div>
+          <div class="hp-tick-price" id="hp-gold">$—</div>
+          <div class="hp-tick-chg" id="hp-gold-c">—</div>
+        </div>
+        <div class="hp-tick-div"></div>
+        <div class="hp-tick-item">
+          <div class="hp-tick-top">
+            <span class="hp-tick-dot" style="background:#6366f1"></span>
+            <span class="hp-tick-sym">EUR/USD</span>
+          </div>
+          <div class="hp-tick-price" id="hp-eur">—</div>
+          <div class="hp-tick-chg" id="hp-eur-c">—</div>
+        </div>
+      </div>
+
+      <!-- Price ticker — right side -->
+      <div class="hp-ticker hp-ticker-r">
+        <div class="hp-tick-item">
+          <div class="hp-tick-top">
+            <span class="hp-tick-dot" style="background:#f97316"></span>
+            <span class="hp-tick-sym">BTC/USD</span>
+          </div>
+          <div class="hp-tick-price" id="hp-btc">$—</div>
+          <div class="hp-tick-chg" id="hp-btc-c">—</div>
+        </div>
+        <div class="hp-tick-div"></div>
+        <div class="hp-tick-item">
+          <div class="hp-tick-top">
+            <span class="hp-tick-dot" style="background:#22c55e"></span>
+            <span class="hp-tick-sym">S&amp;P 500</span>
+          </div>
+          <div class="hp-tick-price" id="hp-spx">$—</div>
+          <div class="hp-tick-chg" id="hp-spx-c">—</div>
+        </div>
+      </div>
+
+      <!-- Live badge -->
+      <div class="hp-live-badge">
+        <span class="hp-live-dot"></span>LIVE
+      </div>
+
     </div>
   </div>
 
@@ -1405,11 +1468,11 @@ function setLang(lang){
     if(typeof prices==='undefined'){ setTimeout(updatePills,2500); return; }
     const fp = p=>{ if(!p) return'—'; if(p>10000) return'$'+p.toLocaleString('en',{maximumFractionDigits:0}); if(p>100) return'$'+p.toFixed(2); return p.toFixed(4); };
     const fc = c=>{ if(c==null) return'—'; return(c>=0?'+':'')+c.toFixed(2)+'%'; };
-    const cc = c=> c==null?'':c>0?'up':'dn';
+    const cc = c=> c==null?'flat':c>0?'up':'dn';
     const set = (pId,cId,val,chg)=>{
       const ep=document.getElementById(pId), ec=document.getElementById(cId);
-      if(ep){ ep.textContent=fp(val); ep.className='hp-pval '+cc(chg); }
-      if(ec){ ec.textContent=fc(chg); ec.className='hp-pchg '+cc(chg); }
+      if(ep) ep.textContent=fp(val);
+      if(ec){ ec.textContent=fc(chg); ec.className='hp-tick-chg '+cc(chg); }
     };
     set('hp-btc','hp-btc-c', prices.bitcoin?.price, prices.bitcoin?.change);
     set('hp-gold','hp-gold-c', prices.XAUUSD?.price, prices.XAUUSD?.change);
@@ -3175,201 +3238,211 @@ function runMatrix(canvas){
 // ── Journal Knowledge Background ─────────────────────────────────────────────
 function runJournalBg(canvas){
   const ctx = canvas.getContext('2d');
-  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  let W, H;
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
-  const W = ()=>canvas.width, H = ()=>canvas.height;
-  const G = 'rgba(34,197,94,';
-  const M = 'rgba(167,243,208,';
+  // ── 3D perspective engine ─────────────────────────────────────────────────
+  const FOV = 400;
+  function project(x3,y3,z3){
+    const scale = FOV/(FOV+z3);
+    return { x: W/2 + x3*scale, y: H/2 + y3*scale, scale };
+  }
 
-  // ── 1. Floating trading study cards ────────────────────────────────────────
-  const CARDS = [
-    { lines:['Risk:Reward','R:R = 2.5 : 1','Win Rate > 45%'], tag:'RULE' },
-    { lines:['EMA Strategy','21 / 50 / 200','Trend Alignment'], tag:'SETUP' },
-    { lines:['Sharpe Ratio','E[R] / σ = 1.82','Portfolio Risk'], tag:'QUANT' },
-    { lines:['Max Drawdown','−8.4% Monthly','Recovery Plan'], tag:'RISK' },
-    { lines:['Bull Flag','Break + Retest','Volume Confirm'], tag:'PATTERN' },
-    { lines:['Kelly Criterion','f = W − L/R','Position Size'], tag:'MATH' },
-    { lines:['Session: London','High Liquidity','08:00–12:00 UTC'], tag:'TIME' },
-    { lines:['Trade Review','Sunday Analysis','Weekly Journal'], tag:'HABIT' },
+  // ── Scene objects ─────────────────────────────────────────────────────────
+  // 1. Rotating 3D knowledge graph — nodes connected in space
+  const LABELS = [
+    'Risk:Reward','Kelly Criterion','Sharpe Ratio','Max Drawdown',
+    'EMA 21/50','Bull Flag','Journal','Backtesting',
+    'Discipline','Liquidity','Position Size','MACD Cross',
+    'Support','Resistance','FVG','Break & Retest',
+    'Psychology','Confluence','Momentum','Structure',
   ];
+  const NODES = LABELS.map((_,i)=>{
+    const theta = (i/LABELS.length)*Math.PI*2;
+    const phi   = (Math.random()-0.5)*Math.PI;
+    const r     = 120+Math.random()*160;
+    return {
+      ox: Math.cos(theta)*Math.cos(phi)*r,
+      oy: Math.sin(phi)*r,
+      oz: Math.sin(theta)*Math.cos(phi)*r,
+      x:0, y:0, z:0,
+      label: LABELS[i],
+      size: 2+Math.random()*2,
+      bright: Math.random()>.6,
+      pulse: Math.random()*Math.PI*2,
+    };
+  });
 
-  const cards = Array.from({length: Math.min(6, Math.floor(W()/200))}, (_,i) => ({
-    x: (W()/(Math.min(6,Math.floor(W()/200)))) * i + Math.random()*80,
-    y: H()*0.1 + Math.random() * H()*0.7,
-    vy: -(0.08 + Math.random()*0.12),
-    vx: (Math.random()-0.5)*0.05,
-    alpha: 0,
-    targetAlpha: 0.06 + Math.random()*0.08,
-    card: CARDS[i % CARDS.length],
-    w: 140, h: 72,
-    phase: Math.random()*Math.PI*2,
-    speed: 0.004 + Math.random()*0.003,
-  }));
-
-  // ── 2. Floating text particles ─────────────────────────────────────────────
-  const WORDS = [
-    'discipline','patience','process','review','backtest','journal',
-    'R multiple','drawdown','edge','consistency','psychology','system',
-    'confluence','structure','momentum','breakout','liquidity','bias',
-  ];
-  const particles = Array.from({length:40}, () => mkParticle());
-  function mkParticle(){ return {
-    x: Math.random()*W(), y: Math.random()*H(),
-    vy: -(0.1+Math.random()*0.2), vx: (Math.random()-.5)*0.06,
-    word: WORDS[Math.floor(Math.random()*WORDS.length)],
-    alpha: 0.03+Math.random()*0.07, size: 9+Math.random()*4,
-    life: Math.random(), lifeDir: Math.random()>.5?1:-1,
-  };}
-
-  // ── 3. Mini candlestick charts drifting through space ─────────────────────
-  const CANDLES = Array.from({length:8}, () => mkCandle());
-  function mkCandle(){ return {
-    x: Math.random()*W(), y: Math.random()*H(),
-    vy: -(0.06+Math.random()*0.1), vx: (Math.random()-.5)*0.04,
-    alpha: 0.04+Math.random()*0.06,
-    bars: Array.from({length:7}, (_,i)=>({
-      open: 0.3+Math.random()*0.4,
-      close: 0.3+Math.random()*0.4,
-      high: 0.7+Math.random()*0.25,
-      low:  0.05+Math.random()*0.15,
-      bull: Math.random()>.45,
-    })),
-    scale: 18+Math.random()*14,
-  };}
-
-  // ── 4. Subtle horizontal notebook lines ───────────────────────────────────
-  let lineOff = 0;
-
-  // ── 5. Connection web between nearby particles ─────────────────────────────
-  function drawWeb(){
-    for(let i=0;i<particles.length;i++){
-      for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<120){
-          ctx.strokeStyle=G+(1-d/120)*0.03+')';
-          ctx.lineWidth=0.4;
-          ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
-          ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke();
-        }
-      }
+  // Connect nearby nodes
+  const EDGES = [];
+  for(let i=0;i<NODES.length;i++){
+    for(let j=i+1;j<NODES.length;j++){
+      const dx=NODES[i].ox-NODES[j].ox, dy=NODES[i].oy-NODES[j].oy, dz=NODES[i].oz-NODES[j].oz;
+      if(Math.sqrt(dx*dx+dy*dy+dz*dz)<180) EDGES.push([i,j]);
     }
   }
 
-  function drawCandleChart(c){
-    const {x,y,bars,scale,alpha} = c;
-    const bw = scale*0.55, gap = scale*0.7;
-    ctx.globalAlpha = alpha;
-    bars.forEach((b,i)=>{
-      const bx = x + i*gap;
-      const topBody = y - Math.max(b.open,b.close)*scale;
-      const botBody = y - Math.min(b.open,b.close)*scale;
-      const bh = Math.max(2, botBody-topBody);
-      // Wick
-      ctx.strokeStyle = b.bull ? '#4ade80' : '#f87171';
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.moveTo(bx+bw/2, y-b.high*scale);
-      ctx.lineTo(bx+bw/2, y-b.low*scale);
-      ctx.stroke();
-      // Body
-      ctx.fillStyle = b.bull ? G+'0.5)' : 'rgba(248,113,113,0.4)';
-      ctx.fillRect(bx, topBody, bw, bh);
-    });
-    ctx.globalAlpha = 1;
-  }
+  // 2. Floating 3D book-like panels drifting through space
+  const CARDS3D = [
+    {lines:['RULE #1','Risk max 1%','Per trade'],    color:'#4ade80'},
+    {lines:['PATTERN','Bull Flag','Volume + Break'],  color:'#86efac'},
+    {lines:['REVIEW','Sunday session','All trades'],  color:'#4ade80'},
+    {lines:['FORMULA','Kelly = W−L/R','Position size'],color:'#a7f3d0'},
+    {lines:['MINDSET','Process > P&L','Stay consistent'],color:'#4ade80'},
+    {lines:['QUANT','Sharpe > 1.5','Seek the edge'], color:'#86efac'},
+  ];
+  const panels = CARDS3D.map((c,i)=>({
+    ...c,
+    ox: (Math.random()-0.5)*500,
+    oy: (Math.random()-0.5)*300,
+    oz: -100+Math.random()*400,
+    vy: -(0.3+Math.random()*0.4),
+    vx: (Math.random()-0.5)*0.15,
+    rotX: Math.random()*0.3-0.15,
+    rotY: Math.random()*0.3-0.15,
+    alpha: 0.05+Math.random()*0.1,
+    w:130, h:65,
+  }));
 
-  function drawCard(c){
-    const {x,y,w,h,card,alpha,phase,speed} = c;
-    const floatY = y + Math.sin(phase)*6;
-    ctx.globalAlpha = alpha;
-    // Card background
-    ctx.fillStyle = 'rgba(3,10,3,0.6)';
-    ctx.strokeStyle = G+'0.15)';
-    ctx.lineWidth = 0.8;
-    roundRect(ctx, x, floatY, w, h, 6);
-    ctx.fill(); ctx.stroke();
-    // Tag
-    ctx.fillStyle = G+'0.5)';
-    ctx.font = '700 7px "DM Mono",monospace';
-    ctx.fillText(card.tag, x+10, floatY+13);
-    // Lines
-    ctx.fillStyle = M+'0.45)';
-    ctx.font = '10px "DM Mono",monospace';
-    card.lines.forEach((l,i)=>{
-      ctx.globalAlpha = alpha * (i===0?0.9:0.55);
-      ctx.fillText(l, x+10, floatY+26+i*14);
-    });
-    ctx.globalAlpha = 1;
-  }
+  // 3. Floating formula particles at random 3D positions
+  const FORMULAS = [
+    'E[R] = Σpᵢrᵢ', 'σ = 1.4%', 'β = 0.82', 'R² = 0.91',
+    'ATR × 1.5', 'EV > 0', 'SL = −1R', 'TP = +2R',
+    'WR = 52%', 'PF = 1.8', 'DD < 10%', 'RRR > 2',
+  ];
+  const fparticles = FORMULAS.map((f,i)=>({
+    text: f,
+    ox: (Math.random()-0.5)*600,
+    oy: (Math.random()-0.5)*400,
+    oz: Math.random()*600-100,
+    vy: -(0.2+Math.random()*0.3),
+    alpha: 0.08+Math.random()*0.12,
+    size: 9+Math.random()*4,
+    pulse: Math.random()*Math.PI*2,
+  }));
 
-  function roundRect(ctx,x,y,w,h,r){
-    ctx.beginPath();
-    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
-    ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r);
-    ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h);
-    ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r);
-    ctx.arcTo(x,y,x+r,y,r); ctx.closePath();
+  // ── Animation state ───────────────────────────────────────────────────────
+  let rotY=0, rotX=0.15, t=0;
+
+  function rotateY(x,z,a){ return { x:x*Math.cos(a)+z*Math.sin(a), z:-x*Math.sin(a)+z*Math.cos(a) }; }
+  function rotateX(y,z,a){ return { y:y*Math.cos(a)-z*Math.sin(a), z:y*Math.sin(a)+z*Math.cos(a) }; }
+
+  function transformNode(ox,oy,oz){
+    let ry=rotateY(ox,oz,rotY);
+    let rx=rotateX(oy,ry.z,rotX);
+    return { x:ry.x, y:rx.y, z:rx.z };
   }
 
   function draw(){
     if(!_journalRaf && document.getElementById('page-journal-page')?.style.display==='none') return;
-    ctx.clearRect(0,0,W(),H());
+    ctx.clearRect(0,0,W,H);
+    t+=0.008; rotY+=0.0025;
 
-    // Notebook lines
-    lineOff=(lineOff+0.12)%(H()/14);
-    for(let i=0;i<16;i++){
-      const ly=(i*H()/14)+lineOff;
-      const g=ctx.createLinearGradient(0,ly,W(),ly);
-      g.addColorStop(0,G+'0)'); g.addColorStop(0.15,G+'0.018)');
-      g.addColorStop(0.85,G+'0.018)'); g.addColorStop(1,G+'0)');
-      ctx.strokeStyle=g; ctx.lineWidth=0.5;
-      ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W(),ly); ctx.stroke();
-    }
+    // Dark radial centre glow
+    const grd=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.6);
+    grd.addColorStop(0,'rgba(34,197,94,0.03)');
+    grd.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
 
-    // Web
-    drawWeb();
-
-    // Candlestick charts
-    CANDLES.forEach(c=>{
-      drawCandleChart(c);
-      c.x+=c.vx; c.y+=c.vy;
-      if(c.y<-80){ Object.assign(c,mkCandle()); c.y=H()+20; }
-      if(c.x<-200) c.x=W()+10;
-      if(c.x>W()+200) c.x=-10;
+    // Transform all nodes
+    NODES.forEach(n=>{
+      const r=transformNode(n.ox,n.oy,n.oz);
+      n.x=r.x; n.y=r.y; n.z=r.z;
     });
 
-    // Floating word particles
-    particles.forEach(p=>{
-      p.life+=0.003*p.lifeDir;
-      if(p.life>1||p.life<0){ p.lifeDir*=-1; }
-      const pulse=0.5+0.5*Math.sin(p.life*Math.PI);
-      ctx.globalAlpha=p.alpha*pulse;
-      ctx.font=`${p.size}px "DM Mono",monospace`;
-      ctx.fillStyle='#4ade80';
-      ctx.fillText(p.word, p.x, p.y);
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.y<-20){ Object.assign(p,mkParticle()); p.y=H()+10; }
-      if(p.x<-150) p.x=W()+10;
-      if(p.x>W()+150) p.x=-10;
+    // Draw edges (behind nodes)
+    EDGES.forEach(([i,j])=>{
+      const a=NODES[i], b=NODES[j];
+      const pa=project(a.x,a.y,a.z), pb=project(b.x,b.y,b.z);
+      const midZ=(a.z+b.z)/2;
+      const alpha=(1-Math.abs(midZ)/350)*0.06;
+      if(alpha<=0) return;
+      ctx.strokeStyle=`rgba(34,197,94,${alpha})`;
+      ctx.lineWidth=0.6*Math.min(pa.scale,pb.scale);
+      ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
+    });
+
+    // Draw nodes + labels (sorted back to front)
+    const sorted=[...NODES].sort((a,b)=>a.z-b.z);
+    sorted.forEach(n=>{
+      const p=project(n.x,n.y,n.z);
+      const depth=1-Math.abs(n.z)/400;
+      if(depth<=0) return;
+      n.pulse+=0.02;
+      const pulse=0.7+0.3*Math.sin(n.pulse);
+      const alpha=(n.bright?0.7:0.35)*depth*pulse;
+      // Node dot
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle=n.bright?'#a7f3d0':'#4ade80';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,n.size*p.scale*0.8,0,Math.PI*2);
+      ctx.fill();
+      // Label
+      if(depth>0.35){
+        ctx.globalAlpha=alpha*0.9;
+        ctx.font=`${Math.max(7,9*p.scale)}px "DM Mono",monospace`;
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
+        ctx.fillText(n.label, p.x+n.size*p.scale+3, p.y+3);
+      }
     });
     ctx.globalAlpha=1;
 
-    // Floating study cards
-    cards.forEach(c=>{
-      c.phase+=c.speed;
-      c.alpha=Math.min(c.alpha+0.001, c.targetAlpha);
-      drawCard(c);
-      c.x+=c.vx; c.y+=c.vy;
-      if(c.y<-100){ c.y=H()+10; c.x=Math.random()*W(); c.alpha=0; c.card=CARDS[Math.floor(Math.random()*CARDS.length)]; }
+    // Draw floating formula particles
+    fparticles.forEach(fp=>{
+      fp.oy+=fp.vy;
+      if(fp.oy<-H/2-50){ fp.oy=H/2+50; fp.ox=(Math.random()-0.5)*600; }
+      fp.pulse+=0.015;
+      const tr=transformNode(fp.ox,fp.oy,fp.oz);
+      const p=project(tr.x,tr.y,tr.z);
+      const depth=1-Math.abs(tr.z)/500;
+      if(depth<=0) return;
+      const a=fp.alpha*depth*(0.7+0.3*Math.sin(fp.pulse));
+      ctx.globalAlpha=a;
+      ctx.font=`${Math.max(8,fp.size*p.scale)}px "DM Mono",monospace`;
+      ctx.fillStyle='#4ade80';
+      ctx.fillText(fp.text,p.x,p.y);
     });
+    ctx.globalAlpha=1;
 
-    _journalRaf = requestAnimationFrame(draw);
+    // Draw floating 3D panels
+    panels.forEach(pn=>{
+      pn.oy+=pn.vy;
+      if(pn.oy<-H/2-80){ pn.oy=H/2+80; pn.ox=(Math.random()-0.5)*500; }
+      const tr=transformNode(pn.ox,pn.oy,pn.oz);
+      const p=project(tr.x,tr.y,tr.z);
+      const depth=1-Math.abs(tr.z)/500;
+      if(depth<0.1) return;
+      const sc=p.scale;
+      const a=pn.alpha*depth;
+      const pw=pn.w*sc, ph=pn.h*sc;
+      ctx.globalAlpha=a;
+      // Panel bg
+      ctx.fillStyle='rgba(2,8,2,0.7)';
+      ctx.strokeStyle=`rgba(34,197,94,${0.2*depth})`;
+      ctx.lineWidth=0.8;
+      ctx.beginPath();
+      ctx.roundRect(p.x-pw/2,p.y-ph/2,pw,ph,4*sc);
+      ctx.fill(); ctx.stroke();
+      // Top accent line
+      ctx.fillStyle=pn.color;
+      ctx.fillRect(p.x-pw/2+4*sc, p.y-ph/2+3*sc, pw-8*sc, 1.5*sc);
+      // Lines
+      pn.lines.forEach((ln,i)=>{
+        ctx.globalAlpha=a*(i===0?0.9:0.5);
+        ctx.font=`${Math.max(6,8*sc)}px "DM Mono",monospace`;
+        ctx.fillStyle=i===0?pn.color:'#a7f3d0';
+        ctx.fillText(ln, p.x-pw/2+6*sc, p.y-ph/2+(14+i*12)*sc);
+      });
+    });
+    ctx.globalAlpha=1;
+
+    _journalRaf=requestAnimationFrame(draw);
   }
   draw();
 }
+
 
 // ── Hero chart animation — overlays on photo's chart area ────────────────────
 (function(){
@@ -4425,7 +4498,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
-<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.7;display:none"></canvas>
+<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:1;display:none"></canvas>
   <!-- Journal Hero Intro -->
   <div class="jrnl-hero z">
     <div class="jrnl-hero-inner">
