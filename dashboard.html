@@ -1051,7 +1051,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .qs-modal-source-desc{font-size:10px;color:var(--t4);line-height:1.5}
 
 /* ── Optional Analysis Tools ─────────────────────────────────────────────── */
-.opt-tools-wrap{margin-top:32px;padding-top:24px;border-top:1px solid var(--br)}
+.opt-tools-wrap{margin-top:0;padding-top:0;border-top:none}
 .opt-tools-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:14px}
 .opt-tools-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .opt-tc{background:var(--s2);border:1px solid var(--br);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
@@ -1120,7 +1120,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="npbtn active" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
     <button class="npbtn" id="np-markets" onclick="goPage('markets')" data-i18n="marketIntel">Market Intelligence</button>
     <button class="npbtn" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journal">Trading Journal</button>
-    <button class="npbtn" id="np-backtest" onclick="goPage('backtest')">Backtesting</button>
+    <button class="npbtn" id="np-quant" onclick="goPage('quant')">Quant Tools</button>
   </div>
   <div class="nr">
     <div class="lang-switcher">
@@ -1166,7 +1166,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="hp-np hp-np-on" id="np-home" onclick="goPage('home')" data-i18n="home">Home</button>
     <button class="hp-np" id="np-markets" onclick="goPage('markets')" data-i18n="intelligence">Intelligence</button>
     <button class="hp-np" id="np-journal-page" onclick="goPage('journal-page')" data-i18n="journalShort">Journal</button>
-    <button class="hp-np" id="np-backtest" onclick="goPage('backtest')">Backtest</button>
+    <button class="hp-np" id="np-quant" onclick="goPage('quant')">Quant Tools</button>
   </div>
   <div class="hp-nav-r">
     <div class="hp-live"><span class="hp-dot"></span>LIVE</div>
@@ -1344,147 +1344,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
       <span class="tab-icon">🏢</span><span>Top 30 Stocks</span>
     </button>
   </div>
-<!-- ── Optional Quant Analysis Tools ────────────────────────────── -->
-  <div class="opt-tools-wrap">
-    <div class="opt-tools-label">Optional Quantitative Analysis Tools</div>
-    <div class="opt-tools-grid">
-      <div class="opt-tc" id="otc-mc" onclick="optOpenTool('mc')">
-        <div class="opt-tc-head"><div class="opt-ti b">⟳</div><div><div class="opt-tn">Monte Carlo</div><div class="opt-td">Simulate equity curve outcomes</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Risk · Drawdown</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-garch" onclick="optOpenTool('garch')">
-        <div class="opt-tc-head"><div class="opt-ti g">σ</div><div><div class="opt-tn">GARCH Model</div><div class="opt-td">Volatility clustering & forecast</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Volatility · GARCH</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-linreg" onclick="optOpenTool('linreg')">
-        <div class="opt-tc-head"><div class="opt-ti a">∕</div><div><div class="opt-tn">Linear Regression</div><div class="opt-td">Trend channel & price forecast</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Trend · R²</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-nn" onclick="optOpenTool('nn')">
-        <div class="opt-tc-head"><div class="opt-ti p">◉</div><div><div class="opt-tn">Neural Network</div><div class="opt-td">LSTM / GRU price prediction</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Deep Learning</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-arima" onclick="optOpenTool('arima')">
-        <div class="opt-tc-head"><div class="opt-ti b">≈</div><div><div class="opt-tn">ARIMA Model</div><div class="opt-td">Time series with confidence bands</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">AIC · BIC · CI</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-hmm" onclick="optOpenTool('hmm')">
-        <div class="opt-tc-head"><div class="opt-ti t">◈</div><div><div class="opt-tn">HMM Regimes</div><div class="opt-td">Detect market regime states</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Regimes · States</span><button class="opt-rb">Run</button></div>
-      </div>
-      <div class="opt-tc" id="otc-kalman" onclick="optOpenTool('kalman')">
-        <div class="opt-tc-head"><div class="opt-ti g">∿</div><div><div class="opt-tn">Kalman Filter</div><div class="opt-td">Noise-free trend extraction</div></div></div>
-        <div class="opt-tc-foot"><span class="opt-tc-tag">Signal · Noise · Q/R</span><button class="opt-rb">Run</button></div>
-      </div>
-    </div>
-
-    <!-- Monte Carlo Panel -->
-    <div class="opt-panel" id="opt-p-mc">
-      <div class="opt-ph"><div class="opt-ptitle">MONTE CARLO SIMULATION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Initial Balance ($)</label><input id="omc-bal" value="10000" type="number"></div><div class="opt-inp-g"><label class="opt-il">Risk per Trade (%)</label><input id="omc-risk" value="1" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Win Rate (%)</label><input id="omc-wr" value="55" type="number"></div><div class="opt-inp-g"><label class="opt-il">R:R Ratio</label><input id="omc-rr" value="2" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Trades</label><input id="omc-trades" value="200" type="number"></div><div class="opt-inp-g"><label class="opt-il">Simulations</label><input id="omc-sims" value="300" type="number"></div></div>
-        <button class="opt-gbtn" onclick="runOptMC()">RUN MONTE CARLO SIMULATION</button>
-        <div class="opt-ld" id="opt-ld-mc"><div class="opt-sp"></div>Running simulations via AI analysis...</div>
-        <div class="opt-res" id="opt-r-mc">
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv gr" id="omc-mean">—</div><div class="opt-sl">Mean Final</div></div><div class="opt-sc"><div class="opt-sv" id="omc-med">—</div><div class="opt-sl">Median</div></div><div class="opt-sc"><div class="opt-sv rd" id="omc-dd">—</div><div class="opt-sl">Avg Drawdown</div></div><div class="opt-sc"><div class="opt-sv am" id="omc-ruin">—</div><div class="opt-sl">Risk of Ruin</div></div></div>
-          <div class="opt-ca"><canvas id="och-mc" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-mc">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- GARCH Panel -->
-    <div class="opt-panel" id="opt-p-garch">
-      <div class="opt-ph"><div class="opt-ptitle">GARCH VOLATILITY MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ogarch-sym" value="Gold (XAU/USD)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="ogarch-model"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="ogarch-fh" value="10" type="number"></div></div>
-        <button class="opt-gbtn" onclick="runOptGARCH()">FIT GARCH MODEL</button>
-        <div class="opt-ld" id="opt-ld-garch"><div class="opt-sp"></div>Fitting volatility model...</div>
-        <div class="opt-res" id="opt-r-garch">
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="ogarch-o">—</div><div class="opt-sl">Omega (ω)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-a">—</div><div class="opt-sl">Alpha (α)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-b">—</div><div class="opt-sl">Beta (β)</div></div><div class="opt-sc"><div class="opt-sv am" id="ogarch-p">—</div><div class="opt-sl">Persistence</div></div></div>
-          <div class="opt-ca"><canvas id="och-garch" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-garch">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Linear Regression Panel -->
-    <div class="opt-panel" id="opt-p-linreg">
-      <div class="opt-ph"><div class="opt-ptitle">LINEAR REGRESSION CHANNEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="olr-sym" value="BTC/USD"></div><div class="opt-inp-g"><label class="opt-il">Regression Type</label><select id="olr-type"><option>Linear</option><option>Logarithmic</option><option>Polynomial</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Periods</label><input id="olr-fh" value="10" type="number"></div><div class="opt-inp-g"><label class="opt-il">Band Width (σ)</label><input id="olr-bw" value="2" type="number" step="0.5"></div></div>
-        <button class="opt-gbtn" onclick="runOptLinReg()">RUN REGRESSION ANALYSIS</button>
-        <div class="opt-ld" id="opt-ld-linreg"><div class="opt-sp"></div>Computing regression...</div>
-        <div class="opt-res" id="opt-r-linreg">
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="olr-slope">—</div><div class="opt-sl">Slope</div></div><div class="opt-sc"><div class="opt-sv bl" id="olr-r2">—</div><div class="opt-sl">R²</div></div><div class="opt-sc"><div class="opt-sv gr" id="olr-dir">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="olr-pos">—</div><div class="opt-sl">Position</div></div></div>
-          <div class="opt-ca"><canvas id="och-linreg" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-linreg">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Neural Network Panel -->
-    <div class="opt-panel" id="opt-p-nn">
-      <div class="opt-ph"><div class="opt-ptitle">NEURAL NETWORK PREDICTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="onn-sym" value="ETH/USD"></div><div class="opt-inp-g"><label class="opt-il">Model</label><select id="onn-model"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select></div><div class="opt-inp-g"><label class="opt-il">Sequence Length</label><input id="onn-seq" value="60" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="onn-fh" value="5" type="number"></div><div class="opt-inp-g"><label class="opt-il">Features</label><select id="onn-feat"><option>Price + Volume</option><option>OHLCV + RSI</option><option>OHLCV + All Indicators</option></select></div></div>
-        <button class="opt-gbtn" onclick="runOptNN()">SIMULATE NEURAL NETWORK</button>
-        <div class="opt-ld" id="opt-ld-nn"><div class="opt-sp"></div>Simulating neural network via Claude...</div>
-        <div class="opt-res" id="opt-r-nn">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span id="onn-sig" class="opt-signal opt-neut">—</span><span style="font-size:11px;color:var(--t3)">Confidence: <strong id="onn-conf" style="color:var(--t1)">—</strong></span></div>
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="onn-mae">—</div><div class="opt-sl">MAE</div></div><div class="opt-sc"><div class="opt-sv" id="onn-rmse">—</div><div class="opt-sl">RMSE</div></div><div class="opt-sc"><div class="opt-sv bl" id="onn-acc">—</div><div class="opt-sl">Direction Acc.</div></div><div class="opt-sc"><div class="opt-sv am" id="onn-params">—</div><div class="opt-sl">Parameters</div></div></div>
-          <div class="opt-ca"><canvas id="och-nn" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-nn">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ARIMA Panel -->
-    <div class="opt-panel" id="opt-p-arima">
-      <div class="opt-ph"><div class="opt-ptitle">ARIMA TIME SERIES MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="oarima-sym" value="EUR/USD"></div><div class="opt-inp-g"><label class="opt-il">p (AR)</label><input id="oarima-p" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">d (Integration)</label><input id="oarima-d" value="1" type="number"></div><div class="opt-inp-g"><label class="opt-il">q (MA)</label><input id="oarima-q" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="oarima-fh" value="10" type="number"></div></div>
-        <button class="opt-gbtn" onclick="runOptARIMA()">FIT ARIMA MODEL</button>
-        <div class="opt-ld" id="opt-ld-arima"><div class="opt-sp"></div>Fitting ARIMA model...</div>
-        <div class="opt-res" id="opt-r-arima">
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="oarima-aic">—</div><div class="opt-sl">AIC</div></div><div class="opt-sc"><div class="opt-sv" id="oarima-bic">—</div><div class="opt-sl">BIC</div></div><div class="opt-sc"><div class="opt-sv gr" id="oarima-dir">—</div><div class="opt-sl">Forecast Dir.</div></div><div class="opt-sc"><div class="opt-sv am" id="oarima-rel">—</div><div class="opt-sl">Reliability</div></div></div>
-          <div class="opt-ca"><canvas id="och-arima" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-arima">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- HMM Panel -->
-    <div class="opt-panel" id="opt-p-hmm">
-      <div class="opt-ph"><div class="opt-ptitle">HMM MARKET REGIME DETECTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig2"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ohmm-sym" value="S&amp;P 500"></div><div class="opt-inp-g"><label class="opt-il">Number of States</label><select id="ohmm-states"><option value="2">2 States — Bull / Bear</option><option value="3" selected>3 States — Bull / Neutral / Bear</option><option value="4">4 States</option></select></div></div>
-        <button class="opt-gbtn" onclick="runOptHMM()">DETECT MARKET REGIMES</button>
-        <div class="opt-ld" id="opt-ld-hmm"><div class="opt-sp"></div>Detecting market regimes...</div>
-        <div class="opt-res" id="opt-r-hmm">
-          <div id="ohmm-regime-cards" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"></div>
-          <div class="opt-ca"><canvas id="och-hmm" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-hmm">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Kalman Panel -->
-    <div class="opt-panel" id="opt-p-kalman">
-      <div class="opt-ph"><div class="opt-ptitle">KALMAN FILTER — TREND EXTRACTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
-      <div class="opt-pb">
-        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="okl-sym" value="Crude Oil (WTI)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="okl-model"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select></div><div class="opt-inp-g"><label class="opt-il">Process Noise (Q)</label><input id="okl-q" value="0.001" type="number" step="0.001"></div><div class="opt-inp-g"><label class="opt-il">Measurement Noise (R)</label><input id="okl-r" value="0.1" type="number" step="0.01"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="okl-fh" value="10" type="number"></div></div>
-        <button class="opt-gbtn" onclick="runOptKalman()">APPLY KALMAN FILTER</button>
-        <div class="opt-ld" id="opt-ld-kalman"><div class="opt-sp"></div>Filtering signal...</div>
-        <div class="opt-res" id="opt-r-kalman">
-          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="okl-snr">—</div><div class="opt-sl">Signal/Noise</div></div><div class="opt-sc"><div class="opt-sv" id="okl-lag">—</div><div class="opt-sl">Lag (bars)</div></div><div class="opt-sc"><div class="opt-sv gr" id="okl-trend">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="okl-cond">—</div><div class="opt-sl">Market State</div></div></div>
-          <div class="opt-ca"><canvas id="och-kalman" height="150"></canvas></div>
-          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-kalman">—</div></div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end opt-tools-wrap -->
 
 </div>
   <div id="s-gold" class="sec"></div>
@@ -1702,8 +1561,8 @@ function goPage(page){
   const jcanvas = document.getElementById('journal-canvas');
   if(jcanvas) jcanvas.style.display='none';
   // Explicitly ensure backtest fixed page is hidden when not active
-  const btp = document.getElementById('page-backtest');
-  if(btp && page !== 'backtest'){ btp.style.display='none'; btp.style.pointerEvents='none'; }
+  const btp = document.getElementById('page-quant');
+  if(btp && page !== 'quant'){ btp.style.display='none'; btp.style.pointerEvents='none'; }
   const el = document.getElementById('page-'+page);
   if(el){ el.style.display='block'; el.style.pointerEvents=''; }
 
@@ -1722,9 +1581,8 @@ function goPage(page){
   if(page==='journal-page'){
     loadJournal();
   }
-  if(page==='backtest'){
-    btPageInit();
-    startBgAnim('backtest');
+  if(page==='quant'){
+    // Quant Tools page — no special init needed
   }
   window.scrollTo(0,0);
   // Start/stop background animations
@@ -3678,8 +3536,45 @@ function optOpenTool(name){
   document.querySelectorAll('.opt-tc').forEach(c=>c.classList.remove('active'));
   document.getElementById('opt-p-'+name)?.classList.add('vis');
   document.getElementById('otc-'+name)?.classList.add('active');
+  // Populate HMM asset dropdown when opening
+  if(name==='hmm') optPopulateHmmAssets();
   document.getElementById('opt-p-'+name)?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
+function optPopulateHmmAssets(){
+  const sel = document.getElementById('ohmm-sym');
+  if(!sel || !prices || !Object.keys(prices).length) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select Asset —</option>';
+  const groups = {commodity:'Gold & Commodities', forex:'Forex', crypto:'Crypto', stocks:'Stocks', indexes:'Indexes'};
+  const byType = {};
+  Object.entries(prices).forEach(([id,p])=>{
+    if(!p || !p.price || id==='_meta') return;
+    const t = p.tab || p.type || 'other';
+    if(!byType[t]) byType[t]=[];
+    byType[t].push({id, name: p.name||p.sym||id, price: p.price});
+  });
+  ['crypto','forex','oil','stocks','indexes'].forEach(tab=>{
+    const items = byType[tab];
+    if(!items?.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = tab==='oil'?'Gold & Commodities':tab==='crypto'?'Crypto Top 30':tab==='forex'?'Forex':tab==='stocks'?'Top 30 Stocks':'Global Indexes';
+    items.sort((a,b)=>a.name.localeCompare(b.name)).forEach(item=>{
+      const o = document.createElement('option');
+      o.value = item.id;
+      o.textContent = `${item.name}`;
+      if(item.id===current || item.id===selId) o.selected=true;
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
+  });
+  // Pre-select currently viewed asset if available
+  if(selId && sel.querySelector(`option[value="${selId}"]`)){
+    sel.value = selId;
+  }
+}
+
+function optHmmSyncName(){}
 function optCloseAll(){
   document.querySelectorAll('.opt-panel').forEach(p=>p.classList.remove('vis'));
   document.querySelectorAll('.opt-tc').forEach(c=>c.classList.remove('active'));
@@ -4073,9 +3968,10 @@ Statistical, concise, actionable.`;
 // ── 6. HMM REGIMES ────────────────────────────────────────────────────────────
 async function runOptHMM(){
   optLoading('hmm');
-  const sym=document.getElementById('ohmm-sym').value;
+  const assetId=document.getElementById('ohmm-sym').value;
+  const sym=assetId && prices[assetId] ? (prices[assetId].name||assetId) : document.getElementById('ohmm-sym').options[document.getElementById('ohmm-sym').selectedIndex]?.text || 'Asset';
   const states=+document.getElementById('ohmm-states').value;
-  const pd=getOptPriceData();
+  const pd=assetId && prices[assetId]?.closes?.length>5 ? {closes:prices[assetId].closes} : getOptPriceData();
   const closes=pd?pd.closes:optGenPrices(80);
   const returns=closes.slice(1).map((v,i)=>+((v-closes[i])/closes[i]*100).toFixed(4));
   const n=returns.length;
@@ -5068,187 +4964,164 @@ setInterval(loadNewsTicker, 10*60*1000);
 setLang(localStorage.getItem('sc_lang')||'en');
 
 </script>
-<!-- BACKTESTING PAGE -->
-<div id="page-backtest" class="page" style="display:none;position:fixed;top:56px;left:0;right:0;bottom:0;z-index:500;overflow:hidden;background:#030704;pointer-events:none">
-<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
 
-  <!-- Top bar -->
-  <div class="bt-bar">
-    <div class="bt-title">BACKTESTING</div>
-    <div class="bt-sep"></div>
+<!-- QUANT TOOLS PAGE -->
+<div id="page-quant" class="page" style="display:none">
+<div class="main" style="padding-bottom:80px">
 
-    <!-- Asset selector -->
-    <div style="position:relative">
-      <button class="bt-asset-btn" id="bt-asset-btn" onclick="btToggleDd()">
-        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="3.5" stroke="var(--g)" stroke-width="1"/></svg>
-        <span id="bt-asset-label">Select Asset</span>
-        <span class="bt-asset-tag tag-crypto" id="bt-asset-tag" style="display:none"></span>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" id="bt-caret"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-      <div class="bt-dropdown" id="bt-dd">
-        <input class="bt-dd-search" id="bt-dd-search" placeholder="Search..." oninput="btBuildDd(this.value)" autocomplete="off"/>
-        <div class="bt-dd-list" id="bt-dd-list"></div>
+  <section class="hero z" style="padding-bottom:32px">
+    <div class="htag"><div class="htag-dot"></div><span>Quantitative Analysis Suite</span></div>
+    <h1>Quant<i>Tools</i></h1>
+    <p class="hsub">Seven institutional-grade quantitative models at your fingertips. Monte Carlo simulation, GARCH volatility, Linear Regression channels, Neural Network prediction, ARIMA time series, HMM regime detection, and Kalman Filter signal extraction — all powered by live market data and AI interpretation.</p>
+  </section>
+
+<!-- ── Optional Quant Analysis Tools ────────────────────────────── -->
+  <div class="opt-tools-wrap">
+    <div class="opt-tools-label">Select a Tool to Begin</div>
+    <div class="opt-tools-grid">
+      <div class="opt-tc" id="otc-mc" onclick="optOpenTool('mc')">
+        <div class="opt-tc-head"><div class="opt-ti b">⟳</div><div><div class="opt-tn">Monte Carlo</div><div class="opt-td">Simulate equity curve outcomes</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Risk · Drawdown</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-garch" onclick="optOpenTool('garch')">
+        <div class="opt-tc-head"><div class="opt-ti g">σ</div><div><div class="opt-tn">GARCH Model</div><div class="opt-td">Volatility clustering & forecast</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Volatility · GARCH</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-linreg" onclick="optOpenTool('linreg')">
+        <div class="opt-tc-head"><div class="opt-ti a">∕</div><div><div class="opt-tn">Linear Regression</div><div class="opt-td">Trend channel & price forecast</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Trend · R²</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-nn" onclick="optOpenTool('nn')">
+        <div class="opt-tc-head"><div class="opt-ti p">◉</div><div><div class="opt-tn">Neural Network</div><div class="opt-td">LSTM / GRU price prediction</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Deep Learning</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-arima" onclick="optOpenTool('arima')">
+        <div class="opt-tc-head"><div class="opt-ti b">≈</div><div><div class="opt-tn">ARIMA Model</div><div class="opt-td">Time series with confidence bands</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">AIC · BIC · CI</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-hmm" onclick="optOpenTool('hmm')">
+        <div class="opt-tc-head"><div class="opt-ti t">◈</div><div><div class="opt-tn">HMM Regimes</div><div class="opt-td">Detect market regime states</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Regimes · States</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-kalman" onclick="optOpenTool('kalman')">
+        <div class="opt-tc-head"><div class="opt-ti g">∿</div><div><div class="opt-tn">Kalman Filter</div><div class="opt-td">Noise-free trend extraction</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Signal · Noise · Q/R</span><button class="opt-rb">Run</button></div>
       </div>
     </div>
 
-    <div class="bt-sep"></div>
-
-    <!-- Timeframes -->
-    <div class="bt-tfs" id="bt-tfs">
-      <button class="bt-tf" data-tf="M1">M1</button>
-      <button class="bt-tf" data-tf="M5">M5</button>
-      <button class="bt-tf" data-tf="M15">M15</button>
-      <button class="bt-tf" data-tf="M30">M30</button>
-      <button class="bt-tf on" data-tf="H1">H1</button>
-      <button class="bt-tf" data-tf="H4">H4</button>
-      <button class="bt-tf" data-tf="D1">D1</button>
-      <button class="bt-tf" data-tf="W1">W1</button>
-    </div>
-
-    <div class="bt-sep"></div>
-
-    <!-- Dates -->
-    <input class="bt-date" id="bt-d1" type="date"/>
-    <span style="color:var(--t4);font-size:11px;flex-shrink:0">—</span>
-    <input class="bt-date" id="bt-d2" type="date"/>
-
-    <div class="bt-sep"></div>
-
-    <!-- Chart style -->
-    <div class="bt-styles">
-      <button class="bt-tf on" id="bt-cs-candle" onclick="btSetChartStyle('candle')">Candle</button>
-      <button class="bt-tf" id="bt-cs-line" onclick="btSetChartStyle('line')">Line</button>
-      <button class="bt-tf" id="bt-cs-ha" onclick="btSetChartStyle('ha')">HA</button>
-    </div>
-  </div>
-
-  <!-- Body -->
-  <div class="bt-body">
-
-    <!-- Left toolbar -->
-    <div class="bt-toolbar">
-      <div class="bt-tool-lbl">Lines</div>
-      <button class="bt-tool on" id="bt-t-cursor" title="Cursor" onclick="btTool('cursor')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M3 1l10 6-5 1.5-2 5z"/></svg>
-      </button>
-      <button class="bt-tool" id="bt-t-trend" title="Trend Line" onclick="btTool('trend')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="13" x2="14" y2="3"/></svg>
-      </button>
-      <button class="bt-tool" id="bt-t-hline" title="Horizontal Line" onclick="btTool('hline')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="1" y1="8" x2="15" y2="8"/></svg>
-      </button>
-      <button class="bt-tool" id="bt-t-vline" title="Vertical Line" onclick="btTool('vline')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"/></svg>
-      </button>
-      <button class="bt-tool" id="bt-t-ray" title="Ray" onclick="btTool('ray')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="13" x2="14" y2="3"/><circle cx="14" cy="3" r="1.5" fill="currentColor"/></svg>
-      </button>
-      <div class="bt-tool-div"></div>
-      <div class="bt-tool-lbl">Shapes</div>
-      <button class="bt-tool" id="bt-t-rect" title="Rectangle" onclick="btTool('rect')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8"/></svg>
-      </button>
-      <button class="bt-tool" id="bt-t-circle" title="Circle" onclick="btTool('circle')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>
-      </button>
-      <div class="bt-tool-div"></div>
-      <div class="bt-tool-lbl">Fib</div>
-      <button class="bt-tool" id="bt-t-fib" title="Fibonacci Retracement" onclick="btTool('fib')">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1"><line x1="1" y1="13" x2="15" y2="13"/><line x1="1" y1="10" x2="15" y2="10"/><line x1="1" y1="8" x2="15" y2="8"/><line x1="1" y1="5.5" x2="15" y2="5.5"/><line x1="1" y1="3" x2="15" y2="3"/></svg>
-      </button>
-      <div class="bt-tool-div"></div>
-      <div class="bt-tool-lbl">Color</div>
-      <input type="color" class="bt-color" id="bt-color" value="#facc15" title="Color" onchange="btDrawColor=this.value"/>
-      <div class="bt-tool-div"></div>
-      <button class="bt-tool" title="Clear All" onclick="btClearAll()" style="color:#f87171">
-        <svg viewBox="0 0 16 16" width="13" height="13" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="#f87171" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-
-    <!-- Center: chart + replay -->
-    <div class="bt-center">
-      <div class="bt-chart-area" id="bt-chart-area">
-        <!-- Empty state -->
-        <div class="bt-empty" id="bt-empty">
-          <div class="bt-empty-icon">
-            <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><rect x="4" y="30" width="7" height="18" rx="1" fill="rgba(34,197,94,.35)"/><rect x="15" y="22" width="7" height="26" rx="1" fill="rgba(34,197,94,.55)"/><rect x="26" y="12" width="7" height="36" rx="1" fill="var(--g)"/><rect x="37" y="18" width="7" height="30" rx="1" fill="rgba(34,197,94,.55)"/></svg>
-          </div>
-          <div class="bt-empty-title">Select an asset to start</div>
-          <div class="bt-empty-sub">Crypto · Forex · Stocks · Commodities · Indexes</div>
+    <!-- Monte Carlo Panel -->
+    <div class="opt-panel" id="opt-p-mc">
+      <div class="opt-ph"><div class="opt-ptitle">MONTE CARLO SIMULATION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Initial Balance ($)</label><input id="omc-bal" value="10000" type="number"></div><div class="opt-inp-g"><label class="opt-il">Risk per Trade (%)</label><input id="omc-risk" value="1" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Win Rate (%)</label><input id="omc-wr" value="55" type="number"></div><div class="opt-inp-g"><label class="opt-il">R:R Ratio</label><input id="omc-rr" value="2" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Trades</label><input id="omc-trades" value="200" type="number"></div><div class="opt-inp-g"><label class="opt-il">Simulations</label><input id="omc-sims" value="300" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptMC()">RUN MONTE CARLO SIMULATION</button>
+        <div class="opt-ld" id="opt-ld-mc"><div class="opt-sp"></div>Running simulations via AI analysis...</div>
+        <div class="opt-res" id="opt-r-mc">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv gr" id="omc-mean">—</div><div class="opt-sl">Mean Final</div></div><div class="opt-sc"><div class="opt-sv" id="omc-med">—</div><div class="opt-sl">Median</div></div><div class="opt-sc"><div class="opt-sv rd" id="omc-dd">—</div><div class="opt-sl">Avg Drawdown</div></div><div class="opt-sc"><div class="opt-sv am" id="omc-ruin">—</div><div class="opt-sl">Risk of Ruin</div></div></div>
+          <div class="opt-ca"><canvas id="och-mc" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-mc">—</div></div>
         </div>
-        <!-- Loading -->
-        <div class="bt-loading-msg" id="bt-loading" style="display:none">
-          <div class="bt-spinner"></div>
-          <div id="bt-loading-txt">Loading...</div>
-        </div>
-        <!-- Chart -->
-        <div id="bt-chart" style="display:none"></div>
-        <!-- Drawing canvas -->
-        <canvas id="bt-canvas" class="bt-canvas"></canvas>
-        <!-- OHLC info -->
-        <div class="bt-ohlc" id="bt-ohlc"></div>
-      </div>
-
-      <!-- Replay controls -->
-      <div class="bt-replay" id="bt-replay">
-        <div style="display:flex;align-items:center;gap:6px">
-          <button class="bt-rbtn" onclick="btStepBack()">⏮</button>
-          <button class="bt-play" id="bt-playbtn" onclick="btTogglePlay()">▶</button>
-          <button class="bt-rbtn" onclick="btStepFwd()">⏭</button>
-          <button class="bt-rbtn" onclick="btRestartReplay()" style="font-size:10px">↺</button>
-          <div class="bt-speed-wrap">
-            <span class="bt-speed-lbl">SPEED</span>
-            <input type="range" min="1" max="10" value="3" class="bt-speed-sl" id="bt-speed" oninput="btSetSpeed(this.value)">
-            <span class="bt-speed-v" id="bt-speedv">3×</span>
-          </div>
-        </div>
-        <div class="bt-rep-info" id="bt-rep-info">—</div>
-        <div style="font-family:monospace;font-size:9px;color:var(--t4)" id="bt-rep-count"></div>
       </div>
     </div>
 
-    <!-- Right panel -->
-    <div class="bt-panel">
-      <!-- Balance -->
-      <div class="bt-pcard" style="text-align:center">
-        <div class="bt-pcard-title">Virtual Balance</div>
-        <div class="bt-bal" id="bt-bal">$10,000</div>
-        <div class="bt-pnl" id="bt-pnl" style="color:var(--t3)">—</div>
-      </div>
-      <!-- Trade -->
-      <div class="bt-pcard">
-        <div class="bt-pcard-title">Place Trade</div>
-        <div class="bt-field"><label>Size ($)</label><input class="bt-inp" id="bt-size" type="number" value="1000" min="1"/></div>
-        <div class="bt-field"><label>Stop Loss</label><input class="bt-inp" id="bt-sl" type="number" step="any" placeholder="Optional"/></div>
-        <div class="bt-field"><label>Take Profit</label><input class="bt-inp" id="bt-tp" type="number" step="any" placeholder="Optional"/></div>
-        <div class="bt-trade-btns">
-          <button class="bt-buy" onclick="btTrade('BUY')">▲ BUY</button>
-          <button class="bt-sell" onclick="btTrade('SELL')">▼ SELL</button>
+    <!-- GARCH Panel -->
+    <div class="opt-panel" id="opt-p-garch">
+      <div class="opt-ph"><div class="opt-ptitle">GARCH VOLATILITY MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ogarch-sym" value="Gold (XAU/USD)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="ogarch-model"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="ogarch-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptGARCH()">FIT GARCH MODEL</button>
+        <div class="opt-ld" id="opt-ld-garch"><div class="opt-sp"></div>Fitting volatility model...</div>
+        <div class="opt-res" id="opt-r-garch">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="ogarch-o">—</div><div class="opt-sl">Omega (ω)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-a">—</div><div class="opt-sl">Alpha (α)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-b">—</div><div class="opt-sl">Beta (β)</div></div><div class="opt-sc"><div class="opt-sv am" id="ogarch-p">—</div><div class="opt-sl">Persistence</div></div></div>
+          <div class="opt-ca"><canvas id="och-garch" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-garch">—</div></div>
         </div>
-        <div id="bt-open-trades" style="margin-top:8px"></div>
-      </div>
-      <!-- Stats -->
-      <div class="bt-pcard">
-        <div class="bt-pcard-title">Session Stats</div>
-        <div class="bt-stat-row"><span>Trades</span><span id="st-n">0</span></div>
-        <div class="bt-stat-row"><span>Win Rate</span><span id="st-wr" style="color:var(--t4)">—</span></div>
-        <div class="bt-stat-row"><span>Avg Win</span><span id="st-aw" style="color:#4ade80">—</span></div>
-        <div class="bt-stat-row"><span>Avg Loss</span><span id="st-al" style="color:#f87171">—</span></div>
-        <div class="bt-stat-row"><span>Best</span><span id="st-best" style="color:#4ade80">—</span></div>
-        <div class="bt-stat-row"><span>Worst</span><span id="st-worst" style="color:#f87171">—</span></div>
-        <div class="bt-stat-row"><span>Profit Factor</span><span id="st-pf">—</span></div>
-      </div>
-      <!-- Log -->
-      <div class="bt-pcard">
-        <div class="bt-pcard-title">Trade Log</div>
-        <div class="bt-log" id="bt-log"><div style="color:var(--t4);font-size:9px;text-align:center;padding:10px">No trades yet</div></div>
       </div>
     </div>
 
-  </div>
+    <!-- Linear Regression Panel -->
+    <div class="opt-panel" id="opt-p-linreg">
+      <div class="opt-ph"><div class="opt-ptitle">LINEAR REGRESSION CHANNEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="olr-sym" value="BTC/USD"></div><div class="opt-inp-g"><label class="opt-il">Regression Type</label><select id="olr-type"><option>Linear</option><option>Logarithmic</option><option>Polynomial</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Periods</label><input id="olr-fh" value="10" type="number"></div><div class="opt-inp-g"><label class="opt-il">Band Width (σ)</label><input id="olr-bw" value="2" type="number" step="0.5"></div></div>
+        <button class="opt-gbtn" onclick="runOptLinReg()">RUN REGRESSION ANALYSIS</button>
+        <div class="opt-ld" id="opt-ld-linreg"><div class="opt-sp"></div>Computing regression...</div>
+        <div class="opt-res" id="opt-r-linreg">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="olr-slope">—</div><div class="opt-sl">Slope</div></div><div class="opt-sc"><div class="opt-sv bl" id="olr-r2">—</div><div class="opt-sl">R²</div></div><div class="opt-sc"><div class="opt-sv gr" id="olr-dir">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="olr-pos">—</div><div class="opt-sl">Position</div></div></div>
+          <div class="opt-ca"><canvas id="och-linreg" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-linreg">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Neural Network Panel -->
+    <div class="opt-panel" id="opt-p-nn">
+      <div class="opt-ph"><div class="opt-ptitle">NEURAL NETWORK PREDICTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="onn-sym" value="ETH/USD"></div><div class="opt-inp-g"><label class="opt-il">Model</label><select id="onn-model"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select></div><div class="opt-inp-g"><label class="opt-il">Sequence Length</label><input id="onn-seq" value="60" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="onn-fh" value="5" type="number"></div><div class="opt-inp-g"><label class="opt-il">Features</label><select id="onn-feat"><option>Price + Volume</option><option>OHLCV + RSI</option><option>OHLCV + All Indicators</option></select></div></div>
+        <button class="opt-gbtn" onclick="runOptNN()">SIMULATE NEURAL NETWORK</button>
+        <div class="opt-ld" id="opt-ld-nn"><div class="opt-sp"></div>Simulating neural network via Claude...</div>
+        <div class="opt-res" id="opt-r-nn">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span id="onn-sig" class="opt-signal opt-neut">—</span><span style="font-size:11px;color:var(--t3)">Confidence: <strong id="onn-conf" style="color:var(--t1)">—</strong></span></div>
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="onn-mae">—</div><div class="opt-sl">MAE</div></div><div class="opt-sc"><div class="opt-sv" id="onn-rmse">—</div><div class="opt-sl">RMSE</div></div><div class="opt-sc"><div class="opt-sv bl" id="onn-acc">—</div><div class="opt-sl">Direction Acc.</div></div><div class="opt-sc"><div class="opt-sv am" id="onn-params">—</div><div class="opt-sl">Parameters</div></div></div>
+          <div class="opt-ca"><canvas id="och-nn" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-nn">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARIMA Panel -->
+    <div class="opt-panel" id="opt-p-arima">
+      <div class="opt-ph"><div class="opt-ptitle">ARIMA TIME SERIES MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="oarima-sym" value="EUR/USD"></div><div class="opt-inp-g"><label class="opt-il">p (AR)</label><input id="oarima-p" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">d (Integration)</label><input id="oarima-d" value="1" type="number"></div><div class="opt-inp-g"><label class="opt-il">q (MA)</label><input id="oarima-q" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="oarima-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptARIMA()">FIT ARIMA MODEL</button>
+        <div class="opt-ld" id="opt-ld-arima"><div class="opt-sp"></div>Fitting ARIMA model...</div>
+        <div class="opt-res" id="opt-r-arima">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="oarima-aic">—</div><div class="opt-sl">AIC</div></div><div class="opt-sc"><div class="opt-sv" id="oarima-bic">—</div><div class="opt-sl">BIC</div></div><div class="opt-sc"><div class="opt-sv gr" id="oarima-dir">—</div><div class="opt-sl">Forecast Dir.</div></div><div class="opt-sc"><div class="opt-sv am" id="oarima-rel">—</div><div class="opt-sl">Reliability</div></div></div>
+          <div class="opt-ca"><canvas id="och-arima" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-arima">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HMM Panel -->
+    <div class="opt-panel" id="opt-p-hmm">
+      <div class="opt-ph"><div class="opt-ptitle">HMM MARKET REGIME DETECTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig2"><div class="opt-inp-g"><label class="opt-il">Asset</label><select id="ohmm-sym" onchange="optHmmSyncName()"><option value="">— Select Asset —</option></select></div><div class="opt-inp-g"><label class="opt-il">Number of States</label><select id="ohmm-states"><option value="2">2 States — Bull / Bear</option><option value="3" selected>3 States — Bull / Neutral / Bear</option><option value="4">4 States</option></select></div></div>
+        <button class="opt-gbtn" onclick="runOptHMM()">DETECT MARKET REGIMES</button>
+        <div class="opt-ld" id="opt-ld-hmm"><div class="opt-sp"></div>Detecting market regimes...</div>
+        <div class="opt-res" id="opt-r-hmm">
+          <div id="ohmm-regime-cards" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"></div>
+          <div class="opt-ca"><canvas id="och-hmm" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-hmm">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kalman Panel -->
+    <div class="opt-panel" id="opt-p-kalman">
+      <div class="opt-ph"><div class="opt-ptitle">KALMAN FILTER — TREND EXTRACTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="okl-sym" value="Crude Oil (WTI)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="okl-model"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select></div><div class="opt-inp-g"><label class="opt-il">Process Noise (Q)</label><input id="okl-q" value="0.001" type="number" step="0.001"></div><div class="opt-inp-g"><label class="opt-il">Measurement Noise (R)</label><input id="okl-r" value="0.1" type="number" step="0.01"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="okl-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptKalman()">APPLY KALMAN FILTER</button>
+        <div class="opt-ld" id="opt-ld-kalman"><div class="opt-sp"></div>Filtering signal...</div>
+        <div class="opt-res" id="opt-r-kalman">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="okl-snr">—</div><div class="opt-sl">Signal/Noise</div></div><div class="opt-sc"><div class="opt-sv" id="okl-lag">—</div><div class="opt-sl">Lag (bars)</div></div><div class="opt-sc"><div class="opt-sv gr" id="okl-trend">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="okl-cond">—</div><div class="opt-sl">Market State</div></div></div>
+          <div class="opt-ca"><canvas id="och-kalman" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-kalman">—</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end opt-tools-wrap -->
+
+
+
 </div>
 </div>
-<!-- END BACKTESTING PAGE -->
+<!-- END QUANT TOOLS PAGE -->
 
 
 <!-- JOURNAL PAGE -->
@@ -5534,5 +5407,8 @@ setLang(localStorage.getItem('sc_lang')||'en');
   </div>
   <div class="nt-dot"><div class="ldot"></div></div>
 </div>
+</body>
+</html>
+
 </body>
 </html>
