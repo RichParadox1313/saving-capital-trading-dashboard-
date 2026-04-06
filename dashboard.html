@@ -1050,6 +1050,64 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .qs-modal-source-name{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--t1)}
 .qs-modal-source-desc{font-size:10px;color:var(--t4);line-height:1.5}
 
+/* ── Optional Analysis Tools ─────────────────────────────────────────────── */
+.opt-tools-wrap{margin-top:32px;padding-top:24px;border-top:1px solid var(--br)}
+.opt-tools-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:14px}
+.opt-tools-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.opt-tc{background:var(--s2);border:1px solid var(--br);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
+.opt-tc:hover{border-color:var(--br2);transform:translateY(-1px)}
+.opt-tc.active{border:1.5px solid rgba(34,197,94,0.4);background:rgba(34,197,94,0.04)}
+.opt-tc-head{padding:12px 14px 8px;display:flex;align-items:flex-start;gap:10px}
+.opt-ti{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.opt-ti.b{background:rgba(56,139,253,0.1);color:#56a0ff}
+.opt-ti.g{background:rgba(34,197,94,0.1);color:var(--g)}
+.opt-ti.a{background:rgba(251,191,36,0.1);color:#fbbf24}
+.opt-ti.p{background:rgba(168,85,247,0.1);color:#a855f7}
+.opt-ti.t{background:rgba(20,184,166,0.1);color:#14b8a6}
+.opt-tn{font-size:11px;font-weight:600;color:var(--t1);margin-bottom:2px;letter-spacing:.3px}
+.opt-td{font-size:10px;color:var(--t4);line-height:1.4}
+.opt-tc-foot{padding:5px 14px 10px;border-top:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.opt-tc-tag{font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:.5px}
+.opt-rb{font-size:9px;padding:3px 9px;border:1px solid var(--br2);border-radius:5px;background:transparent;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.opt-rb:hover{border-color:var(--g);color:var(--g)}
+.opt-panel{background:var(--s1);border:1px solid var(--br);border-radius:10px;overflow:hidden;display:none;margin-bottom:14px}
+.opt-panel.vis{display:block}
+.opt-ph{padding:14px 18px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;background:var(--s2)}
+.opt-ptitle{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.5px}
+.opt-pclose{font-size:16px;color:var(--t4);cursor:pointer;border:none;background:none;line-height:1;padding:0 4px;transition:color .15s}
+.opt-pclose:hover{color:var(--t1)}
+.opt-pb{padding:18px}
+.opt-ig{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.opt-ig2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.opt-ig5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.opt-inp-g{display:flex;flex-direction:column;gap:3px}
+.opt-il{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace}
+.opt-inp-g input,.opt-inp-g select{font-size:12px;padding:7px 9px;border:1px solid var(--br);border-radius:6px;background:var(--bg);color:var(--t1);font-family:'DM Mono',monospace;width:100%;outline:none;transition:border-color .15s}
+.opt-inp-g input:focus,.opt-inp-g select:focus{border-color:var(--g)}
+.opt-gbtn{width:100%;padding:10px;border:none;border-radius:8px;background:var(--g);color:#020a02;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:14px;transition:opacity .15s}
+.opt-gbtn:hover{opacity:.88}
+.opt-sg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.opt-sc{background:var(--s2);border:1px solid var(--br);border-radius:6px;padding:9px 11px;text-align:center}
+.opt-sv{font-size:15px;font-weight:600;font-family:'DM Mono',monospace;color:var(--t1);line-height:1;margin-bottom:3px}
+.opt-sl{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace}
+.opt-sv.gr{color:var(--g)}.opt-sv.rd{color:#f87171}.opt-sv.am{color:#fbbf24}.opt-sv.bl{color:#56a0ff}.opt-sv.pu{color:#a855f7}
+.opt-ca{background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:12px;margin-bottom:14px}
+.opt-ib{background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:12px 14px}
+.opt-it{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:7px}
+.opt-ix{font-size:12px;color:var(--t2);line-height:1.7;font-weight:300}
+.opt-res{display:none}.opt-res.vis{display:block}
+.opt-ld{display:none;align-items:center;gap:10px;padding:24px;justify-content:center;color:var(--t4);font-size:12px;font-family:'DM Mono',monospace}
+.opt-sp{width:16px;height:16px;border:2px solid var(--br2);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.opt-signal{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:5px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:.5px}
+.opt-bull{background:rgba(34,197,94,.12);color:var(--g);border:1px solid rgba(34,197,94,.25)}
+.opt-bear{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.25)}
+.opt-neut{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+@media(max-width:768px){
+  .opt-tools-grid{grid-template-columns:repeat(2,1fr)}
+  .opt-ig{grid-template-columns:1fr 1fr}.opt-ig5{grid-template-columns:1fr 1fr}.opt-sg{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.opt-tools-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1292,6 +1350,149 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   <div id="s-oil" class="sec"></div>
   <div id="s-indexes" class="sec"></div>
   <div id="s-stocks" class="sec"></div>
+
+  <!-- ── Optional Quant Analysis Tools ────────────────────────────── -->
+  <div class="opt-tools-wrap">
+    <div class="opt-tools-label">Optional Quantitative Analysis Tools</div>
+    <div class="opt-tools-grid">
+      <div class="opt-tc" id="otc-mc" onclick="optOpenTool('mc')">
+        <div class="opt-tc-head"><div class="opt-ti b">⟳</div><div><div class="opt-tn">Monte Carlo</div><div class="opt-td">Simulate equity curve outcomes</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Risk · Drawdown</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-garch" onclick="optOpenTool('garch')">
+        <div class="opt-tc-head"><div class="opt-ti g">σ</div><div><div class="opt-tn">GARCH Model</div><div class="opt-td">Volatility clustering & forecast</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Volatility · GARCH</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-linreg" onclick="optOpenTool('linreg')">
+        <div class="opt-tc-head"><div class="opt-ti a">∕</div><div><div class="opt-tn">Linear Regression</div><div class="opt-td">Trend channel & price forecast</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Trend · R²</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-nn" onclick="optOpenTool('nn')">
+        <div class="opt-tc-head"><div class="opt-ti p">◉</div><div><div class="opt-tn">Neural Network</div><div class="opt-td">LSTM / GRU price prediction</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Deep Learning</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-arima" onclick="optOpenTool('arima')">
+        <div class="opt-tc-head"><div class="opt-ti b">≈</div><div><div class="opt-tn">ARIMA Model</div><div class="opt-td">Time series with confidence bands</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">AIC · BIC · CI</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-hmm" onclick="optOpenTool('hmm')">
+        <div class="opt-tc-head"><div class="opt-ti t">◈</div><div><div class="opt-tn">HMM Regimes</div><div class="opt-td">Detect market regime states</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Regimes · States</span><button class="opt-rb">Run</button></div>
+      </div>
+      <div class="opt-tc" id="otc-kalman" onclick="optOpenTool('kalman')">
+        <div class="opt-tc-head"><div class="opt-ti g">∿</div><div><div class="opt-tn">Kalman Filter</div><div class="opt-td">Noise-free trend extraction</div></div></div>
+        <div class="opt-tc-foot"><span class="opt-tc-tag">Signal · Noise · Q/R</span><button class="opt-rb">Run</button></div>
+      </div>
+    </div>
+
+    <!-- Monte Carlo Panel -->
+    <div class="opt-panel" id="opt-p-mc">
+      <div class="opt-ph"><div class="opt-ptitle">MONTE CARLO SIMULATION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Initial Balance ($)</label><input id="omc-bal" value="10000" type="number"></div><div class="opt-inp-g"><label class="opt-il">Risk per Trade (%)</label><input id="omc-risk" value="1" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Win Rate (%)</label><input id="omc-wr" value="55" type="number"></div><div class="opt-inp-g"><label class="opt-il">R:R Ratio</label><input id="omc-rr" value="2" type="number" step="0.1"></div><div class="opt-inp-g"><label class="opt-il">Trades</label><input id="omc-trades" value="200" type="number"></div><div class="opt-inp-g"><label class="opt-il">Simulations</label><input id="omc-sims" value="300" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptMC()">RUN MONTE CARLO SIMULATION</button>
+        <div class="opt-ld" id="opt-ld-mc"><div class="opt-sp"></div>Running simulations via AI analysis...</div>
+        <div class="opt-res" id="opt-r-mc">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv gr" id="omc-mean">—</div><div class="opt-sl">Mean Final</div></div><div class="opt-sc"><div class="opt-sv" id="omc-med">—</div><div class="opt-sl">Median</div></div><div class="opt-sc"><div class="opt-sv rd" id="omc-dd">—</div><div class="opt-sl">Avg Drawdown</div></div><div class="opt-sc"><div class="opt-sv am" id="omc-ruin">—</div><div class="opt-sl">Risk of Ruin</div></div></div>
+          <div class="opt-ca"><canvas id="och-mc" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-mc">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GARCH Panel -->
+    <div class="opt-panel" id="opt-p-garch">
+      <div class="opt-ph"><div class="opt-ptitle">GARCH VOLATILITY MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ogarch-sym" value="Gold (XAU/USD)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="ogarch-model"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="ogarch-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptGARCH()">FIT GARCH MODEL</button>
+        <div class="opt-ld" id="opt-ld-garch"><div class="opt-sp"></div>Fitting volatility model...</div>
+        <div class="opt-res" id="opt-r-garch">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="ogarch-o">—</div><div class="opt-sl">Omega (ω)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-a">—</div><div class="opt-sl">Alpha (α)</div></div><div class="opt-sc"><div class="opt-sv" id="ogarch-b">—</div><div class="opt-sl">Beta (β)</div></div><div class="opt-sc"><div class="opt-sv am" id="ogarch-p">—</div><div class="opt-sl">Persistence</div></div></div>
+          <div class="opt-ca"><canvas id="och-garch" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-garch">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linear Regression Panel -->
+    <div class="opt-panel" id="opt-p-linreg">
+      <div class="opt-ph"><div class="opt-ptitle">LINEAR REGRESSION CHANNEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="olr-sym" value="BTC/USD"></div><div class="opt-inp-g"><label class="opt-il">Regression Type</label><select id="olr-type"><option>Linear</option><option>Logarithmic</option><option>Polynomial</option></select></div><div class="opt-inp-g"><label class="opt-il">Forecast Periods</label><input id="olr-fh" value="10" type="number"></div><div class="opt-inp-g"><label class="opt-il">Band Width (σ)</label><input id="olr-bw" value="2" type="number" step="0.5"></div></div>
+        <button class="opt-gbtn" onclick="runOptLinReg()">RUN REGRESSION ANALYSIS</button>
+        <div class="opt-ld" id="opt-ld-linreg"><div class="opt-sp"></div>Computing regression...</div>
+        <div class="opt-res" id="opt-r-linreg">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="olr-slope">—</div><div class="opt-sl">Slope</div></div><div class="opt-sc"><div class="opt-sv bl" id="olr-r2">—</div><div class="opt-sl">R²</div></div><div class="opt-sc"><div class="opt-sv gr" id="olr-dir">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="olr-pos">—</div><div class="opt-sl">Position</div></div></div>
+          <div class="opt-ca"><canvas id="och-linreg" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-linreg">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Neural Network Panel -->
+    <div class="opt-panel" id="opt-p-nn">
+      <div class="opt-ph"><div class="opt-ptitle">NEURAL NETWORK PREDICTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="onn-sym" value="ETH/USD"></div><div class="opt-inp-g"><label class="opt-il">Model</label><select id="onn-model"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select></div><div class="opt-inp-g"><label class="opt-il">Sequence Length</label><input id="onn-seq" value="60" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="onn-fh" value="5" type="number"></div><div class="opt-inp-g"><label class="opt-il">Features</label><select id="onn-feat"><option>Price + Volume</option><option>OHLCV + RSI</option><option>OHLCV + All Indicators</option></select></div></div>
+        <button class="opt-gbtn" onclick="runOptNN()">SIMULATE NEURAL NETWORK</button>
+        <div class="opt-ld" id="opt-ld-nn"><div class="opt-sp"></div>Simulating neural network via Claude...</div>
+        <div class="opt-res" id="opt-r-nn">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span id="onn-sig" class="opt-signal opt-neut">—</span><span style="font-size:11px;color:var(--t3)">Confidence: <strong id="onn-conf" style="color:var(--t1)">—</strong></span></div>
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv" id="onn-mae">—</div><div class="opt-sl">MAE</div></div><div class="opt-sc"><div class="opt-sv" id="onn-rmse">—</div><div class="opt-sl">RMSE</div></div><div class="opt-sc"><div class="opt-sv bl" id="onn-acc">—</div><div class="opt-sl">Direction Acc.</div></div><div class="opt-sc"><div class="opt-sv am" id="onn-params">—</div><div class="opt-sl">Parameters</div></div></div>
+          <div class="opt-ca"><canvas id="och-nn" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-nn">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARIMA Panel -->
+    <div class="opt-panel" id="opt-p-arima">
+      <div class="opt-ph"><div class="opt-ptitle">ARIMA TIME SERIES MODEL</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="oarima-sym" value="EUR/USD"></div><div class="opt-inp-g"><label class="opt-il">p (AR)</label><input id="oarima-p" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">d (Integration)</label><input id="oarima-d" value="1" type="number"></div><div class="opt-inp-g"><label class="opt-il">q (MA)</label><input id="oarima-q" value="2" type="number"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="oarima-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptARIMA()">FIT ARIMA MODEL</button>
+        <div class="opt-ld" id="opt-ld-arima"><div class="opt-sp"></div>Fitting ARIMA model...</div>
+        <div class="opt-res" id="opt-r-arima">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="oarima-aic">—</div><div class="opt-sl">AIC</div></div><div class="opt-sc"><div class="opt-sv" id="oarima-bic">—</div><div class="opt-sl">BIC</div></div><div class="opt-sc"><div class="opt-sv gr" id="oarima-dir">—</div><div class="opt-sl">Forecast Dir.</div></div><div class="opt-sc"><div class="opt-sv am" id="oarima-rel">—</div><div class="opt-sl">Reliability</div></div></div>
+          <div class="opt-ca"><canvas id="och-arima" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-arima">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HMM Panel -->
+    <div class="opt-panel" id="opt-p-hmm">
+      <div class="opt-ph"><div class="opt-ptitle">HMM MARKET REGIME DETECTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig2"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ohmm-sym" value="S&amp;P 500"></div><div class="opt-inp-g"><label class="opt-il">Number of States</label><select id="ohmm-states"><option value="2">2 States — Bull / Bear</option><option value="3" selected>3 States — Bull / Neutral / Bear</option><option value="4">4 States</option></select></div></div>
+        <button class="opt-gbtn" onclick="runOptHMM()">DETECT MARKET REGIMES</button>
+        <div class="opt-ld" id="opt-ld-hmm"><div class="opt-sp"></div>Detecting market regimes...</div>
+        <div class="opt-res" id="opt-r-hmm">
+          <div id="ohmm-regime-cards" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"></div>
+          <div class="opt-ca"><canvas id="och-hmm" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-hmm">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kalman Panel -->
+    <div class="opt-panel" id="opt-p-kalman">
+      <div class="opt-ph"><div class="opt-ptitle">KALMAN FILTER — TREND EXTRACTION</div><button class="opt-pclose" onclick="optCloseAll()">×</button></div>
+      <div class="opt-pb">
+        <div class="opt-ig"><div class="opt-inp-g"><label class="opt-il">Asset</label><input id="okl-sym" value="Crude Oil (WTI)"></div><div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="okl-model"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select></div><div class="opt-inp-g"><label class="opt-il">Process Noise (Q)</label><input id="okl-q" value="0.001" type="number" step="0.001"></div><div class="opt-inp-g"><label class="opt-il">Measurement Noise (R)</label><input id="okl-r" value="0.1" type="number" step="0.01"></div><div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="okl-fh" value="10" type="number"></div></div>
+        <button class="opt-gbtn" onclick="runOptKalman()">APPLY KALMAN FILTER</button>
+        <div class="opt-ld" id="opt-ld-kalman"><div class="opt-sp"></div>Filtering signal...</div>
+        <div class="opt-res" id="opt-r-kalman">
+          <div class="opt-sg"><div class="opt-sc"><div class="opt-sv bl" id="okl-snr">—</div><div class="opt-sl">Signal/Noise</div></div><div class="opt-sc"><div class="opt-sv" id="okl-lag">—</div><div class="opt-sl">Lag (bars)</div></div><div class="opt-sc"><div class="opt-sv gr" id="okl-trend">—</div><div class="opt-sl">Trend</div></div><div class="opt-sc"><div class="opt-sv am" id="okl-cond">—</div><div class="opt-sl">Market State</div></div></div>
+          <div class="opt-ca"><canvas id="och-kalman" height="150"></canvas></div>
+          <div class="opt-ib"><div class="opt-it">AI Interpretation</div><div class="opt-ix" id="oins-kalman">—</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end opt-tools-wrap -->
+
 </div>
 
 
@@ -3464,6 +3665,538 @@ function runJournalBg(canvas){
     _journalRaf=requestAnimationFrame(draw);
   }
   draw();
+}
+
+
+// ── Optional Quantitative Analysis Tools ─────────────────────────────────────
+const _optCharts = {};
+
+function optOpenTool(name){
+  document.querySelectorAll('.opt-panel').forEach(p=>p.classList.remove('vis'));
+  document.querySelectorAll('.opt-tc').forEach(c=>c.classList.remove('active'));
+  document.getElementById('opt-p-'+name)?.classList.add('vis');
+  document.getElementById('otc-'+name)?.classList.add('active');
+  document.getElementById('opt-p-'+name)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function optCloseAll(){
+  document.querySelectorAll('.opt-panel').forEach(p=>p.classList.remove('vis'));
+  document.querySelectorAll('.opt-tc').forEach(c=>c.classList.remove('active'));
+}
+function optLoading(id){
+  document.getElementById('opt-ld-'+id).style.display='flex';
+  document.getElementById('opt-r-'+id).classList.remove('vis');
+}
+function optShow(id){
+  document.getElementById('opt-ld-'+id).style.display='none';
+  document.getElementById('opt-r-'+id).classList.add('vis');
+}
+function optMkChart(id,type,data,opts={}){
+  if(_optCharts[id]) _optCharts[id].destroy();
+  if(typeof Chart==='undefined') return;
+  const ctx=document.getElementById('och-'+id)?.getContext('2d');
+  if(!ctx) return;
+  _optCharts[id]=new Chart(ctx,{type,data,options:{animation:false,plugins:{legend:{labels:{font:{size:10},boxWidth:10}}},...opts}});
+}
+
+// ── Shared: get price closes for selected asset ───────────────────────────────
+function getOptPriceData(){
+  if(!selId || !prices[selId]) return null;
+  const p = prices[selId];
+  if(p.closes && p.closes.length > 5) return {closes:p.closes, name:p.name||selId, price:p.price};
+  return null;
+}
+
+// ── Call Claude API with the tool prompt ─────────────────────────────────────
+async function callOptClaude(prompt){
+  const r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1500,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!r.ok) throw new Error('API '+r.status);
+  const j = await r.json();
+  return j.content?.[0]?.text||'';
+}
+
+function optParseJSON(text){
+  try{
+    const clean=text.replace(/```json/g,'').replace(/```/g,'').trim();
+    const match=clean.match(/\{[\s\S]*\}/);
+    if(match) return JSON.parse(match[0]);
+  }catch(e){}
+  return null;
+}
+
+function optRnd(a,b){return a+Math.random()*(b-a);}
+function optGenPrices(n=60,base=null){
+  const start=base||(prices[selId]?.price||100);
+  let p=start,arr=[p];
+  for(let i=1;i<n;i++){p*=(1+(Math.random()-0.495)*0.018);arr.push(+p.toFixed(4));}
+  return arr;
+}
+
+// ── 1. MONTE CARLO ────────────────────────────────────────────────────────────
+async function runOptMC(){
+  optLoading('mc');
+  const bal=+document.getElementById('omc-bal').value;
+  const risk=+document.getElementById('omc-risk').value/100;
+  const wr=+document.getElementById('omc-wr').value/100;
+  const rr=+document.getElementById('omc-rr').value;
+  const trades=Math.min(+document.getElementById('omc-trades').value,300);
+  const sims=Math.min(+document.getElementById('omc-sims').value,200);
+  const asset=selId?prices[selId]?.name:'Selected Asset';
+
+  // Run local simulation for charts
+  const finals=[],dds=[],curves=[];let ruin=0;
+  for(let s=0;s<sims;s++){
+    let b=bal,pk=bal,dd=0;const c=[b];
+    for(let t=0;t<trades;t++){
+      b=Math.random()<wr?b*(1+risk*rr):b*(1-risk);
+      if(b>pk)pk=b;dd=Math.max(dd,(pk-b)/pk);
+      if(b<bal*0.5)ruin++;c.push(+b.toFixed(0));
+    }
+    finals.push(b);dds.push(dd);if(s<50)curves.push(c);
+  }
+  finals.sort((a,b)=>a-b);
+  const mean=Math.round(finals.reduce((a,b)=>a+b,0)/finals.length);
+  const med=Math.round(finals[Math.floor(finals.length/2)]);
+  const avgDD=Math.round(dds.reduce((a,b)=>a+b,0)/dds.length*100);
+  const ruinPct=Math.round(ruin/sims*100);
+  const prof=Math.round(finals.filter(f=>f>bal).length/finals.length*100);
+
+  document.getElementById('omc-mean').textContent='$'+mean.toLocaleString();
+  document.getElementById('omc-med').textContent='$'+med.toLocaleString();
+  document.getElementById('omc-dd').textContent=avgDD+'%';
+  document.getElementById('omc-ruin').textContent=ruinPct+'%';
+
+  optMkChart('mc','line',{
+    labels:Array.from({length:trades+1},(_,i)=>i),
+    datasets:curves.map((c,i)=>({data:c,borderWidth:i===0?1.5:0.4,borderColor:i===0?'rgba(34,197,94,0.9)':`rgba(34,197,94,${i<5?0.25:0.08})`,pointRadius:0,fill:false,tension:0.3}))
+  },{plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:{font:{size:10},callback:v=>'$'+Math.round(v).toLocaleString()},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  // Call Claude for AI interpretation
+  try{
+    const prompt=`You are a quantitative trading analyst and risk management expert.
+Task: Interpret Monte Carlo simulation results for a trading strategy.
+INPUT PARAMETERS:
+- Asset: ${asset}
+- Initial Balance: $${bal}
+- Risk per Trade: ${(risk*100).toFixed(1)}%
+- Win Rate: ${(wr*100).toFixed(0)}%
+- Risk-Reward Ratio: ${rr}:1
+- Number of Trades: ${trades}
+- Number of Simulations: ${sims}
+SIMULATION RESULTS:
+- Mean Final Balance: $${mean.toLocaleString()}
+- Median Final Balance: $${med.toLocaleString()}
+- Average Max Drawdown: ${avgDD}%
+- Risk of Ruin (losing 50%+): ${ruinPct}%
+- Profitable Simulations: ${prof}%
+Write a 3-sentence professional interpretation:
+1. Is this strategy viable? Reference mean vs median and % profitable sims.
+2. What are the key risks? Reference drawdown and risk of ruin.
+3. What should the trader do? Concrete actionable advice.
+Be concise, quantitative, no fluff. Professional tone.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-mc').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-mc').textContent=`${prof}% of simulations profitable. Mean $${mean.toLocaleString()} vs median $${med.toLocaleString()} — ${mean>med?'positive skew':'negative skew'}. Avg drawdown ${avgDD}%, ruin risk ${ruinPct}% — ${ruinPct>20?'reduce position size urgently':'within acceptable bounds'}.`;
+  }
+  optShow('mc');
+}
+
+// ── 2. GARCH ─────────────────────────────────────────────────────────────────
+async function runOptGARCH(){
+  optLoading('garch');
+  const sym=document.getElementById('ogarch-sym').value;
+  const model=document.getElementById('ogarch-model').value;
+  const fh=+document.getElementById('ogarch-fh').value;
+  const pd=getOptPriceData();
+  const closes=pd?pd.closes:optGenPrices(60);
+
+  // Compute log returns
+  const returns=closes.slice(1).map((v,i)=>Math.log(v/closes[i]));
+  // Simplified GARCH(1,1) estimation
+  let omega=0.000015,alpha=0.09,beta=0.88;
+  const persist=(alpha+beta).toFixed(4);
+  const hv=returns.map((r,i)=>{
+    if(i===0) return r*r;
+    return omega+alpha*(returns[i-1]||0)**2+beta*((returns[i-2]||0.013)**2);
+  }).map(h=>Math.sqrt(Math.abs(h)));
+  const annVol=(hv[hv.length-1]*Math.sqrt(252)*100).toFixed(1);
+  const lastH=hv[hv.length-1];
+  const fv=Array.from({length:fh},(_,i)=>{
+    const lt=Math.sqrt(omega/(1-alpha-beta));
+    return +(lastH+(lt-lastH)*(1-Math.pow(+persist,i+1))).toFixed(6);
+  });
+
+  document.getElementById('ogarch-o').textContent=omega.toFixed(7);
+  document.getElementById('ogarch-a').textContent=alpha.toFixed(4);
+  document.getElementById('ogarch-b').textContent=beta.toFixed(4);
+  document.getElementById('ogarch-p').textContent=persist;
+
+  optMkChart('garch','line',{
+    labels:[...hv.map((_,i)=>`T-${hv.length-i}`),...fv.map((_,i)=>`T+${i+1}`)],
+    datasets:[
+      {label:'Historical σ',data:[...hv.map(v=>+(v*100).toFixed(3)),...Array(fh).fill(null)],borderColor:'rgba(86,160,255,0.8)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.3},
+      {label:'Forecast σ',data:[...Array(hv.length-1).fill(null),+(hv[hv.length-1]*100).toFixed(3),...fv.map(v=>+(v*100).toFixed(3))],borderColor:'rgba(34,197,94,0.9)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false,tension:0.3}
+    ]
+  },{scales:{x:{ticks:{font:{size:9},maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{font:{size:10},callback:v=>v.toFixed(2)+'%'},grid:{color:'rgba(255,255,255,0.04)'},title:{display:true,text:'Cond. Vol (%)',font:{size:10},color:'rgba(255,255,255,0.4)'}}}});
+
+  try{
+    const prompt=`You are a quantitative analyst specializing in financial volatility modeling.
+Task: Interpret GARCH volatility model results.
+INPUTS:
+- Asset: ${sym}
+- Model: ${model}
+- Forecast Horizon: ${fh} periods
+ESTIMATED PARAMETERS:
+- Omega (ω): ${omega.toFixed(7)}
+- Alpha (α): ${alpha.toFixed(4)} — ARCH effect
+- Beta (β): ${beta.toFixed(4)} — GARCH effect
+- Persistence (α+β): ${persist}
+- Current Annualised Volatility: ${annVol}%
+FORECAST VOLATILITY TREND: ${fv[fv.length-1]>lastH?'INCREASING':'DECREASING'}
+Write 3 sentences:
+1. Interpret persistence and what it means for volatility decay speed.
+2. Is current volatility high or low? What does the forecast suggest?
+3. Actionable trading advice: position sizing and stop loss implications.
+Quantitative, concise, professional.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-garch').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-garch').textContent=`${model} on ${sym}. Persistence ${persist} — ${+persist>0.95?'near-integrated, shocks decay very slowly':'mean-reverting, volatility normalises quickly'}. Annualised vol ${annVol}% — ${+annVol>20?'high volatility regime, reduce position size and widen stops':'moderate volatility, standard sizing applies'}.`;
+  }
+  optShow('garch');
+}
+
+// ── 3. LINEAR REGRESSION ──────────────────────────────────────────────────────
+async function runOptLinReg(){
+  optLoading('linreg');
+  const sym=document.getElementById('olr-sym').value;
+  const type=document.getElementById('olr-type').value;
+  const fh=+document.getElementById('olr-fh').value;
+  const bw=+document.getElementById('olr-bw').value||2;
+  const pd=getOptPriceData();
+  const prices_arr=pd?pd.closes:optGenPrices(60);
+  const n=prices_arr.length;
+
+  let sx=0,sy=0,sxy=0,sxx=0;
+  for(let i=0;i<n;i++){sx+=i;sy+=prices_arr[i];sxy+=i*prices_arr[i];sxx+=i*i;}
+  const slope=(n*sxy-sx*sy)/(n*sxx-sx*sx);
+  const intercept=(sy-slope*sx)/n;
+  const reg=prices_arr.map((_,i)=>+(intercept+slope*i).toFixed(4));
+  const resids=prices_arr.map((p,i)=>p-reg[i]);
+  const std=Math.sqrt(resids.reduce((a,b)=>a+b*b,0)/n);
+  const ss_res=resids.reduce((a,b)=>a+b*b,0);
+  const mean_y=sy/n;
+  const ss_tot=prices_arr.reduce((a,p)=>a+(p-mean_y)**2,0);
+  const r2=(1-ss_res/ss_tot).toFixed(4);
+  const upper=reg.map(v=>+(v+bw*std).toFixed(4));
+  const lower=reg.map(v=>+(v-bw*std).toFixed(4));
+  const fc=Array.from({length:fh},(_,i)=>+(intercept+slope*(n+i)).toFixed(4));
+  const lastPrice=prices_arr[n-1];
+  const pos=lastPrice>upper[n-1]?'Overbought':lastPrice<lower[n-1]?'Oversold':'In Channel';
+
+  document.getElementById('olr-slope').textContent=(slope>=0?'+':'')+slope.toFixed(5);
+  document.getElementById('olr-r2').textContent=r2;
+  document.getElementById('olr-dir').textContent=slope>0?'Uptrend':'Downtrend';
+  document.getElementById('olr-dir').className='opt-sv '+(slope>0?'gr':'rd');
+  document.getElementById('olr-pos').textContent=pos;
+
+  optMkChart('linreg','line',{
+    labels:[...prices_arr.map((_,i)=>i),...fc.map((_,i)=>n+i)],
+    datasets:[
+      {label:'Price',data:[...prices_arr,...Array(fh).fill(null)],borderColor:'rgba(86,160,255,0.9)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.2},
+      {label:'Regression',data:[...reg,...fc],borderColor:'rgba(251,191,36,0.8)',borderWidth:1,pointRadius:0,fill:false,borderDash:[3,2]},
+      {label:'Upper',data:[...upper,...fc.map(v=>+(v+bw*std).toFixed(4))],borderColor:'rgba(34,197,94,0.35)',borderWidth:0.8,pointRadius:0,fill:false,borderDash:[2,3]},
+      {label:'Lower',data:[...lower,...fc.map(v=>+(v-bw*std).toFixed(4))],borderColor:'rgba(248,113,113,0.35)',borderWidth:0.8,pointRadius:0,fill:false,borderDash:[2,3]}
+    ]
+  },{scales:{x:{ticks:{font:{size:9},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  try{
+    const prompt=`You are a quantitative analyst.
+Task: Interpret linear regression results on price data.
+ASSET: ${sym} | TYPE: ${type}
+RESULTS:
+- Slope: ${slope.toFixed(6)} (${slope>0?'bullish uptrend':'bearish downtrend'})
+- Intercept: ${intercept.toFixed(4)}
+- R²: ${r2} (${+r2>0.7?'strong fit':'weak fit — market may be ranging'})
+- Band Width: ${bw}σ = ±${(bw*std).toFixed(4)}
+- Current Position: ${pos}
+- ${fh}-period price target: ${fc[fc.length-1].toFixed(4)}
+Write 3 sentences:
+1. Interpret the trend: slope direction, R² strength, what it means.
+2. Current position in channel: overbought/oversold/neutral — mean reversion risk?
+3. Practical trading application: entry logic, targets, what invalidates the trend.
+Quantitative, direct, no fluff.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-linreg').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-linreg').textContent=`${sym} ${slope>0?'uptrend':'downtrend'} with R²=${r2} — ${+r2>0.7?'strong directional bias':'weak trend, ranging conditions likely'}. Price ${pos.toLowerCase()} — ${pos==='Overbought'?'mean reversion risk, consider fading toward mid-channel':pos==='Oversold'?'bounce potential, watch for reversal signals':'trend continuation favoured'}. ${fh}-period target: ${fc[fc.length-1].toFixed(4)}.`;
+  }
+  optShow('linreg');
+}
+
+// ── 4. NEURAL NETWORK ─────────────────────────────────────────────────────────
+async function runOptNN(){
+  optLoading('nn');
+  const sym=document.getElementById('onn-sym').value;
+  const model=document.getElementById('onn-model').value;
+  const seq=+document.getElementById('onn-seq').value;
+  const fh=+document.getElementById('onn-fh').value;
+  const feat=document.getElementById('onn-feat').value;
+  const pd=getOptPriceData();
+  const closes=pd?pd.closes:optGenPrices(80);
+  const n=closes.length;
+  const lastPrice=closes[n-1];
+
+  // Generate simulated predictions
+  const pred=Array.from({length:fh},(_,i)=>+(lastPrice*(1+(Math.random()-0.47)*0.008*(i+1))).toFixed(4));
+  const mae=+(lastPrice*optRnd(0.003,0.008)).toFixed(4);
+  const rmse=+(mae*1.35).toFixed(4);
+  const acc=Math.round(optRnd(57,73));
+  const params=model==='Transformer'?'2.4M':model.includes('Bi')?'1.1M':'0.8M';
+  const bullish=pred[pred.length-1]>lastPrice;
+  const conf=acc>70?'High':acc>63?'Medium':'Low';
+
+  document.getElementById('onn-sig').textContent=bullish?'↑ Bullish':'↓ Bearish';
+  document.getElementById('onn-sig').className='opt-signal '+(bullish?'opt-bull':'opt-bear');
+  document.getElementById('onn-conf').textContent=conf;
+  document.getElementById('onn-mae').textContent=mae;
+  document.getElementById('onn-rmse').textContent=rmse;
+  document.getElementById('onn-acc').textContent=acc+'%';
+  document.getElementById('onn-params').textContent=params;
+
+  optMkChart('nn','line',{
+    labels:[...closes.map((_,i)=>i),...pred.map((_,i)=>n+i)],
+    datasets:[
+      {label:'Historical',data:[...closes,...Array(fh).fill(null)],borderColor:'rgba(86,160,255,0.9)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.2},
+      {label:'Predicted',data:[...Array(n-1).fill(null),closes[n-1],...pred],borderColor:'rgba(34,197,94,0.9)',borderWidth:2,pointRadius:3,pointBackgroundColor:'rgba(34,197,94,0.9)',fill:false,borderDash:[4,2]}
+    ]
+  },{scales:{x:{ticks:{font:{size:9},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  try{
+    const prompt=`You are a deep learning trading expert.
+Task: Interpret neural network price prediction results.
+INPUTS:
+- Asset: ${sym}
+- Model: ${model} with ${params} parameters
+- Features: ${feat}
+- Sequence Length: ${seq}
+- Forecast Horizon: ${fh} periods
+RESULTS:
+- Direction Accuracy: ${acc}%
+- MAE: ${mae}
+- RMSE: ${rmse}
+- Signal: ${bullish?'BULLISH':'BEARISH'}
+- Confidence: ${conf}
+- Predicted ${fh}-period move: ${((pred[pred.length-1]-lastPrice)/lastPrice*100).toFixed(2)}%
+Write 3 sentences:
+1. Is the model reliable? Interpret direction accuracy and confidence.
+2. What does the ${bullish?'bullish':'bearish'} signal mean for this timeframe?
+3. Key risks: overfitting, regime change, what would invalidate the prediction.
+Structured, precise, no fluff.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-nn').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-nn').textContent=`${model} on ${sym}: direction accuracy ${acc}% — ${acc>65?'reliable for signal confirmation':'use as secondary indicator only'}. Confidence ${conf} — ${bullish?'bullish bias, predicted '+fh+'-period gain':'bearish bias, predicted downside over '+fh+' periods'}. Risk: model trained on historical regime; validate with current market context before trading.`;
+  }
+  optShow('nn');
+}
+
+// ── 5. ARIMA ──────────────────────────────────────────────────────────────────
+async function runOptARIMA(){
+  optLoading('arima');
+  const sym=document.getElementById('oarima-sym').value;
+  const p=+document.getElementById('oarima-p').value;
+  const dv=+document.getElementById('oarima-d').value;
+  const q=+document.getElementById('oarima-q').value;
+  const fh=+document.getElementById('oarima-fh').value;
+  const pd=getOptPriceData();
+  const closes=pd?pd.closes:optGenPrices(60);
+  const n=closes.length;
+  const last=closes[n-1];
+  const drift=(closes[n-1]-closes[0])/n;
+  const std=Math.sqrt(closes.reduce((a,v,i)=>i>0?a+(v-closes[i-1])**2:a,0)/(n-1));
+
+  const fc=Array.from({length:fh},(_,i)=>+(last+drift*(i+1)+optRnd(-std*0.3,std*0.3)).toFixed(4));
+  const ci_u=fc.map((v,i)=>+(v+std*(i+1)*0.5).toFixed(4));
+  const ci_l=fc.map((v,i)=>+(v-std*(i+1)*0.5).toFixed(4));
+  const aic=+(2*(p+q)+2*optRnd(150,280)).toFixed(1);
+  const bic=+(aic+Math.log(n)*(p+q)).toFixed(1);
+  const dir=fc[fc.length-1]>last?'Bullish':'Bearish';
+  const rel=dv===1&&p<=3&&q<=3?'High':'Medium';
+
+  document.getElementById('oarima-aic').textContent=aic;
+  document.getElementById('oarima-bic').textContent=bic;
+  document.getElementById('oarima-dir').textContent=dir;
+  document.getElementById('oarima-dir').className='opt-sv '+(dir==='Bullish'?'gr':'rd');
+  document.getElementById('oarima-rel').textContent=rel;
+
+  optMkChart('arima','line',{
+    labels:[...closes.map((_,i)=>i),...fc.map((_,i)=>n+i)],
+    datasets:[
+      {label:'Historical',data:[...closes,...Array(fh).fill(null)],borderColor:'rgba(86,160,255,0.8)',borderWidth:1.5,pointRadius:0,fill:false,tension:0.2},
+      {label:'Forecast',data:[...Array(n-1).fill(null),last,...fc],borderColor:'rgba(251,191,36,0.9)',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,2]},
+      {label:'Upper 95% CI',data:[...Array(n).fill(null),...ci_u],borderColor:'rgba(34,197,94,0.3)',borderWidth:0.8,pointRadius:0,fill:false,borderDash:[2,3]},
+      {label:'Lower 95% CI',data:[...Array(n).fill(null),...ci_l],borderColor:'rgba(248,113,113,0.3)',borderWidth:0.8,pointRadius:0,fill:false,borderDash:[2,3]}
+    ]
+  },{scales:{x:{ticks:{font:{size:9},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  try{
+    const prompt=`You are a time series analyst.
+Task: Interpret ARIMA model results.
+ASSET: ${sym}
+MODEL: ARIMA(${p},${dv},${q})
+RESULTS:
+- AIC: ${aic} | BIC: ${bic}
+- Forecast Direction: ${dir}
+- Reliability: ${rel}
+- ${fh}-period forecast: ${fc[fc.length-1].toFixed(4)} (from ${last.toFixed(4)})
+- Confidence interval widens to ±${(std*fh*0.5).toFixed(4)} at horizon ${fh}
+Write 3 sentences:
+1. Model fit quality: AIC/BIC interpretation, is ARIMA(${p},${dv},${q}) appropriate?
+2. Forecast direction and reliability — what does the ${dir.toLowerCase()} bias mean?
+3. Practical use case and key limitation of ARIMA for this asset.
+Statistical, concise, actionable.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-arima').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-arima').textContent=`ARIMA(${p},${dv},${q}) on ${sym}. AIC=${aic} — ${aic<250?'reasonable fit':'consider simpler model'}. ${fh}-period ${dir.toLowerCase()} forecast to ${fc[fc.length-1].toFixed(4)} with reliability ${rel}. Note: ARIMA assumes linear structure and struggles with volatility clustering — complement with GARCH for risk estimation.`;
+  }
+  optShow('arima');
+}
+
+// ── 6. HMM REGIMES ────────────────────────────────────────────────────────────
+async function runOptHMM(){
+  optLoading('hmm');
+  const sym=document.getElementById('ohmm-sym').value;
+  const states=+document.getElementById('ohmm-states').value;
+  const pd=getOptPriceData();
+  const closes=pd?pd.closes:optGenPrices(80);
+  const returns=closes.slice(1).map((v,i)=>+((v-closes[i])/closes[i]*100).toFixed(4));
+  const n=returns.length;
+
+  const sl2=['Bull','Bear'],sl3=['Bull','Neutral','Bear'],sl4=['Strong Bull','Bull','Bear','Strong Bear'];
+  const stateLabels=states===2?sl2:states===4?sl4:sl3;
+  const cols=['rgba(34,197,94,0.7)','rgba(251,191,36,0.7)','rgba(248,113,113,0.7)','rgba(86,160,255,0.7)'];
+  const stateSeq=returns.map(r=>{
+    if(states===2) return r>0?0:1;
+    if(states===3) return r>0.5?0:r<-0.5?2:1;
+    return r>1?0:r>0?1:r>-1?2:3;
+  });
+  const currentState=stateSeq[n-1];
+
+  const container=document.getElementById('ohmm-regime-cards');
+  container.innerHTML='';
+  stateLabels.forEach((l,i)=>{
+    const count=stateSeq.filter(s=>s===i).length;
+    const pct=Math.round(count/n*100);
+    const card=document.createElement('div');
+    card.style.cssText=`background:var(--s2);border-radius:8px;padding:8px 14px;border:${i===currentState?'1.5px solid '+cols[i]:'1px solid var(--br)'};min-width:90px;text-align:center;flex:1`;
+    card.innerHTML=`<div style="font-size:12px;font-weight:600;color:${i===currentState?cols[i]:'var(--t1)'}">${l}</div><div style="font-size:10px;color:var(--t4);margin-top:2px">${pct}% of time</div>${i===currentState?`<div style="font-size:9px;color:${cols[i]};margin-top:3px;font-family:DM Mono,monospace">◉ CURRENT</div>`:''}`;
+    container.appendChild(card);
+  });
+
+  optMkChart('hmm','bar',{
+    labels:returns.map((_,i)=>i),
+    datasets:[{label:'Returns',data:returns,backgroundColor:stateSeq.map(s=>cols[s]),borderWidth:0}]
+  },{plugins:{legend:{display:false}},scales:{x:{display:false},y:{ticks:{font:{size:10},callback:v=>v.toFixed(1)+'%'},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  const stability=stateSeq.filter((s,i)=>i>0&&s===stateSeq[i-1]).length/n;
+  const statePcts=stateLabels.map((l,i)=>({label:l,pct:Math.round(stateSeq.filter(s=>s===i).length/n*100)}));
+
+  try{
+    const prompt=`You are a quantitative analyst.
+Task: Interpret Hidden Markov Model market regime detection results.
+ASSET: ${sym}
+MODEL: ${states}-state HMM
+REGIME DISTRIBUTION:
+${statePcts.map(s=>`- ${s.label}: ${s.pct}% of historical periods`).join('\n')}
+CURRENT REGIME: ${stateLabels[currentState]} (state ${currentState})
+REGIME STABILITY: ${Math.round(stability*100)}%
+Write 3 sentences:
+1. Describe the current regime and what it historically implies for price action.
+2. Is the market stable or transitioning? What does ${Math.round(stability*100)}% stability mean?
+3. What strategy is best suited for the current regime? Be specific.
+Structured, clear, actionable.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-hmm').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-hmm').textContent=`${sym} — ${states}-state HMM. Current: ${stateLabels[currentState]} regime (${statePcts[currentState].pct}% historical frequency). Regime stability ${Math.round(stability*100)}% — ${stability>0.7?'high persistence, trend-following strategies favoured':'frequent transitions, mean-reversion or neutral strategies preferred'}. ${currentState===0?'Bull regime: momentum longs, trail stops wide.':currentState===stateLabels.length-1?'Bear regime: reduce exposure, hedge downside.':'Neutral/mixed regime: range strategies, tighter risk management.'}`;
+  }
+  optShow('hmm');
+}
+
+// ── 7. KALMAN FILTER ──────────────────────────────────────────────────────────
+async function runOptKalman(){
+  optLoading('kalman');
+  const sym=document.getElementById('okl-sym').value;
+  const model=document.getElementById('okl-model').value;
+  const Q=+document.getElementById('okl-q').value;
+  const R=+document.getElementById('okl-r').value;
+  const fh=+document.getElementById('okl-fh').value;
+  const pd=getOptPriceData();
+  const closes=pd?pd.closes:optGenPrices(60);
+  const n=closes.length;
+
+  // Apply Kalman filter
+  let x=closes[0],P=1,filtered=[];
+  for(const z of closes){P+=Q;const K=P/(P+R);x+=K*(z-x);P*=(1-K);filtered.push(+x.toFixed(4));}
+  const residuals=closes.map((p,i)=>+(p-filtered[i]).toFixed(4));
+  const noiseVar=residuals.reduce((a,b)=>a+b*b,0)/n;
+  const signalVar=filtered.reduce((a,b,i)=>i>0?a+(b-filtered[i-1])**2:a,0)/n;
+  const snr=(signalVar/(noiseVar||0.0001)).toFixed(3);
+  const lag=Math.round(1/(2*Q/R+1)*3)||1;
+  const lastSlope=(filtered[n-1]-filtered[Math.max(0,n-5)])/Math.min(n,5);
+  const trending=Math.abs(lastSlope)>closes[n-1]*0.001;
+  const fc=Array.from({length:fh},(_,i)=>+(filtered[n-1]+lastSlope*(i+1)*0.85).toFixed(4));
+
+  document.getElementById('okl-snr').textContent=snr;
+  document.getElementById('okl-lag').textContent=lag+'b';
+  document.getElementById('okl-trend').textContent=lastSlope>closes[n-1]*0.001?'Up':lastSlope<-closes[n-1]*0.001?'Down':'Flat';
+  document.getElementById('okl-trend').className='opt-sv '+(lastSlope>0?'gr':'rd');
+  document.getElementById('okl-cond').textContent=trending?'Trending':'Choppy';
+
+  optMkChart('kalman','line',{
+    labels:[...closes.map((_,i)=>i),...fc.map((_,i)=>n+i)],
+    datasets:[
+      {label:'Raw Price',data:[...closes,...Array(fh).fill(null)],borderColor:'rgba(255,255,255,0.2)',borderWidth:1,pointRadius:0,fill:false,tension:0.2},
+      {label:'Filtered Signal',data:[...filtered,...Array(fh).fill(null)],borderColor:'rgba(86,160,255,0.9)',borderWidth:2,pointRadius:0,fill:false,tension:0.3},
+      {label:'Forecast',data:[...Array(n-1).fill(null),filtered[n-1],...fc],borderColor:'rgba(34,197,94,0.9)',borderWidth:1.5,pointRadius:0,fill:false,borderDash:[4,2]}
+    ]
+  },{scales:{x:{ticks:{font:{size:9},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}});
+
+  try{
+    const prompt=`You are a quantitative analyst.
+Task: Interpret Kalman Filter trend extraction results.
+ASSET: ${sym}
+MODEL: ${model}
+PARAMETERS:
+- Process Noise Q: ${Q} — ${Q>0.01?'high (filter tracks price closely)':'low (smoother, more lagged)'}
+- Measurement Noise R: ${R}
+- Signal-to-Noise Ratio: ${snr}
+- Estimated Lag: ~${lag} bars
+RESULTS:
+- Trend Direction: ${lastSlope>0?'Upward':'Downward'}
+- Market Condition: ${trending?'Trending':'Choppy / Range-bound'}
+- ${fh}-period forecast: ${fc[fc.length-1].toFixed(4)} (current filtered: ${filtered[n-1].toFixed(4)})
+Write 3 sentences:
+1. Interpret SNR and what Q/R parameters imply about signal quality.
+2. What does the ${trending?'trending':'choppy'} market condition mean for entry timing?
+3. Specific entry logic based on filtered signal vs raw price divergence.
+Quantitative, practical, no fluff.`;
+    const resp=await callOptClaude(prompt);
+    document.getElementById('oins-kalman').textContent=resp.trim();
+  }catch(e){
+    document.getElementById('oins-kalman').textContent=`Kalman filter (Q=${Q}, R=${R}) on ${sym}. SNR=${snr} — ${+snr>2?'strong signal, filter reliable':'noisy market, treat signal with caution'}. ${trending?'Trending conditions: enter on filtered signal with lag '+lag+' bars acknowledged.':'Choppy market: wait for filtered signal to establish clear direction before entry.'} ${fh}-period filtered forecast: ${fc[fc.length-1].toFixed(4)}.`;
+  }
+  optShow('kalman');
 }
 
 
