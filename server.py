@@ -61,7 +61,7 @@ def check_rate_limit(ip: str) -> bool:
 
 PRICE_TTL    = 900  # 15 min — reduces Yahoo auth failures
 NEWS_TTL     = 600
-ANALYSIS_TTL = 21600
+ANALYSIS_TTL = 900  # 15 minutes — analysis always reflects current market
 
 # Full browser headers — makes Yahoo Finance respond correctly from server
 BROWSER_HEADERS = {
@@ -829,7 +829,14 @@ async def api_prices():
         # Refresh in background if stale — don't block the response
         if now - price_cache["ts"] >= PRICE_TTL:
             asyncio.create_task(_background_price_refresh())
-        return JSONResponse(price_cache["data"])
+        # Inject metadata so frontend knows how fresh the data is
+        response_data = dict(price_cache["data"])
+        response_data["_meta"] = {
+            "ts": price_cache["ts"],
+            "age_seconds": int(now - price_cache["ts"]),
+            "next_refresh": max(0, int(PRICE_TTL - (now - price_cache["ts"])))
+        }
+        return JSONResponse(response_data)
     # No cache at all — must wait for first load
     data = await load_all_prices()
     price_cache.update({"data": data, "ts": time.time()})
@@ -1187,10 +1194,12 @@ async def api_analysis(req: AnalysisRequest, request: Request):
         c = analysis_cache[cache_key]
         if time.time() - c["ts"] < ANALYSIS_TTL:
             return JSONResponse(c["data"])
-    # Always ensure prices are loaded
-    if not price_cache["data"] or time.time() - price_cache["ts"] > PRICE_TTL:
+    # Always refresh prices before analysis — ensures data is current
+    age = time.time() - price_cache["ts"]
+    if not price_cache["data"] or age > 60:  # force refresh if prices older than 60s
         data = await load_all_prices()
         price_cache.update({"data": data, "ts": time.time()})
+        print(f"  Prices refreshed for analysis (was {age:.0f}s old)")
 
     prices = price_cache["data"]
     a = prices.get(req.asset_id)
