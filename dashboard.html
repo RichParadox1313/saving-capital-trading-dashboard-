@@ -1055,6 +1055,37 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .opt-stats-4{grid-template-columns:1fr 1fr}.opt-scenarios{grid-template-columns:1fr}
 }
 @media(max-width:480px){.opt-tools-grid{grid-template-columns:1fr}}
+/* ── Quant Usage Guide ─────────────────────────────────────────────────────── */
+.qt-guide{margin-bottom:40px}
+.qt-guide-title{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.qt-guide-title::before{content:'';display:block;width:20px;height:1px;background:var(--br2)}
+.qt-workflow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.qt-step{background:rgba(2,10,2,0.6);border:1px solid var(--br);border-radius:12px;padding:16px;backdrop-filter:blur(8px);position:relative}
+.qt-step-num{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:rgba(34,197,94,0.15);line-height:1;margin-bottom:6px}
+.qt-step-title{font-size:11px;font-weight:600;color:var(--t1);margin-bottom:6px;letter-spacing:.3px}
+.qt-step-desc{font-size:11px;color:var(--t4);line-height:1.6}
+.qt-step-tools{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.qt-tool-pill{font-size:8px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:.5px}
+.qt-tool-pill.b{background:rgba(56,139,253,0.12);color:#56a0ff;border:1px solid rgba(56,139,253,0.2)}
+.qt-tool-pill.g{background:rgba(34,197,94,0.1);color:var(--g);border:1px solid rgba(34,197,94,0.2)}
+.qt-tool-pill.a{background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.2)}
+.qt-tool-pill.p{background:rgba(168,85,247,0.1);color:#a855f7;border:1px solid rgba(168,85,247,0.2)}
+.qt-tool-pill.t{background:rgba(20,184,166,0.1);color:#14b8a6;border:1px solid rgba(20,184,166,0.2)}
+.qt-table-wrap{background:rgba(2,10,2,0.5);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:28px;backdrop-filter:blur(8px)}
+.qt-table{width:100%;border-collapse:collapse;font-size:11px}
+.qt-table th{background:rgba(0,0,0,0.3);padding:10px 14px;text-align:left;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;border-bottom:1px solid var(--br);font-weight:500}
+.qt-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--t2);vertical-align:top;line-height:1.5}
+.qt-table tr:last-child td{border-bottom:none}
+.qt-table tr:hover td{background:rgba(34,197,94,0.03)}
+.qt-table .tool-name{font-weight:600;color:var(--t1);font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap}
+.qt-table .badge{display:inline-block;font-size:7.5px;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:.5px;margin-right:3px;margin-bottom:2px}
+.qt-combo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.qt-combo-card{background:rgba(2,10,2,0.6);border:1px solid var(--br);border-radius:10px;padding:14px;backdrop-filter:blur(8px)}
+.qt-combo-title{font-size:10px;font-weight:600;color:var(--t1);margin-bottom:6px;letter-spacing:.3px}
+.qt-combo-flow{font-size:10px;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:6px}
+.qt-combo-desc{font-size:10px;color:var(--t4);line-height:1.6}
+@media(max-width:768px){.qt-workflow{grid-template-columns:1fr 1fr}.qt-combo{grid-template-columns:1fr}}
+@media(max-width:480px){.qt-workflow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3980,6 +4011,179 @@ async function runOptKalman(){
 }
 
 
+// ── 3D Quant Tools Background (Financial Matrix) ──────────────────────────────
+let _quantRaf = null;
+
+function runQuantBg(canvas){
+  if(_quantRaf){ cancelAnimationFrame(_quantRaf); _quantRaf=null; }
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const FOV=400;
+  function project(x,y,z){ const s=FOV/(FOV+z+200); return {x:W/2+x*s,y:H/2+y*s,scale:s}; }
+
+  // ── Financial formula nodes in 3D space ──────────────────────────────────
+  const TERMS=[
+    'GARCH(1,1)','α+β<1','Kelly','ARIMA','HMM','LSTM','R²=0.91',
+    'σ̂²','VaR','Monte Carlo','Kalman','persistence','regime',
+    'ω','α','β','AIC','BIC','MAE','RMSE','SNR','drawdown',
+    'stationarity','heteroskedasticity','autocorrelation',
+    'E[R]','Sharpe','Sortino','max DD','ruin risk',
+  ];
+  const NODES=TERMS.map((_,i)=>{
+    const t=(i/TERMS.length)*Math.PI*2, p=(Math.random()-.5)*Math.PI*.9, r=130+Math.random()*170;
+    return {ox:Math.cos(t)*Math.cos(p)*r, oy:Math.sin(p)*r, oz:Math.sin(t)*Math.cos(p)*r,
+            x:0,y:0,z:0, label:TERMS[i], bright:Math.random()>.5,
+            pulse:Math.random()*Math.PI*2, ps:0.012+Math.random()*.018, sz:1.5+Math.random()*2.5};
+  });
+  const EDGES=[];
+  for(let i=0;i<NODES.length;i++) for(let j=i+1;j<NODES.length;j++){
+    const dx=NODES[i].ox-NODES[j].ox,dy=NODES[i].oy-NODES[j].oy,dz=NODES[i].oz-NODES[j].oz;
+    if(Math.sqrt(dx*dx+dy*dy+dz*dz)<190) EDGES.push([i,j]);
+  }
+
+  // ── Floating data panels ─────────────────────────────────────────────────
+  const PANELS=[
+    {l:['MONTE CARLO','Ruin: 2.1%','Paths: 500'], c:'34,197,94'},
+    {l:['GARCH(1,1)','α=0.09 β=0.88','Persist: 0.97'],c:'86,160,255'},
+    {l:['ARIMA(2,1,2)','AIC: 218.4','↑ Bullish'],c:'251,191,36'},
+    {l:['HMM REGIME','State: Bull','P=0.84'],c:'168,85,247'},
+    {l:['KALMAN','SNR: 2.41','Trending↑'],c:'20,184,166'},
+    {l:['LSTM','Acc: 68%','Signal: ↑'],c:'34,197,94'},
+    {l:['REGRESSION','R²=0.92','Uptrend'],c:'86,160,255'},
+  ];
+  const panels=PANELS.map(p=>({
+    ...p, w:132, h:58,
+    ox:(Math.random()-.5)*680, oy:(Math.random()-.5)*420, oz:-80+Math.random()*500,
+    vy:-(0.22+Math.random()*.32), vx:(Math.random()-.5)*.08,
+    alpha:.04+Math.random()*.08, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
+  }));
+
+  // ── Streaming number rain (like Matrix but with financial data) ────────────
+  const COLS=Math.floor(W/18);
+  const drops=Array.from({length:COLS},()=>({
+    y:Math.random()*H, speed:1.5+Math.random()*2.5,
+    chars:'0123456789αβσωΔ∑∫±<>%'.split(''),
+    alpha:0.04+Math.random()*0.06,
+  }));
+
+  // ── Sine wave grid (oscilloscope style) ───────────────────────────────────
+  let waveT=0;
+
+  function ry(x,z,a){return{x:x*Math.cos(a)+z*Math.sin(a),z:-x*Math.sin(a)+z*Math.cos(a)};}
+  function rx(y,z,a){return{y:y*Math.cos(a)-z*Math.sin(a),z:y*Math.sin(a)+z*Math.cos(a)};}
+  function transform(ox,oy,oz,rotY,rotX){
+    const r=ry(ox,oz,rotY); const r2=rx(oy,r.z,rotX);
+    return{x:r.x,y:r2.y,z:r2.z};
+  }
+
+  let rotY=0,rotX=0.1;
+
+  function drawPanel(pn){
+    const tr=transform(pn.ox,pn.oy,pn.oz,rotY,rotX);
+    const p=project(tr.x,tr.y,tr.z);
+    const depth=Math.max(0,1-Math.abs(tr.z)/480);
+    if(depth<0.06) return;
+    pn.phase+=pn.ps;
+    const sc=p.scale, pw=pn.w*sc, ph=pn.h*sc;
+    const a=pn.alpha*depth;
+    ctx.globalAlpha=a;
+    ctx.fillStyle='rgba(2,8,2,0.72)';
+    ctx.strokeStyle=`rgba(${pn.c},0.22)`;
+    ctx.lineWidth=0.7;
+    ctx.beginPath(); ctx.roundRect(p.x-pw/2,p.y-ph/2,pw,ph,4*sc); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=`rgba(${pn.c},0.7)`;
+    ctx.fillRect(p.x-pw/2+3*sc,p.y-ph/2+2.5*sc,pw-6*sc,1.5*sc);
+    pn.l.forEach((line,i)=>{
+      ctx.globalAlpha=a*(i===0?.88:.45);
+      ctx.font=`${Math.max(5.5,7*sc)}px "DM Mono",monospace`;
+      ctx.fillStyle=i===0?`rgba(${pn.c},0.9)`:'rgba(167,243,208,0.6)';
+      ctx.fillText(line,p.x-pw/2+5*sc,p.y-ph/2+(12+i*10)*sc);
+    });
+    ctx.globalAlpha=1;
+  }
+
+  function draw(){
+    if(!_quantRaf && document.getElementById('page-quant')?.style.display==='none') return;
+    ctx.clearRect(0,0,W,H);
+    waveT+=0.025; rotY+=0.0018;
+
+    // Subtle wave grid at bottom
+    ctx.globalAlpha=0.04;
+    ctx.strokeStyle='#22c55e'; ctx.lineWidth=0.8;
+    for(let row=0;row<3;row++){
+      ctx.beginPath();
+      for(let x=0;x<W;x+=2){
+        const y=H*.65+row*28+Math.sin((x/W)*Math.PI*6+waveT+row)*(10-row*2);
+        row===0&&x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+
+    // Number rain
+    drops.forEach((d,col)=>{
+      const char=d.chars[Math.floor(Math.random()*d.chars.length)];
+      ctx.globalAlpha=d.alpha;
+      ctx.fillStyle='#4ade80';
+      ctx.font='11px "DM Mono",monospace';
+      ctx.fillText(char,col*18+4,d.y);
+      d.y+=d.speed;
+      if(d.y>H+10) d.y=-10;
+    });
+    ctx.globalAlpha=1;
+
+    // Transform nodes
+    NODES.forEach(n=>{const r=transform(n.ox,n.oy,n.oz,rotY,rotX);n.x=r.x;n.y=r.y;n.z=r.z;});
+
+    // Edges
+    EDGES.forEach(([i,j])=>{
+      const a=NODES[i],b=NODES[j];
+      const pa=project(a.x,a.y,a.z),pb=project(b.x,b.y,b.z);
+      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.05;
+      if(alpha<=0) return;
+      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=0.55;
+      ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
+    });
+
+    // Nodes + labels (back to front)
+    [...NODES].sort((a,b)=>a.z-b.z).forEach(n=>{
+      const p=project(n.x,n.y,n.z);
+      const depth=1-Math.abs(n.z)/400;
+      if(depth<=0) return;
+      n.pulse+=n.ps;
+      const pulse=0.55+0.45*Math.sin(n.pulse);
+      const a=(n.bright?.65:.3)*depth*pulse;
+      ctx.globalAlpha=a;
+      ctx.fillStyle=n.bright?'#a7f3d0':'#4ade80';
+      ctx.beginPath(); ctx.arc(p.x,p.y,n.sz*p.scale,0,Math.PI*2); ctx.fill();
+      if(depth>.28){
+        ctx.globalAlpha=a*.8;
+        ctx.font=`${Math.max(6.5,9*p.scale)}px "DM Mono",monospace`;
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
+        ctx.fillText(n.label,p.x+n.sz*p.scale+3,p.y+3);
+      }
+    });
+    ctx.globalAlpha=1;
+
+    // Panels
+    panels.forEach(pn=>{
+      pn.oy+=pn.vy; pn.ox+=pn.vx;
+      if(pn.oy<-H/2-80){pn.oy=H/2+80;pn.ox=(Math.random()-.5)*600;}
+      if(pn.ox<-W/2-100)pn.ox=W/2+100;
+      if(pn.ox>W/2+100)pn.ox=-W/2-100;
+      drawPanel(pn);
+    });
+
+    _quantRaf=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
 // ── Hero chart animation — overlays on photo's chart area ────────────────────
 (function(){
   const canvas = document.getElementById('hero-chart-canvas');
@@ -4836,6 +5040,142 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <h1>Quant<i>Tools</i></h1>
     <p class="hsub">Seven institutional-grade quantitative models at your fingertips. Monte Carlo simulation, GARCH volatility, Linear Regression channels, Neural Network prediction, ARIMA time series, HMM regime detection, and Kalman Filter signal extraction — all powered by live market data and AI interpretation.</p>
   </section>
+
+  <!-- ── How to Use Guide ─────────────────────────────────────────────── -->
+  <div class="qt-guide">
+    <div class="qt-guide-title">How to Build a Proper Quant Analysis</div>
+
+    <!-- 4-Step Workflow -->
+    <div class="qt-workflow">
+      <div class="qt-step">
+        <div class="qt-step-num">01</div>
+        <div class="qt-step-title">Identify the Regime</div>
+        <div class="qt-step-desc">Start by understanding the current market state — trending, ranging, or transitioning. This determines which other tools are relevant.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill t">HMM Regimes</span>
+          <span class="qt-tool-pill g">Kalman Filter</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">02</div>
+        <div class="qt-step-title">Assess Volatility</div>
+        <div class="qt-step-desc">Before sizing any position, understand the current vol regime and forecast. This drives stop placement and position sizing.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill g">GARCH Model</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">03</div>
+        <div class="qt-step-title">Find the Trend & Target</div>
+        <div class="qt-step-desc">With regime and vol confirmed, identify trend direction, entry zone, and price target using regression or time-series models.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill a">Regression Channel</span>
+          <span class="qt-tool-pill b">ARIMA</span>
+          <span class="qt-tool-pill p">Neural Network</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">04</div>
+        <div class="qt-step-title">Validate Risk Parameters</div>
+        <div class="qt-step-desc">Before executing, simulate your strategy parameters to ensure the risk of ruin and drawdown profile are acceptable.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill b">Monte Carlo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Table -->
+    <div class="qt-table-wrap">
+      <table class="qt-table">
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>When to Use</th>
+            <th>Key Inputs</th>
+            <th>What It Tells You</th>
+            <th>Combine With</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tool-name">Monte Carlo</span></td>
+            <td>Before going live with a new strategy. Use to stress-test parameters before real capital.</td>
+            <td>Win rate, R:R ratio, risk per trade, number of trades</td>
+            <td>Probability of ruin, expected drawdown, realistic P&L range across scenarios</td>
+            <td><span class="badge b">GARCH</span> for vol-adjusted sizing</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">GARCH Model</span></td>
+            <td>Anytime before sizing a position or setting a stop loss. Always check vol first.</td>
+            <td>Asset symbol, model type (GARCH/EGARCH), forecast horizon</td>
+            <td>Current conditional volatility, persistence of shocks, vol regime (low/moderate/high)</td>
+            <td><span class="badge t">HMM</span> for regime context · <span class="badge b">Monte Carlo</span> for sizing</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Regression Channel</span></td>
+            <td>Trending markets only. Use R² to confirm a trend exists before applying.</td>
+            <td>Asset, band width (σ), forecast horizon</td>
+            <td>Trend direction and strength, overbought/oversold vs the channel, price target</td>
+            <td><span class="badge g">GARCH</span> to set band width · <span class="badge p">Neural Net</span> for directional confirmation</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Neural Network</span></td>
+            <td>Use as a directional signal confirmation — never as the sole reason to trade.</td>
+            <td>Architecture (LSTM/GRU), sequence length, forecast horizon, features</td>
+            <td>Predicted direction, confidence level, MAE/RMSE accuracy metrics</td>
+            <td><span class="badge a">Regression</span> for structural levels · <span class="badge t">HMM</span> for regime validity</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">ARIMA Model</span></td>
+            <td>Short-horizon forecasting on liquid, stationary assets. Best for mean-reverting markets.</td>
+            <td>p, d, q parameters, forecast horizon</td>
+            <td>Point forecast with confidence interval, model fit (AIC/BIC), forecast reliability</td>
+            <td><span class="badge p">Neural Net</span> for non-linear patterns · <span class="badge g">Kalman</span> to pre-smooth</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">HMM Regimes</span></td>
+            <td>First step of any analysis. Determines which other tools are applicable.</td>
+            <td>Asset (select from live prices), number of states (2–4)</td>
+            <td>Current market regime, stability score, regime probability distribution</td>
+            <td>Use output to decide: Bull → trend tools · Bear → mean-reversion · Neutral → wait</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Kalman Filter</span></td>
+            <td>Noisy markets and high-frequency data. Pre-process before other models.</td>
+            <td>Q (process noise), R (measurement noise), model type</td>
+            <td>Clean trend signal, signal-to-noise ratio, market trending vs choppy classification</td>
+            <td><span class="badge a">Regression</span> on filtered signal · <span class="badge b">ARIMA</span> on residuals</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Combination Strategies -->
+    <div class="qt-guide-title">Recommended Tool Combinations</div>
+    <div class="qt-combo">
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Trend Trade Setup</div>
+        <div class="qt-combo-flow">HMM → GARCH → Regression → Monte Carlo</div>
+        <div class="qt-combo-desc">Confirm bull regime, check vol is moderate (not extreme), find channel entry, validate risk parameters before sizing.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Mean Reversion Setup</div>
+        <div class="qt-combo-flow">HMM → Kalman → ARIMA → Monte Carlo</div>
+        <div class="qt-combo-desc">Confirm neutral/ranging regime, extract clean signal, forecast the reversion target, stress-test position sizing.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Volatility Breakout Setup</div>
+        <div class="qt-combo-flow">GARCH → HMM → Neural Net → Regression</div>
+        <div class="qt-combo-desc">Identify vol compression, confirm regime transition forming, get directional signal, find breakout target in channel.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Strategy Validation</div>
+        <div class="qt-combo-flow">Monte Carlo → GARCH → HMM</div>
+        <div class="qt-combo-desc">Run simulations with realistic win rate and R:R, adjust position size for current vol, check if regime supports the strategy.</div>
+      </div>
+    </div>
+  </div>
+
 
 <!-- ── Quant Analysis Tools ─────────────────────────────────────────── -->
   <div class="opt-tools-wrap">
