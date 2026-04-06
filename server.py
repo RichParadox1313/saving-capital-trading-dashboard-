@@ -1117,6 +1117,145 @@ def _q_macro_impact(asset_name: str, news_ctx: str = "") -> str:
     conf=min(abs(score)*25,100)
     return f"Macro model: {impact} {conf}% confidence (triggers: {', '.join(hits)})"
 # ── Main builder ──────────────────────────────────────────────────────────────
+# ─── Live News Context for Analysis ──────────────────────────────────────────
+
+# Asset keyword map — maps asset names to news keywords
+ASSET_NEWS_KEYWORDS = {
+    "Gold":        ["gold","xau","precious metal","safe haven","bullion","inflation"],
+    "Silver":      ["silver","xag","precious metal"],
+    "Crude Oil":   ["oil","crude","opec","petroleum","barrel","wti","brent","energy"],
+    "Brent Crude": ["brent","oil","crude","opec","energy"],
+    "Natural Gas": ["natural gas","lng","energy"],
+    "Copper":      ["copper","industrial metal","china demand"],
+    "Bitcoin":     ["bitcoin","btc","crypto","cryptocurrency","digital asset"],
+    "Ethereum":    ["ethereum","eth","defi","smart contract"],
+    "Solana":      ["solana","sol"],
+    "XRP":         ["ripple","xrp","sec"],
+    "BNB":         ["binance","bnb"],
+    "EUR/USD":     ["euro","eur","ecb","european","draghi","lagarde"],
+    "GBP/USD":     ["pound","sterling","gbp","bank of england","boe","uk economy"],
+    "USD/JPY":     ["yen","jpy","boj","bank of japan","japanese"],
+    "DXY":         ["dollar","dxy","fed","federal reserve","powell","usd"],
+    "S&P 500":     ["s&p","spx","stocks","wall street","equities","us market"],
+    "NASDAQ":      ["nasdaq","tech stocks","technology"],
+    "Gold":        ["gold","xau"],
+}
+
+# Global macro keywords always included
+MACRO_KEYWORDS = [
+    "federal reserve","fed rate","fomc","inflation","cpi","nfp","gdp","recession",
+    "interest rate","geopolit","war","sanction","opec","china","tariff","trump",
+    "middle east","ukraine","iran","dollar","treasury"
+]
+
+async def get_news_context_for_asset(asset_name: str, asset_sym: str) -> str:
+    """Pull relevant recent news headlines for a specific asset from cached news."""
+    try:
+        # Use cached news — already fetched by /api/news endpoint
+        all_news = news_cache.get("data", [])
+        if not all_news:
+            # Try to load if empty
+            all_news = await load_news()
+        
+        # Get keywords for this asset
+        kws = ASSET_NEWS_KEYWORDS.get(asset_name, [])
+        sym_lower = asset_sym.lower()
+        name_lower = asset_name.lower()
+        
+        relevant = []
+        macro = []
+        
+        for item in all_news[:60]:  # check top 60 news items
+            title = item.get("title","").lower()
+            # Direct asset match
+            if any(k in title for k in kws) or sym_lower in title or name_lower in title:
+                relevant.append(item.get("title",""))
+            # Macro context
+            elif any(k in title for k in MACRO_KEYWORDS):
+                macro.append(item.get("title",""))
+        
+        lines = []
+        if relevant:
+            lines.append("DIRECTLY RELEVANT NEWS (last 24h):")
+            for h in relevant[:5]:
+                lines.append(f"  • {h}")
+        
+        if macro:
+            lines.append("MACRO/GLOBAL CONTEXT:")
+            for h in macro[:4]:
+                lines.append(f"  • {h}")
+        
+        if not lines:
+            lines.append("No specific news found — base analysis on price action and quant signals.")
+        
+        return "\n".join(lines)
+    except Exception as e:
+        print(f"  News context error: {e}")
+        return ""
+
+async def get_economic_calendar() -> str:
+    """Fetch upcoming high-impact economic events from ForexFactory-compatible source."""
+    try:
+        async with aiohttp.ClientSession() as s:
+            # Use a free calendar API
+            async with s.get(
+                "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+                headers={"User-Agent":"Mozilla/5.0"},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as r:
+                if r.status != 200:
+                    return ""
+                events = await r.json(content_type=None)
+        
+        now_utc = datetime.utcnow()
+        upcoming = []
+        for ev in events:
+            try:
+                if ev.get("impact") not in ("High","Medium"): continue
+                # Parse event time
+                ev_time_str = ev.get("date","")
+                if not ev_time_str: continue
+                ev_time = datetime.strptime(ev_time_str[:19], "%Y-%m-%dT%H:%M:%S")
+                if ev_time < now_utc: continue
+                if (ev_time - now_utc).total_seconds() > 72*3600: continue
+                upcoming.append({
+                    "time": ev_time.strftime("%a %H:%M UTC"),
+                    "country": ev.get("country",""),
+                    "event": ev.get("title",""),
+                    "impact": ev.get("impact",""),
+                    "forecast": ev.get("forecast",""),
+                    "previous": ev.get("previous",""),
+                })
+            except:
+                continue
+        
+        if not upcoming:
+            return ""
+        
+        lines = ["UPCOMING HIGH-IMPACT EVENTS (next 72h):"]
+        for ev in upcoming[:6]:
+            impact_flag = "🔴" if ev["impact"]=="High" else "🟡"
+            forecast = f" | Forecast: {ev['forecast']}" if ev.get('forecast') else ""
+            lines.append(f"  {impact_flag} {ev['time']} [{ev['country']}] {ev['event']}{forecast}")
+        
+        return "\n".join(lines)
+    except Exception as e:
+        print(f"  Calendar fetch: {e}")
+        return ""
+
+# Cache for calendar — refresh every 2 hours
+_calendar_cache = {"data": "", "ts": 0}
+
+async def get_calendar_cached() -> str:
+    import time as _t
+    if _t.time() - _calendar_cache["ts"] < 7200 and _calendar_cache["data"]:
+        return _calendar_cache["data"]
+    result = await get_economic_calendar()
+    _calendar_cache["data"] = result
+    _calendar_cache["ts"] = _t.time()
+    return result
+
+
 async def build_dashboard_quant_context(asset_name: str, asset_data: dict, all_prices: dict) -> str:
     """Build full quant context for dashboard analysis prompt."""
     _q_update_history(all_prices)
@@ -1194,12 +1333,16 @@ async def api_analysis(req: AnalysisRequest, request: Request):
         c = analysis_cache[cache_key]
         if time.time() - c["ts"] < ANALYSIS_TTL:
             return JSONResponse(c["data"])
-    # Always refresh prices before analysis — ensures data is current
+    # Trigger background price refresh if stale — never block analysis on it
     age = time.time() - price_cache["ts"]
-    if not price_cache["data"] or age > 60:  # force refresh if prices older than 60s
-        data = await load_all_prices()
+    if not price_cache["data"]:
+        # No prices at all — must wait (startup case)
+        data = await asyncio.wait_for(load_all_prices(), timeout=20.0)
         price_cache.update({"data": data, "ts": time.time()})
-        print(f"  Prices refreshed for analysis (was {age:.0f}s old)")
+    elif age > 60:
+        # Prices stale — refresh in background, use current cache for this analysis
+        asyncio.create_task(_background_price_refresh())
+        print(f"  Prices are {age:.0f}s old — background refresh triggered, using cache")
 
     prices = price_cache["data"]
     a = prices.get(req.asset_id)
@@ -1234,9 +1377,29 @@ async def api_analysis(req: AnalysisRequest, request: Request):
         print(f"  Quant context failed (non-fatal): {qe}")
         quant_ctx = ""
 
+    # Fetch live news context and economic calendar in parallel
+    try:
+        news_ctx, calendar_ctx = await asyncio.gather(
+            asyncio.wait_for(get_news_context_for_asset(a.get("name",""), a.get("sym","")), timeout=8.0),
+            asyncio.wait_for(get_calendar_cached(), timeout=8.0),
+            return_exceptions=True
+        )
+        news_ctx     = news_ctx     if isinstance(news_ctx,     str) else ""
+        calendar_ctx = calendar_ctx if isinstance(calendar_ctx, str) else ""
+    except Exception as ne:
+        print(f"  News/calendar fetch failed (non-fatal): {ne}")
+        news_ctx = calendar_ctx = ""
+
+    # Build news/calendar section for prompt
+    live_events_section = ""
+    if news_ctx:
+        live_events_section += f"\n{news_ctx}\n"
+    if calendar_ctx:
+        live_events_section += f"\n{calendar_ctx}\n"
+
     prompt = f"""You are a senior quantitative analyst combining frameworks from the world's top hedge funds and quant trading desks: Bridgewater macro debt-cycle analysis, RenTech statistical momentum and mean-reversion, Citadel multi-strategy risk-adjusted positioning, Two Sigma factor decomposition (momentum, carry, value, quality), and Goldman institutional flow analysis.
 
-You now also have access to LIVE INSTITUTIONAL DATA LAYERS that real quant firms use. Integrate ALL of them into your analysis.
+You have access to LIVE INSTITUTIONAL DATA LAYERS, REAL-TIME NEWS, and ECONOMIC CALENDAR. Integrate ALL of them into your analysis.
 
 {lang_instruction}
 
@@ -1245,13 +1408,16 @@ Asset: {a['name']} ({a['sym']}) | Price: {ps} | 24h: {cs} | 5d: {c5s} | Phase: {
 Global: {ph['phase']} | {ph['regime']} | {ph['risk']} risk | {ph['bullPct']}% positive | avg {ph['avg']}%
 
 {quant_ctx}
-
+{live_events_section}
 INSTRUCTIONS:
+- Lead with the most important current event driving this asset — reference specific news if available
+- Explain the CAUSATION CHAIN: event → mechanism → market impact
 - Reference the multi-factor score and signal explicitly in your quant section
 - Use COT data to explain institutional positioning (smart money vs retail divergence)
 - Use funding rates to assess leverage and squeeze risk
 - Use Fear & Greed as a contrarian indicator
 - Use correlations to explain cross-asset dynamics
+- Flag any upcoming economic events that could be catalysts
 - Every field must reference specific numbers from the data above
 
 Return ONLY valid JSON no markdown:
