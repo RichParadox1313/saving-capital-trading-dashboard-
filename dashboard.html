@@ -21,7 +21,7 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:52px}
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--br3);border-radius:2px}
 #bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07}
-.z{position:relative;z-index:2}
+.z{position:relative}
 
 /* NAV */
 nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(3,7,4,0.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--br)}
@@ -486,7 +486,7 @@ h1 i{color:var(--g);font-style:normal;display:block}
 
 
 /* ── Journal Page Hero ──────────────────────────────────────────────── */
-.jrnl-hero{background:linear-gradient(180deg,rgba(34,197,94,0.04) 0%,transparent 100%);border-bottom:1px solid var(--br);padding:110px 48px 48px;overflow:hidden}
+.jrnl-hero{background:linear-gradient(180deg,rgba(34,197,94,0.04) 0%,transparent 100%);border-bottom:1px solid var(--br);padding:110px 48px 48px;overflow:hidden;position:relative}
 .jrnl-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 70%);pointer-events:none}
 .jrnl-hero-inner{max-width:900px;margin:0 auto;position:relative}
 .jrnl-hero-badge{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:16px;display:inline-flex;align-items:center;gap:8px}
@@ -1487,6 +1487,10 @@ function setLang(lang){
 // ── Page Navigation ──────────────────────────────────────────────────────────
 function goPage(page){
   document.querySelectorAll('.page').forEach(p=>{ p.style.display='none'; p.style.pointerEvents='none'; });
+  // Stop journal background animation when leaving journal
+  if(_journalRaf){ cancelAnimationFrame(_journalRaf); _journalRaf=null; }
+  const jcanvas = document.getElementById('journal-canvas');
+  if(jcanvas) jcanvas.style.display='none';
   // Explicitly ensure backtest fixed page is hidden when not active
   const btp = document.getElementById('page-backtest');
   if(btp && page !== 'backtest'){ btp.style.display='none'; btp.style.pointerEvents='none'; }
@@ -4501,7 +4505,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 <div id="page-journal-page" class="page" style="display:none">
 <canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.55;display:none"></canvas>
   <!-- Journal Hero Intro -->
-  <div class="jrnl-hero z">
+  <div class="jrnl-hero" style="position:relative;z-index:1">
     <div class="jrnl-hero-inner">
       <div class="jrnl-hero-badge">PROFESSIONAL TRADING JOURNAL</div>
       <h1 class="jrnl-hero-title">Track. Analyse. <span class="jrnl-hero-accent">Improve.</span></h1>
@@ -4515,7 +4519,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
     </div>
   </div>
   <!-- Journal Panel -->
-  <div class="main z" style="padding-bottom:80px">
+  <div class="main" style="padding-bottom:80px;position:relative;z-index:2">
     <div id="journal-standalone"></div>
   </div>
 </div>
