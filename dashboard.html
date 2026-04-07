@@ -5041,142 +5041,6 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <p class="hsub">Seven institutional-grade quantitative models at your fingertips. Monte Carlo simulation, GARCH volatility, Linear Regression channels, Neural Network prediction, ARIMA time series, HMM regime detection, and Kalman Filter signal extraction — all powered by live market data and AI interpretation.</p>
   </section>
 
-  <!-- ── How to Use Guide ─────────────────────────────────────────────── -->
-  <div class="qt-guide">
-    <div class="qt-guide-title">How to Build a Proper Quant Analysis</div>
-
-    <!-- 4-Step Workflow -->
-    <div class="qt-workflow">
-      <div class="qt-step">
-        <div class="qt-step-num">01</div>
-        <div class="qt-step-title">Identify the Regime</div>
-        <div class="qt-step-desc">Start by understanding the current market state — trending, ranging, or transitioning. This determines which other tools are relevant.</div>
-        <div class="qt-step-tools">
-          <span class="qt-tool-pill t">HMM Regimes</span>
-          <span class="qt-tool-pill g">Kalman Filter</span>
-        </div>
-      </div>
-      <div class="qt-step">
-        <div class="qt-step-num">02</div>
-        <div class="qt-step-title">Assess Volatility</div>
-        <div class="qt-step-desc">Before sizing any position, understand the current vol regime and forecast. This drives stop placement and position sizing.</div>
-        <div class="qt-step-tools">
-          <span class="qt-tool-pill g">GARCH Model</span>
-        </div>
-      </div>
-      <div class="qt-step">
-        <div class="qt-step-num">03</div>
-        <div class="qt-step-title">Find the Trend & Target</div>
-        <div class="qt-step-desc">With regime and vol confirmed, identify trend direction, entry zone, and price target using regression or time-series models.</div>
-        <div class="qt-step-tools">
-          <span class="qt-tool-pill a">Regression Channel</span>
-          <span class="qt-tool-pill b">ARIMA</span>
-          <span class="qt-tool-pill p">Neural Network</span>
-        </div>
-      </div>
-      <div class="qt-step">
-        <div class="qt-step-num">04</div>
-        <div class="qt-step-title">Validate Risk Parameters</div>
-        <div class="qt-step-desc">Before executing, simulate your strategy parameters to ensure the risk of ruin and drawdown profile are acceptable.</div>
-        <div class="qt-step-tools">
-          <span class="qt-tool-pill b">Monte Carlo</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Usage Table -->
-    <div class="qt-table-wrap">
-      <table class="qt-table">
-        <thead>
-          <tr>
-            <th>Tool</th>
-            <th>When to Use</th>
-            <th>Key Inputs</th>
-            <th>What It Tells You</th>
-            <th>Combine With</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class="tool-name">Monte Carlo</span></td>
-            <td>Before going live with a new strategy. Use to stress-test parameters before real capital.</td>
-            <td>Win rate, R:R ratio, risk per trade, number of trades</td>
-            <td>Probability of ruin, expected drawdown, realistic P&L range across scenarios</td>
-            <td><span class="badge b">GARCH</span> for vol-adjusted sizing</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">GARCH Model</span></td>
-            <td>Anytime before sizing a position or setting a stop loss. Always check vol first.</td>
-            <td>Asset symbol, model type (GARCH/EGARCH), forecast horizon</td>
-            <td>Current conditional volatility, persistence of shocks, vol regime (low/moderate/high)</td>
-            <td><span class="badge t">HMM</span> for regime context · <span class="badge b">Monte Carlo</span> for sizing</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">Regression Channel</span></td>
-            <td>Trending markets only. Use R² to confirm a trend exists before applying.</td>
-            <td>Asset, band width (σ), forecast horizon</td>
-            <td>Trend direction and strength, overbought/oversold vs the channel, price target</td>
-            <td><span class="badge g">GARCH</span> to set band width · <span class="badge p">Neural Net</span> for directional confirmation</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">Neural Network</span></td>
-            <td>Use as a directional signal confirmation — never as the sole reason to trade.</td>
-            <td>Architecture (LSTM/GRU), sequence length, forecast horizon, features</td>
-            <td>Predicted direction, confidence level, MAE/RMSE accuracy metrics</td>
-            <td><span class="badge a">Regression</span> for structural levels · <span class="badge t">HMM</span> for regime validity</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">ARIMA Model</span></td>
-            <td>Short-horizon forecasting on liquid, stationary assets. Best for mean-reverting markets.</td>
-            <td>p, d, q parameters, forecast horizon</td>
-            <td>Point forecast with confidence interval, model fit (AIC/BIC), forecast reliability</td>
-            <td><span class="badge p">Neural Net</span> for non-linear patterns · <span class="badge g">Kalman</span> to pre-smooth</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">HMM Regimes</span></td>
-            <td>First step of any analysis. Determines which other tools are applicable.</td>
-            <td>Asset (select from live prices), number of states (2–4)</td>
-            <td>Current market regime, stability score, regime probability distribution</td>
-            <td>Use output to decide: Bull → trend tools · Bear → mean-reversion · Neutral → wait</td>
-          </tr>
-          <tr>
-            <td><span class="tool-name">Kalman Filter</span></td>
-            <td>Noisy markets and high-frequency data. Pre-process before other models.</td>
-            <td>Q (process noise), R (measurement noise), model type</td>
-            <td>Clean trend signal, signal-to-noise ratio, market trending vs choppy classification</td>
-            <td><span class="badge a">Regression</span> on filtered signal · <span class="badge b">ARIMA</span> on residuals</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Combination Strategies -->
-    <div class="qt-guide-title">Recommended Tool Combinations</div>
-    <div class="qt-combo">
-      <div class="qt-combo-card">
-        <div class="qt-combo-title">Trend Trade Setup</div>
-        <div class="qt-combo-flow">HMM → GARCH → Regression → Monte Carlo</div>
-        <div class="qt-combo-desc">Confirm bull regime, check vol is moderate (not extreme), find channel entry, validate risk parameters before sizing.</div>
-      </div>
-      <div class="qt-combo-card">
-        <div class="qt-combo-title">Mean Reversion Setup</div>
-        <div class="qt-combo-flow">HMM → Kalman → ARIMA → Monte Carlo</div>
-        <div class="qt-combo-desc">Confirm neutral/ranging regime, extract clean signal, forecast the reversion target, stress-test position sizing.</div>
-      </div>
-      <div class="qt-combo-card">
-        <div class="qt-combo-title">Volatility Breakout Setup</div>
-        <div class="qt-combo-flow">GARCH → HMM → Neural Net → Regression</div>
-        <div class="qt-combo-desc">Identify vol compression, confirm regime transition forming, get directional signal, find breakout target in channel.</div>
-      </div>
-      <div class="qt-combo-card">
-        <div class="qt-combo-title">Strategy Validation</div>
-        <div class="qt-combo-flow">Monte Carlo → GARCH → HMM</div>
-        <div class="qt-combo-desc">Run simulations with realistic win rate and R:R, adjust position size for current vol, check if regime supports the strategy.</div>
-      </div>
-    </div>
-  </div>
-
-
 <!-- ── Quant Analysis Tools ─────────────────────────────────────────── -->
   <div class="opt-tools-wrap">
     <div class="qt-hero-label">Seven Institutional Models</div>
@@ -5480,6 +5344,142 @@ setLang(localStorage.getItem('sc_lang')||'en');
     </div>
 
   </div><!-- end opt-tools-wrap -->
+  <!-- ── How to Use Guide ─────────────────────────────────────────────── -->
+  <div class="qt-guide">
+    <div class="qt-guide-title">How to Build a Proper Quant Analysis</div>
+
+    <!-- 4-Step Workflow -->
+    <div class="qt-workflow">
+      <div class="qt-step">
+        <div class="qt-step-num">01</div>
+        <div class="qt-step-title">Identify the Regime</div>
+        <div class="qt-step-desc">Start by understanding the current market state — trending, ranging, or transitioning. This determines which other tools are relevant.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill t">HMM Regimes</span>
+          <span class="qt-tool-pill g">Kalman Filter</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">02</div>
+        <div class="qt-step-title">Assess Volatility</div>
+        <div class="qt-step-desc">Before sizing any position, understand the current vol regime and forecast. This drives stop placement and position sizing.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill g">GARCH Model</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">03</div>
+        <div class="qt-step-title">Find the Trend & Target</div>
+        <div class="qt-step-desc">With regime and vol confirmed, identify trend direction, entry zone, and price target using regression or time-series models.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill a">Regression Channel</span>
+          <span class="qt-tool-pill b">ARIMA</span>
+          <span class="qt-tool-pill p">Neural Network</span>
+        </div>
+      </div>
+      <div class="qt-step">
+        <div class="qt-step-num">04</div>
+        <div class="qt-step-title">Validate Risk Parameters</div>
+        <div class="qt-step-desc">Before executing, simulate your strategy parameters to ensure the risk of ruin and drawdown profile are acceptable.</div>
+        <div class="qt-step-tools">
+          <span class="qt-tool-pill b">Monte Carlo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Table -->
+    <div class="qt-table-wrap">
+      <table class="qt-table">
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>When to Use</th>
+            <th>Key Inputs</th>
+            <th>What It Tells You</th>
+            <th>Combine With</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tool-name">Monte Carlo</span></td>
+            <td>Before going live with a new strategy. Use to stress-test parameters before real capital.</td>
+            <td>Win rate, R:R ratio, risk per trade, number of trades</td>
+            <td>Probability of ruin, expected drawdown, realistic P&L range across scenarios</td>
+            <td><span class="badge b">GARCH</span> for vol-adjusted sizing</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">GARCH Model</span></td>
+            <td>Anytime before sizing a position or setting a stop loss. Always check vol first.</td>
+            <td>Asset symbol, model type (GARCH/EGARCH), forecast horizon</td>
+            <td>Current conditional volatility, persistence of shocks, vol regime (low/moderate/high)</td>
+            <td><span class="badge t">HMM</span> for regime context · <span class="badge b">Monte Carlo</span> for sizing</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Regression Channel</span></td>
+            <td>Trending markets only. Use R² to confirm a trend exists before applying.</td>
+            <td>Asset, band width (σ), forecast horizon</td>
+            <td>Trend direction and strength, overbought/oversold vs the channel, price target</td>
+            <td><span class="badge g">GARCH</span> to set band width · <span class="badge p">Neural Net</span> for directional confirmation</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Neural Network</span></td>
+            <td>Use as a directional signal confirmation — never as the sole reason to trade.</td>
+            <td>Architecture (LSTM/GRU), sequence length, forecast horizon, features</td>
+            <td>Predicted direction, confidence level, MAE/RMSE accuracy metrics</td>
+            <td><span class="badge a">Regression</span> for structural levels · <span class="badge t">HMM</span> for regime validity</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">ARIMA Model</span></td>
+            <td>Short-horizon forecasting on liquid, stationary assets. Best for mean-reverting markets.</td>
+            <td>p, d, q parameters, forecast horizon</td>
+            <td>Point forecast with confidence interval, model fit (AIC/BIC), forecast reliability</td>
+            <td><span class="badge p">Neural Net</span> for non-linear patterns · <span class="badge g">Kalman</span> to pre-smooth</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">HMM Regimes</span></td>
+            <td>First step of any analysis. Determines which other tools are applicable.</td>
+            <td>Asset (select from live prices), number of states (2–4)</td>
+            <td>Current market regime, stability score, regime probability distribution</td>
+            <td>Use output to decide: Bull → trend tools · Bear → mean-reversion · Neutral → wait</td>
+          </tr>
+          <tr>
+            <td><span class="tool-name">Kalman Filter</span></td>
+            <td>Noisy markets and high-frequency data. Pre-process before other models.</td>
+            <td>Q (process noise), R (measurement noise), model type</td>
+            <td>Clean trend signal, signal-to-noise ratio, market trending vs choppy classification</td>
+            <td><span class="badge a">Regression</span> on filtered signal · <span class="badge b">ARIMA</span> on residuals</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Combination Strategies -->
+    <div class="qt-guide-title">Recommended Tool Combinations</div>
+    <div class="qt-combo">
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Trend Trade Setup</div>
+        <div class="qt-combo-flow">HMM → GARCH → Regression → Monte Carlo</div>
+        <div class="qt-combo-desc">Confirm bull regime, check vol is moderate (not extreme), find channel entry, validate risk parameters before sizing.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Mean Reversion Setup</div>
+        <div class="qt-combo-flow">HMM → Kalman → ARIMA → Monte Carlo</div>
+        <div class="qt-combo-desc">Confirm neutral/ranging regime, extract clean signal, forecast the reversion target, stress-test position sizing.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Volatility Breakout Setup</div>
+        <div class="qt-combo-flow">GARCH → HMM → Neural Net → Regression</div>
+        <div class="qt-combo-desc">Identify vol compression, confirm regime transition forming, get directional signal, find breakout target in channel.</div>
+      </div>
+      <div class="qt-combo-card">
+        <div class="qt-combo-title">Strategy Validation</div>
+        <div class="qt-combo-flow">Monte Carlo → GARCH → HMM</div>
+        <div class="qt-combo-desc">Run simulations with realistic win rate and R:R, adjust position size for current vol, check if regime supports the strategy.</div>
+      </div>
+    </div>
+  </div>
+
+
 
 
 
