@@ -1086,6 +1086,17 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .qt-combo-desc{font-size:10px;color:var(--t4);line-height:1.6}
 @media(max-width:768px){.qt-workflow{grid-template-columns:1fr 1fr}.qt-combo{grid-template-columns:1fr}}
 @media(max-width:480px){.qt-workflow{grid-template-columns:1fr}}
+/* ── Auto-config panel components ─── */
+.qt-auto-badge{display:flex;align-items:center;gap:10px;padding:9px 13px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;margin-bottom:12px}
+.qt-auto-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;flex-shrink:0;animation:hpdot 2s infinite}
+.qt-auto-badge span{font-size:10px;font-family:'DM Mono',monospace;color:rgba(167,243,208,0.7);line-height:1.5}
+.qt-param-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.qt-param{display:flex;flex-direction:column;gap:2px;padding:8px 12px;background:rgba(2,14,2,0.7);border:1px solid rgba(34,197,94,0.1);border-radius:7px;flex:1;min-width:80px}
+.qt-pl{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace}
+.qt-pv{font-size:11px;font-family:'DM Mono',monospace;font-weight:600;color:#a7f3d0}
+.qt-override-section{margin-bottom:10px;padding:12px;background:rgba(34,197,94,0.03);border:1px solid rgba(34,197,94,0.1);border-radius:8px}
+.qt-override-btn{padding:11px 16px;border:1px solid rgba(34,197,94,0.2);border-radius:9px;background:transparent;color:rgba(167,243,208,0.5);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.qt-override-btn:hover{border-color:rgba(34,197,94,0.4);color:rgba(167,243,208,0.8)}
 </style>
 </head>
 <body>
@@ -1266,11 +1277,11 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 <!-- BOTTOM STRIP -->
 <div class="hp-strip">
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Advanced Price Engine</b><span data-i18n="feat1Sub">Live Feed · Sub-Second Response</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Real-Time Prices</b><span data-i18n="feat1Sub">Binance WebSocket · Sub-second crypto</span></div></div>
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.5v6l-5.5 3-5.5-3v-6z" stroke="#22c55e" stroke-width="1.1"/></svg><div><b data-i18n="feat2Title">Quant AI Analysis</b><span data-i18n="feat2Sub">5 Wall Street frameworks</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live Market News</b><span data-i18n="feat3Sub">Institutional Sources · Instant Updates</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live News Feed</b><span data-i18n="feat3Sub">Reuters · ForexLive · CoinTelegraph</span></div></div>
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
 </div>
@@ -1378,9 +1389,9 @@ const LANGS = {
     mktPhase:"Market Phase", regime:"Regime", riskAppetite:"Risk Appetite",
     cryptoTab:"Crypto Top 30", forexTab:"Forex", goldTab:"Gold & Commodities",
     indexesTab:"Global Indexes", stocksTab:"Top 30 Stocks",
-    feat1Title:"Advanced Price Engine", feat1Sub:"Live Feed · Sub-Second Response",
+    feat1Title:"Real-Time Prices", feat1Sub:"Binance WebSocket · Sub-second crypto",
     feat2Title:"Quant AI Analysis", feat2Sub:"5 Wall Street frameworks",
-    feat3Title:"Live Market News", feat3Sub:"Institutional Sources · Instant Updates",
+    feat3Title:"Live News Feed", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
     feat4Title:"Trading Journal", feat4Sub:"MT5 auto-sync · P&L · Win rate",
     live:"Live", liveNews:"Live News",
     selectAsset:"SELECT", selectMsg:"Click an asset above to view Quant Grade market analysis",
@@ -1411,7 +1422,7 @@ const LANGS = {
     indexesTab:"Глобални индекси", stocksTab:"Топ 30 акции",
     feat1Title:"Цени в реално време", feat1Sub:"Binance WebSocket · Крипто под секунда",
     feat2Title:"Quant AI анализ", feat2Sub:"5 Уолстрийт методологии",
-    feat3Title:"Живи новини", feat3Sub:"Institutional Sources · Instant Updates",
+    feat3Title:"Живи новини", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
     feat4Title:"Търговски дневник", feat4Sub:"MT5 синхронизация · P&L · % печалба",
     live:"Живо", liveNews:"Живи новини",
     selectAsset:"ИЗБЕРИ", selectMsg:"Кликнете актив за Quant Grade пазарен анализ",
@@ -1442,7 +1453,7 @@ const LANGS = {
     indexesTab:"מדדים גלובליים", stocksTab:"טופ 30 מניות",
     feat1Title:"מחירים בזמן אמת", feat1Sub:"Binance WebSocket · קריפטו תת-שנייתי",
     feat2Title:"ניתוח Quant AI", feat2Sub:"5 מסגרות וול סטריט",
-    feat3Title:"עדכוני חדשות חי", feat3Sub:"Institutional Sources · Instant Updates",
+    feat3Title:"עדכוני חדשות חי", feat3Sub:"Reuters · ForexLive · CoinTelegraph",
     feat4Title:"יומן מסחר", feat4Sub:"סינכרון MT5 · P&L · שיעור זכייה",
     live:"חי", liveNews:"חדשות חי",
     selectAsset:"בחר", selectMsg:"לחץ על נכס לעיל לצפייה בניתוח שוק Quant Grade",
@@ -1559,9 +1570,7 @@ function goPage(page){
   if(page==='journal-page'){
     loadJournal();
   }
-  if(page==='quant'){
-    // Quant Tools page — no special init needed
-  }
+  if(page==='quant'){ qtInit(); }
   window.scrollTo(0,0);
   // Start/stop background animations
   startBgAnim(page);
@@ -2763,6 +2772,7 @@ async function loadPrices(){
     updatePhaseBar();
     updateStats();
     renderAll();
+    if(document.getElementById('page-quant')?.style.display!=='none') qtPopulateAssetDropdown();
     // Wait for DOM to fully render then draw sparks
     setTimeout(()=>requestAnimationFrame(redrawAllSparks), 200);
     // Update live data indicator
@@ -2921,91 +2931,94 @@ function qScoreClass(sig){
 function buildQuantPanel(d){
   const q=d.quant||{};
   const raw=parseInt(q.score)||0;
+
+  // Convert -10..+10 to confidence 1..100
+  // Confidence = how strong the signal is regardless of direction
+  // Score ±10 = 100 confidence, score 0 = 1 confidence
   const absScore = Math.abs(raw);
   const confidence = Math.max(1, Math.round(absScore / 10 * 100));
+
+  // Direction
   const bullish = raw > 0;
   const bearish  = raw < 0;
   const neutral  = raw === 0;
 
-  let sig, sigCls, sigColor, sigIcon;
+  // Signal label based on confidence + direction
+  let sig, sigCls, sigColor;
   if(neutral || confidence < 20){
-    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8'; sigIcon='◈';
+    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8';
   } else if(bullish){
-    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; sigIcon='▲▲'; }
-    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; sigIcon='▲'; }
-    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; sigIcon='△'; }
+    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; }
+    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; }
+    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; }
   } else {
-    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; sigIcon='▼▼'; }
-    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; sigIcon='▼'; }
-    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; sigIcon='▽'; }
+    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
+    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; }
+    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; }
   }
 
-  const gaugeColor = confidence>=75 ? sigColor : confidence>=45 ? sigColor : '#94a3b8';
-  const r=36, cx=50, cy=50;
+  // Confidence arc — SVG circular gauge
+  const r=38, cx=50, cy=50;
   const arcLen=2*Math.PI*r;
   const filled=arcLen*(confidence/100);
   const dash=`${filled} ${arcLen-filled}`;
+  const rotation=-90; // start from top
 
-  const gaugeSvg=`<svg viewBox="0 0 100 100" width="110" height="110" style="transform:rotate(-90deg)">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="10"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}22" stroke-width="14"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}" stroke-width="5"
+  const gaugeColor=confidence>=75?sigColor:confidence>=45?sigColor:'#94a3b8';
+  const trackColor='rgba(255,255,255,0.06)';
+
+  const gaugeSvg=`<svg viewBox="0 0 100 100" width="100" height="100" style="transform:rotate(${rotation}deg)">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="8"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}" stroke-width="8"
       stroke-dasharray="${dash}" stroke-linecap="round"
-      style="transition:stroke-dasharray .9s cubic-bezier(.4,0,.2,1),stroke .4s ease;filter:drop-shadow(0 0 4px ${gaugeColor}88)"/>
+      style="transition:stroke-dasharray .8s ease,stroke .4s ease"/>
   </svg>`;
 
+  // Factor pills
   const factorMap={
-    momentum:     {icon:'◆', label:'Momentum',  color:'#a78bfa'},
-    meanReversion:{icon:'⟳', label:'Mean Rev.', color:'#60a5fa'},
-    macroRegime:  {icon:'◉', label:'Macro',      color:'#fbbf24'},
-    volRegime:    {icon:'▰', label:'Volatility', color:'#34d399'},
+    momentum:    {icon:'⚡',label:'Momentum'},
+    meanReversion:{icon:'↩',label:'Mean Rev.'},
+    macroRegime: {icon:'🌍',label:'Macro'},
+    volRegime:   {icon:'📊',label:'Volatility'},
   };
-  const factorPills=Object.entries(factorMap).map(([key,{icon,label,color}])=>{
+  const factorPills=Object.entries(factorMap).map(([key,{icon,label}])=>{
     const val=(q[key]||'').split('—')[0].split('–')[0].split('.')[0].trim().slice(0,18)||'—';
-    const isGreen=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy');
-    const isRed=val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell');
-    const valColor=isGreen?'#4ade80':isRed?'#f87171':'rgba(167,243,208,0.55)';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;">
-      <div style="width:28px;height:28px;border-radius:6px;background:${color}18;border:1px solid ${color}33;display:flex;align-items:center;justify-content:center;font-size:12px;color:${color};flex-shrink:0;font-family:'DM Mono',monospace;font-weight:700">${icon}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace;margin-bottom:2px">${label}</div>
-        <div style="font-size:11px;font-family:'DM Mono',monospace;font-weight:600;color:${valColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${val}</div>
+    const fc=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy')?'green':
+              val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell')?'red':'';
+    return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+      <span style="font-size:13px">${icon}</span>
+      <div>
+        <div class="qs-factor-name">${label}</div>
+        <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${val}</div>
       </div>
-      <div style="width:4px;height:28px;border-radius:2px;background:${valColor}44;flex-shrink:0"></div>
     </div>`;
   }).join('');
 
-  return `<div class="qs-panel" style="background:rgba(2,10,2,0.7);border:1px solid rgba(34,197,94,0.15);border-radius:14px;padding:18px 20px;backdrop-filter:blur(12px)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:6px;height:6px;border-radius:50%;background:${gaugeColor};box-shadow:0 0 8px ${gaugeColor}"></div>
-        <span style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,243,208,0.4);font-family:'DM Mono',monospace">Quant Intelligence</span>
-      </div>
-      <button class="qs-info-btn" onclick="document.getElementById('qs-info-modal').classList.add('open')" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.06);color:rgba(167,243,208,0.4);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-weight:700">i</button>
+  return `<div class="qs-panel">
+    <div class="qs-header">
+      <span class="qs-title">Confidence Score</span>
+      <button class="qs-info-btn" onclick="document.getElementById('qs-info-modal').classList.add('open')">ⓘ</button>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-      <div style="position:relative;width:110px;height:110px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">
+      <div style="position:relative;width:100px;height:100px;flex-shrink:0">
         ${gaugeSvg}
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;color:${gaugeColor};text-shadow:0 0 20px ${gaugeColor}66">${confidence}</div>
-          <div style="font-size:7px;letter-spacing:2px;color:rgba(167,243,208,0.25);font-family:'DM Mono',monospace">/ 100</div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;line-height:1;color:${gaugeColor}">${confidence}</div>
+          <div style="font-size:7px;letter-spacing:1.5px;color:var(--t4);font-family:'DM Mono',monospace">/ 100</div>
         </div>
       </div>
       <div style="flex:1">
-        <div style="display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:6px;margin-bottom:10px;background:${sigColor}18;border:1px solid ${sigColor}33">
-          <span style="font-size:10px;color:${sigColor};font-weight:700;letter-spacing:.5px">${sigIcon}</span>
-          <span style="font-size:10px;font-family:'DM Mono',monospace;font-weight:700;letter-spacing:1.5px;color:${sigColor}">${sig}</span>
+        <div class="qs-signal ${sigCls}" style="margin-bottom:8px">${sig}</div>
+        <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;line-height:1.6">
+          Direction: <span style="color:${sigColor};font-weight:700">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
+          Quant score: <span style="color:var(--t2)">${raw>0?'+':''}${raw}/10</span>
         </div>
-        <div style="font-size:9px;font-family:'DM Mono',monospace;line-height:1.8;color:rgba(167,243,208,0.35)">
-          Direction <span style="color:${sigColor};font-weight:700;letter-spacing:.5px">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
-          Score <span style="color:rgba(167,243,208,0.7)">${raw>0?'+':''}${raw} / 10</span>
-        </div>
-        <div style="margin-top:10px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden">
-          <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}55,${gaugeColor});border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px ${gaugeColor}66"></div>
+        <div style="margin-top:8px;height:4px;border-radius:2px;background:var(--br);overflow:hidden">
+          <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}88,${gaugeColor});border-radius:2px;transition:width .8s ease"></div>
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${factorPills}</div>
+    <div class="qs-factors" style="grid-template-columns:1fr 1fr">${factorPills}</div>
   </div>`;
 }
 
@@ -3446,7 +3459,7 @@ function runJournalBg(canvas){
       if(depth>0.35){
         ctx.globalAlpha=alpha*0.9;
         ctx.font=`${Math.max(7,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
         ctx.fillText(n.label, p.x+n.size*p.scale+3, p.y+3);
       }
     });
@@ -3506,6 +3519,363 @@ function runJournalBg(canvas){
   draw();
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// QUANT TOOLS — Global Asset Selector, Auto-Config & Simulation Runner
+// ══════════════════════════════════════════════════════════════════════════════
+let _qtCurrentAssetId = null;
+let _qtCurrentVolPct  = 0;
+
+// Helper — set select by text value
+function _qtSetSelect(id, val){
+  const el = document.getElementById(id); if(!el) return;
+  for(let i=0;i<el.options.length;i++){
+    if(el.options[i].text===val||el.options[i].value===val){ el.selectedIndex=i; return; }
+  }
+}
+
+// Populate asset dropdown from TABS (all market intelligence assets)
+function qtPopulateAssetDropdown(){
+  const sel = document.getElementById('qt-global-asset');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select Asset —</option>';
+
+  const catLabels = {crypto:'Crypto Top 30',forex:'Forex',oil:'Gold & Commodities',indexes:'Global Indexes',stocks:'Top 30 Stocks'};
+  const catOrder  = ['crypto','forex','oil','indexes','stocks'];
+
+  catOrder.forEach(tab=>{
+    const assets = TABS[tab]; if(!assets?.length) return;
+    const g = document.createElement('optgroup');
+    g.label = catLabels[tab]||tab;
+    assets.forEach(a=>{
+      const p = prices[a.id]||{};
+      const priceStr = p.price ? ' — ' + fp(p.price) : '';
+      const chgStr   = p.change!=null ? (p.change>=0?' ▲':' ▼')+Math.abs(p.change).toFixed(2)+'%' : '';
+      const o = document.createElement('option');
+      o.value = a.id;
+      o.textContent = a.name + ' (' + a.sym + ')' + priceStr + chgStr;
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  });
+
+  // HMM has its own dropdown — sync it too
+  optPopulateHmmAssets();
+
+  if(current && sel.querySelector('option[value="'+current+'"]')) sel.value = current;
+
+  // Highlight checkboxes that are checked
+  qtSyncPickStyles();
+}
+
+// Search/filter assets
+function qtFilterAssets(q){
+  const sel = document.getElementById('qt-global-asset');
+  if(!sel) return;
+  const query = q.toLowerCase().trim();
+  Array.from(sel.querySelectorAll('option,optgroup')).forEach(el=>{
+    if(el.tagName==='OPTION' && el.value){
+      el.style.display = (!query || el.textContent.toLowerCase().includes(query)) ? '' : 'none';
+    }
+  });
+}
+
+// Sync checkbox visual state
+function qtSyncPickStyles(){
+  document.querySelectorAll('.qt-pick').forEach(label=>{
+    const cb = label.querySelector('input[type=checkbox]');
+    label.classList.toggle('active', cb?.checked||false);
+  });
+}
+
+function qtUpdateRunBtn(){
+  qtSyncPickStyles();
+  const anyChecked = Array.from(document.querySelectorAll('#qt-tool-picks input[type=checkbox]')).some(c=>c.checked);
+  const hasAsset   = !!document.getElementById('qt-global-asset')?.value;
+  const btn = document.getElementById('qt-autoconfig-btn');
+  if(!btn) return;
+  btn.disabled = !(anyChecked && hasAsset);
+  btn.style.opacity = (anyChecked && hasAsset) ? '1' : '0.35';
+}
+
+function qtSelectAll(state){
+  document.querySelectorAll('#qt-tool-picks input[type=checkbox]').forEach(c=>c.checked=state);
+  qtUpdateRunBtn();
+}
+
+function qtToggleOverride(tool){
+  const el = document.getElementById('qt-ov-'+tool); if(!el) return;
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+// Called when user picks an asset
+function qtAssetChanged(){
+  const sel = document.getElementById('qt-global-asset');
+  const id  = sel?.value;
+  if(!id){ qtUpdateRunBtn(); return; }
+
+  _qtCurrentAssetId = id;
+
+  // Find asset def in TABS
+  let assetDef = null;
+  let assetCat = 'crypto';
+  for(const [tab, arr] of Object.entries(TABS)){
+    const found = arr.find(a=>a.id===id);
+    if(found){ assetDef=found; assetCat=tab; break; }
+  }
+
+  const p = prices[id]||{};
+  const name = assetDef?.name || p.name || id;
+  const sym  = assetDef?.sym  || id.toUpperCase();
+  const closes = p.closes||[];
+
+  // Compute annualised vol from closes
+  let annVol = 0;
+  if(closes.length>5){
+    const rets = closes.slice(1).map((v,i)=>Math.log(v/closes[i]));
+    const mean = rets.reduce((a,b)=>a+b,0)/rets.length;
+    const variance = rets.reduce((a,r)=>a+(r-mean)**2,0)/rets.length;
+    annVol = Math.sqrt(variance)*Math.sqrt(252)*100;
+  }
+  _qtCurrentVolPct = annVol;
+
+  // Show info strip
+  const infoEl = document.getElementById('qt-asset-info');
+  if(infoEl) infoEl.style.display='';
+  const setEl = (elId, val, color) => {
+    const el = document.getElementById(elId); if(!el) return;
+    el.textContent = val;
+    if(color) el.style.color = color;
+  };
+  setEl('qt-info-name', sym);
+  setEl('qt-info-price', fp(p.price));
+  const chgColor = (p.change||0)>=0 ? '#4ade80' : '#f87171';
+  setEl('qt-info-chg', fc(p.change), chgColor);
+  setEl('qt-info-vol', annVol>0 ? annVol.toFixed(1)+'%' : '—');
+  const catLabel = {crypto:'Crypto',forex:'Forex',oil:'Commodity',indexes:'Index',stocks:'Stock'}[assetCat]||assetCat;
+  setEl('qt-info-cat', catLabel);
+
+  // Pre-fetch extended closes in background for better quant model accuracy
+  fetch('/api/closes/'+id+'?bars=100').then(r=>r.ok?r.json():null).then(data=>{
+    if(data?.closes?.length > 10 && prices[id]){
+      prices[id].closes = data.closes.slice(-60);
+      // Recompute vol with more data
+      const rets2 = data.closes.slice(1).map((v,i)=>Math.log(v/data.closes[i]));
+      const m2 = rets2.reduce((a,b)=>a+b,0)/rets2.length;
+      const v2 = rets2.reduce((a,r)=>a+(r-m2)**2,0)/rets2.length;
+      const newVol = Math.sqrt(v2)*Math.sqrt(252)*100;
+      if(newVol > 0){
+        const volEl = document.getElementById('qt-info-vol');
+        if(volEl) volEl.textContent = newVol.toFixed(1)+'%';
+        qtConfigureModels(id, name, assetCat, newVol, data.closes, p);
+      }
+    }
+  }).catch(()=>{});
+
+  // Auto-configure all models
+  qtConfigureModels(id, name, assetCat, annVol, closes, p);
+  qtUpdateRunBtn();
+
+  // Update status
+  const status = document.getElementById('qt-config-status');
+  if(status) status.textContent = '⚡ All models configured for '+name+' · '+annVol.toFixed(1)+'% ann. vol · '+closes.length+' bars · '+catLabel;
+}
+
+function qtConfigureModels(id, name, tab, annVol, closes, p){
+  const isCrypto    = tab==='crypto';
+  const isForex     = tab==='forex';
+  const isHighVol   = annVol > 40;
+  const isMedVol    = annVol > 12 && annVol <= 40;
+
+  // ── GARCH ──────────────────────────────────────────────────────────────────
+  const garchModel = isHighVol ? 'EGARCH' : isCrypto ? 'GJR-GARCH' : 'GARCH(1,1)';
+  const garchFh    = isHighVol ? 5 : 10;
+  document.getElementById('ogarch-sym').value = name;
+  document.getElementById('ogarch-fh').value  = garchFh;
+  _qtSetSelect('ogarch-model', garchModel);
+  _qtSetSelect('ogarch-model-m', garchModel);
+  document.getElementById('qt-pv-garch-sym').textContent   = name;
+  document.getElementById('qt-pv-garch-model').textContent = garchModel;
+  document.getElementById('qt-pv-garch-fh').textContent    = garchFh+' bars';
+  document.getElementById('qt-auto-txt-garch').textContent = name+' — '+garchModel+', '+garchFh+'-bar horizon (vol: '+annVol.toFixed(1)+'% ann.)';
+
+  // ── REGRESSION ─────────────────────────────────────────────────────────────
+  const lrType = isCrypto ? 'Logarithmic' : 'Linear';
+  const lrBw   = isHighVol ? 3 : isMedVol ? 2 : 1.5;
+  const lrFh   = isHighVol ? 5 : 10;
+  document.getElementById('olr-sym').value = name;
+  document.getElementById('olr-fh').value  = lrFh;
+  document.getElementById('olr-bw').value  = lrBw;
+  _qtSetSelect('olr-type', lrType);
+  _qtSetSelect('olr-type-m', lrType);
+  document.getElementById('qt-pv-lr-sym').textContent  = name;
+  document.getElementById('qt-pv-lr-type').textContent = lrType;
+  document.getElementById('qt-pv-lr-bw').textContent   = '±'+lrBw+'σ';
+  document.getElementById('qt-pv-lr-fh').textContent   = lrFh+' bars';
+  document.getElementById('qt-auto-txt-linreg').textContent = name+' — '+lrType+' regression, ±'+lrBw+'σ bands, '+lrFh+'-period forecast';
+
+  // ── NEURAL NETWORK ─────────────────────────────────────────────────────────
+  const nnArch = isCrypto ? 'Transformer' : isForex ? 'LSTM' : 'BiLSTM';
+  const nnSeq  = isHighVol ? 30 : 60;
+  const nnFh   = isHighVol ? 3 : isForex ? 7 : 5;
+  document.getElementById('onn-sym').value = name;
+  document.getElementById('onn-seq').value = nnSeq;
+  document.getElementById('onn-fh').value  = nnFh;
+  _qtSetSelect('onn-model', nnArch);
+  _qtSetSelect('onn-feat', 'OHLCV + RSI + MACD');
+  _qtSetSelect('onn-model-m', nnArch);
+  document.getElementById('qt-pv-nn-sym').textContent  = name;
+  document.getElementById('qt-pv-nn-arch').textContent = nnArch;
+  document.getElementById('qt-pv-nn-seq').textContent  = nnSeq;
+  document.getElementById('qt-pv-nn-fh').textContent   = nnFh+' bars';
+  document.getElementById('qt-auto-txt-nn').textContent = name+' — '+nnArch+', seq '+nnSeq+', horizon '+nnFh+' bars';
+
+  // ── ARIMA ──────────────────────────────────────────────────────────────────
+  let arimaP=2, arimaD=1, arimaQ=2, arimaFh=10;
+  if(closes.length>10){
+    const rets = closes.slice(1).map((v,i)=>v-closes[i]);
+    const h1 = rets.slice(0,Math.floor(rets.length/2));
+    const h2 = rets.slice(Math.floor(rets.length/2));
+    const v1 = h1.reduce((a,b)=>a+b*b,0)/(h1.length||1);
+    const v2 = h2.reduce((a,b)=>a+b*b,0)/(h2.length||1);
+    arimaD  = Math.abs(v1-v2)/(v1+v2+0.0001) > 0.3 ? 0 : 1;
+    arimaP  = isHighVol ? 3 : 2;
+    arimaQ  = isHighVol ? 1 : 2;
+    arimaFh = isHighVol ? 5 : 10;
+  }
+  document.getElementById('oarima-sym').value = name;
+  document.getElementById('oarima-p').value   = arimaP;
+  document.getElementById('oarima-d').value   = arimaD;
+  document.getElementById('oarima-q').value   = arimaQ;
+  document.getElementById('oarima-fh').value  = arimaFh;
+  document.getElementById('qt-pv-arima-sym').textContent   = name;
+  document.getElementById('qt-pv-arima-order').textContent = '('+arimaP+','+arimaD+','+arimaQ+')';
+  document.getElementById('qt-pv-arima-fh').textContent    = arimaFh+' bars';
+  document.getElementById('qt-auto-txt-arima').textContent = name+' — Auto ARIMA('+arimaP+','+arimaD+','+arimaQ+'), horizon '+arimaFh;
+
+  // ── KALMAN ──────────────────────────────────────────────────────────────────
+  const klModel = isHighVol ? 'Trend + Noise' : isForex ? 'Random Walk' : 'Constant Velocity';
+  const klQ     = isHighVol ? 0.005 : isMedVol ? 0.001 : 0.0003;
+  const klR     = isHighVol ? 0.05  : isMedVol ? 0.1   : 0.2;
+  document.getElementById('okl-sym').value = name;
+  document.getElementById('okl-q').value   = klQ;
+  document.getElementById('okl-r').value   = klR;
+  document.getElementById('okl-fh').value  = isHighVol ? 5 : 10;
+  _qtSetSelect('okl-model', klModel);
+  _qtSetSelect('okl-model-m', klModel);
+  document.getElementById('qt-pv-kl-sym').textContent   = name;
+  document.getElementById('qt-pv-kl-model').textContent = klModel;
+  document.getElementById('qt-pv-kl-q').textContent     = klQ;
+  document.getElementById('qt-pv-kl-r').textContent     = klR;
+  document.getElementById('qt-auto-txt-kalman').textContent = name+' — '+klModel+', Q='+klQ+', R='+klR+' (vol '+annVol.toFixed(1)+'%)';
+
+  // ── MONTE CARLO ─────────────────────────────────────────────────────────────
+  const mcWr = isHighVol ? 52 : isMedVol ? 55 : 58;
+  const mcRr = isHighVol ? 1.5 : 2;
+  document.getElementById('omc-wr').value     = mcWr;
+  document.getElementById('omc-rr').value     = mcRr;
+  document.getElementById('omc-trades').value = 200;
+  document.getElementById('omc-risk').value   = isHighVol ? 0.5 : 1;
+  document.getElementById('qt-pv-mc-sym').textContent    = name;
+  document.getElementById('qt-pv-mc-wr').textContent     = mcWr+'%';
+  document.getElementById('qt-pv-mc-rr').textContent     = mcRr;
+  document.getElementById('qt-pv-mc-trades').textContent = '200';
+  document.getElementById('qt-auto-txt-mc').textContent  = name+' — AI derived: Win Rate '+mcWr+'%, R:R '+mcRr+' from '+annVol.toFixed(1)+'% ann. vol';
+
+  // ── HMM — sync its dropdown ──────────────────────────────────────────────────
+  const hmmSel = document.getElementById('ohmm-sym');
+  if(hmmSel && hmmSel.querySelector('option[value="'+id+'"]')) hmmSel.value = id;
+}
+
+// Handles overridden values when running tools
+function _qtGetVal(hidden, manual, ovTool){
+  const ovEl = document.getElementById('qt-ov-'+ovTool);
+  const isOv = ovEl && ovEl.style.display !== 'none';
+  const manEl = document.getElementById(manual);
+  return isOv && manEl ? manEl.value : document.getElementById(hidden)?.value;
+}
+function _qtGetSelect(hidden, manual, ovTool){
+  const ovEl = document.getElementById('qt-ov-'+ovTool);
+  const isOv = ovEl && ovEl.style.display !== 'none';
+  const manEl = document.getElementById(manual);
+  if(isOv && manEl) return manEl.options[manEl.selectedIndex]?.text||manEl.value;
+  const hidEl = document.getElementById(hidden);
+  return hidEl ? (hidEl.options ? hidEl.options[hidEl.selectedIndex]?.text||hidEl.value : hidEl.value) : '';
+}
+
+// Main simulation runner
+async function qtAutoConfigAll(){
+  const id = document.getElementById('qt-global-asset')?.value;
+  if(!id){ alert('Please select an asset first.'); return; }
+
+  const selectedTools = Array.from(document.querySelectorAll('#qt-tool-picks input[type=checkbox]'))
+    .filter(c=>c.checked).map(c=>c.value);
+  if(!selectedTools.length){ alert('Please select at least one model.'); return; }
+
+  const btn = document.getElementById('qt-autoconfig-btn');
+  const progWrap = document.getElementById('qt-progress-wrap');
+  const progBar  = document.getElementById('qt-progress-bar');
+  const progLbl  = document.getElementById('qt-progress-label');
+  const progPct  = document.getElementById('qt-progress-pct');
+
+  btn.disabled = true;
+  btn.textContent = '⟳ Running...';
+  progWrap.style.display = 'block';
+
+  const toolRunners = {
+    garch:  runOptGARCH,
+    linreg: runOptLinReg,
+    nn:     runOptNN,
+    arima:  runOptARIMA,
+    hmm:    runOptHMM,
+    kalman: runOptKalman,
+    mc:     runOptMC,
+  };
+
+  for(let i=0; i<selectedTools.length; i++){
+    const tool = selectedTools[i];
+    const pct  = Math.round((i/selectedTools.length)*100);
+    progBar.style.width = pct+'%';
+    progPct.textContent = pct+'%';
+    progLbl.textContent = 'Running '+tool.toUpperCase()+'...';
+
+    optOpenTool(tool);
+    await new Promise(r=>setTimeout(r,150));
+    if(toolRunners[tool]) await toolRunners[tool]();
+    await new Promise(r=>setTimeout(r,200));
+  }
+
+  progBar.style.width = '100%';
+  progPct.textContent = '100%';
+  progLbl.textContent = '✓ All '+selectedTools.length+' models complete';
+  btn.textContent = '✓ Done';
+  btn.style.background = 'linear-gradient(135deg,#065f46,#059669)';
+
+  setTimeout(()=>{
+    btn.textContent = '⚡ RUN SIMULATION';
+    btn.style.background = '';
+    btn.disabled = false;
+    progWrap.style.display = 'none';
+    progBar.style.width = '0%';
+  }, 3500);
+}
+
+// Quant page init
+function qtInit(){
+  setTimeout(()=>{
+    qtPopulateAssetDropdown();
+    qtSyncPickStyles();
+    // Pre-select currently viewed market asset
+    if(selId){
+      const sel = document.getElementById('qt-global-asset');
+      if(sel && sel.querySelector('option[value="'+selId+'"]')){
+        sel.value = selId;
+        qtAssetChanged();
+      }
+    }
+  }, 120);
+}
 
 // ── Quant Analysis Tools ──────────────────────────────────────────────────────
 const _optCharts={};
@@ -3575,12 +3945,29 @@ function optPopulateHmmAssets(){
 function optHmmSyncName(){}
 
 function optGetCloses(assetId){
-  const id=assetId||selId;
-  if(id&&prices[id]?.closes?.length>5) return prices[id].closes;
-  // Generate representative data
-  let p=100,arr=[p];
+  const id = assetId || selId;
+  if(id && prices[id]?.closes?.length > 5) return prices[id].closes;
+  // Synthetic fallback
+  let p = prices[id]?.price || 100, arr = [p];
   for(let i=1;i<60;i++){p*=(1+(Math.random()-0.495)*0.018);arr.push(+p.toFixed(4));}
   return arr;
+}
+
+// Fetch extended closes from server (60-200 bars) for quant models
+async function optGetClosesExtended(assetId){
+  const id = assetId || selId;
+  try{
+    const r = await fetch('/api/closes/'+(id||'bitcoin')+'?bars=100');
+    if(r.ok){
+      const data = await r.json();
+      if(data.closes?.length > 10){
+        // Update local prices cache too
+        if(prices[id]) prices[id].closes = data.closes.slice(-60);
+        return data.closes;
+      }
+    }
+  }catch(e){ console.warn('Extended closes fetch failed:', e); }
+  return optGetCloses(id);
 }
 function optRnd(a,b){return a+Math.random()*(b-a);}
 
@@ -3613,12 +4000,13 @@ function optSplitInsight(text,ids){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptMC(){
   optLoading('mc');
-  const bal=+document.getElementById('omc-bal').value;
-  const risk=+document.getElementById('omc-risk').value/100;
-  const wr=+document.getElementById('omc-wr').value/100;
-  const rr=+document.getElementById('omc-rr').value;
-  const trades=Math.min(+document.getElementById('omc-trades').value,300);
-  const sims=Math.min(+document.getElementById('omc-sims').value,300);
+  const mcOv = document.getElementById('qt-ov-mc')?.style.display!=='none';
+  const bal    = +document.getElementById('omc-bal').value||10000;
+  const risk   = (mcOv ? +(document.getElementById('omc-risk-m')?.value||1) : +document.getElementById('omc-risk').value||1)/100;
+  const wr     = (mcOv ? +(document.getElementById('omc-wr-m')?.value||55) : +document.getElementById('omc-wr').value||55)/100;
+  const rr     = mcOv ? +(document.getElementById('omc-rr-m')?.value||2) : +document.getElementById('omc-rr').value||2;
+  const trades = Math.min(mcOv ? +(document.getElementById('omc-trades-m')?.value||200) : +document.getElementById('omc-trades').value||200, 300);
+  const sims   = Math.min(+document.getElementById('omc-sims').value||500, 300);
 
   const finals=[],dds=[],curves=[];
   let ruin=0,longestLoss=0;
@@ -3676,10 +4064,10 @@ async function runOptMC(){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptGARCH(){
   optLoading('garch');
-  const sym=document.getElementById('ogarch-sym').value;
-  const model=document.getElementById('ogarch-model').value;
-  const fh=+document.getElementById('ogarch-fh').value;
-  const closes=optGetCloses();
+  const sym   = document.getElementById('ogarch-sym').value || 'Asset';
+  const model = _qtGetSelect('ogarch-model','ogarch-model-m','garch') || 'GARCH(1,1)';
+  const fh    = +(_qtGetVal('ogarch-fh','ogarch-fh-m','garch')||10);
+  const closes=await optGetClosesExtended(document.getElementById('ogarch-sym')?.value ? _qtCurrentAssetId : selId);
   const n=closes.length;
 
   // Log returns
@@ -3730,11 +4118,11 @@ async function runOptGARCH(){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptLinReg(){
   optLoading('linreg');
-  const sym=document.getElementById('olr-sym').value;
-  const type=document.getElementById('olr-type').value;
-  const fh=+document.getElementById('olr-fh').value;
-  const bw=+document.getElementById('olr-bw').value||2;
-  const closes=optGetCloses();
+  const sym  = document.getElementById('olr-sym').value || 'Asset';
+  const type = _qtGetSelect('olr-type','olr-type-m','linreg') || 'Linear';
+  const fh   = +(_qtGetVal('olr-fh','olr-fh-m','linreg')||10);
+  const bw   = +(_qtGetVal('olr-bw','olr-bw-m','linreg')||2);
+  const closes=await optGetClosesExtended(_qtCurrentAssetId||selId);
   const n=closes.length;
 
   let sx=0,sy=0,sxy=0,sxx=0;
@@ -3788,12 +4176,12 @@ async function runOptLinReg(){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptNN(){
   optLoading('nn');
-  const sym=document.getElementById('onn-sym').value;
-  const model=document.getElementById('onn-model').value;
-  const seq=+document.getElementById('onn-seq').value;
-  const fh=+document.getElementById('onn-fh').value;
-  const feat=document.getElementById('onn-feat').value;
-  const closes=optGetCloses();
+  const sym   = document.getElementById('onn-sym').value || 'Asset';
+  const model = _qtGetSelect('onn-model','onn-model-m','nn') || 'LSTM';
+  const seq   = +(_qtGetVal('onn-seq','onn-seq-m','nn')||60);
+  const fh    = +(_qtGetVal('onn-fh','onn-fh-m','nn')||5);
+  const feat  = _qtGetSelect('onn-feat','onn-feat-m','nn') || 'Price + Volume';
+  const closes=await optGetClosesExtended(_qtCurrentAssetId||selId);
   const n=closes.length;
   const lastP=closes[n-1];
 
@@ -3837,12 +4225,12 @@ async function runOptNN(){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptARIMA(){
   optLoading('arima');
-  const sym=document.getElementById('oarima-sym').value;
-  const p=+document.getElementById('oarima-p').value;
-  const dv=+document.getElementById('oarima-d').value;
-  const q=+document.getElementById('oarima-q').value;
-  const fh=+document.getElementById('oarima-fh').value;
-  const closes=optGetCloses();
+  const sym = document.getElementById('oarima-sym').value || 'Asset';
+  const p   = +(_qtGetVal('oarima-p','oarima-p-m','arima')||2);
+  const dv  = +(_qtGetVal('oarima-d','oarima-d-m','arima')||1);
+  const q   = +(_qtGetVal('oarima-q','oarima-q-m','arima')||2);
+  const fh  = +(_qtGetVal('oarima-fh','oarima-fh-m','arima')||10);
+  const closes=await optGetClosesExtended(_qtCurrentAssetId||selId);
   const n=closes.length;
   const last=closes[n-1];
 
@@ -3891,7 +4279,7 @@ async function runOptHMM(){
   const assetId=document.getElementById('ohmm-sym').value;
   const sym=assetId&&prices[assetId]?prices[assetId].name:document.getElementById('ohmm-sym').options[document.getElementById('ohmm-sym').selectedIndex]?.text||'Asset';
   const states=+document.getElementById('ohmm-states').value;
-  const closes=optGetCloses(assetId);
+  const closes=await optGetClosesExtended(assetId||_qtCurrentAssetId||selId);
   const returns=closes.slice(1).map((v,i)=>+((v-closes[i])/closes[i]*100).toFixed(4));
   const n=returns.length;
 
@@ -3951,12 +4339,12 @@ async function runOptHMM(){
 // ─────────────────────────────────────────────────────────────────────────────
 async function runOptKalman(){
   optLoading('kalman');
-  const sym=document.getElementById('okl-sym').value;
-  const model=document.getElementById('okl-model').value;
-  const Q=+document.getElementById('okl-q').value;
-  const R=+document.getElementById('okl-r').value;
-  const fh=+document.getElementById('okl-fh').value;
-  const closes=optGetCloses();
+  const sym   = document.getElementById('okl-sym').value || 'Asset';
+  const model = _qtGetSelect('okl-model','okl-model-m','kalman') || 'Constant Velocity';
+  const Q     = +(_qtGetVal('okl-q','okl-q-m','kalman')||0.001);
+  const R     = +(_qtGetVal('okl-r','okl-r-m','kalman')||0.1);
+  const fh    = +(_qtGetVal('okl-fh','okl-fh-m','kalman')||10);
+  const closes=await optGetClosesExtended(_qtCurrentAssetId||selId);
   const n=closes.length;
 
   // Apply Kalman filter
@@ -4056,7 +4444,7 @@ function runQuantBg(canvas){
     ...p, w:132, h:58,
     ox:(Math.random()-.5)*680, oy:(Math.random()-.5)*420, oz:-80+Math.random()*500,
     vy:-(0.22+Math.random()*.32), vx:(Math.random()-.5)*.08,
-    alpha:.16+Math.random()*.22, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
+    alpha:.04+Math.random()*.08, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
   }));
 
   // ── Streaming number rain (like Matrix but with financial data) ────────────
@@ -4064,7 +4452,7 @@ function runQuantBg(canvas){
   const drops=Array.from({length:COLS},()=>({
     y:Math.random()*H, speed:1.5+Math.random()*2.5,
     chars:'0123456789αβσωΔ∑∫±<>%'.split(''),
-    alpha:0.14+Math.random()*0.18,
+    alpha:0.04+Math.random()*0.06,
   }));
 
   // ── Sine wave grid (oscilloscope style) ───────────────────────────────────
@@ -4109,8 +4497,8 @@ function runQuantBg(canvas){
     waveT+=0.025; rotY+=0.0018;
 
     // Subtle wave grid at bottom
-    ctx.globalAlpha=0.15;
-    ctx.strokeStyle='#22c55e'; ctx.lineWidth=1.2;
+    ctx.globalAlpha=0.04;
+    ctx.strokeStyle='#22c55e'; ctx.lineWidth=0.8;
     for(let row=0;row<3;row++){
       ctx.beginPath();
       for(let x=0;x<W;x+=2){
@@ -4140,9 +4528,9 @@ function runQuantBg(canvas){
     EDGES.forEach(([i,j])=>{
       const a=NODES[i],b=NODES[j];
       const pa=project(a.x,a.y,a.z),pb=project(b.x,b.y,b.z);
-      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.16;
+      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.05;
       if(alpha<=0) return;
-      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=1.0;
+      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=0.55;
       ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
     });
 
@@ -4153,14 +4541,14 @@ function runQuantBg(canvas){
       if(depth<=0) return;
       n.pulse+=n.ps;
       const pulse=0.55+0.45*Math.sin(n.pulse);
-      const a=(n.bright?.92:.6)*depth*pulse;
+      const a=(n.bright?.65:.3)*depth*pulse;
       ctx.globalAlpha=a;
       ctx.fillStyle=n.bright?'#a7f3d0':'#4ade80';
       ctx.beginPath(); ctx.arc(p.x,p.y,n.sz*p.scale,0,Math.PI*2); ctx.fill();
       if(depth>.28){
         ctx.globalAlpha=a*.8;
         ctx.font=`${Math.max(6.5,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
         ctx.fillText(n.label,p.x+n.sz*p.scale+3,p.y+3);
       }
     });
@@ -5029,14 +5417,98 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- QUANT TOOLS PAGE -->
 <div id="page-quant" class="page" style="display:none">
-<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:1;display:none"></canvas>
+<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.65;display:none"></canvas>
 <div class="main" style="padding-bottom:80px;position:relative;z-index:1">
 
-  <section class="hero z" style="padding-bottom:32px">
+  <section class="hero z" style="padding-bottom:24px">
     <div class="htag"><div class="htag-dot"></div><span>Quantitative Analysis Suite</span></div>
     <h1>Quant<i>Tools</i></h1>
-    <p class="hsub">Seven institutional-grade quantitative models at your fingertips. Monte Carlo simulation, GARCH volatility, Linear Regression channels, Neural Network prediction, ARIMA time series, HMM regime detection, and Kalman Filter signal extraction — all powered by live market data and AI interpretation.</p>
+    <p class="hsub">Select any asset from the full market universe — the AI auto-configures every model parameter from live data. Choose which tools to include in your simulation and hit Run.</p>
   </section>
+
+  <!-- ══ QUANT CONTROL CENTER ══════════════════════════════════════════════ -->
+  <div id="qt-control" style="background:rgba(2,10,2,0.88);border:1px solid rgba(34,197,94,0.22);border-radius:16px;padding:22px 26px;margin-bottom:24px;backdrop-filter:blur(14px)">
+
+    <!-- Row 1: Asset selector + info strip -->
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+      <div style="flex:1;min-width:240px">
+        <div style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,243,208,0.4);font-family:'DM Mono',monospace;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+          <div id="qt-live-dot" style="width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e"></div>
+          Asset — Synced with Live Market Data
+        </div>
+        <div style="position:relative">
+          <input id="qt-search" placeholder="Search asset..." oninput="qtFilterAssets(this.value)"
+            style="width:100%;background:rgba(2,14,2,0.9);border:1px solid rgba(34,197,94,0.2);border-radius:9px 9px 0 0;color:#f0fdf4;font-family:'DM Mono',monospace;font-size:12px;padding:10px 14px;outline:none;box-sizing:border-box">
+          <select id="qt-global-asset" onchange="qtAssetChanged()" size="1"
+            style="width:100%;background:rgba(2,14,2,0.95);border:1px solid rgba(34,197,94,0.2);border-top:none;border-radius:0 0 9px 9px;color:#f0fdf4;font-family:'DM Mono',monospace;font-size:12px;padding:10px 14px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;max-height:200px">
+            <option value="">— Select Asset —</option>
+          </select>
+        </div>
+      </div>
+      <!-- Live price strip -->
+      <div id="qt-asset-info" style="display:none;flex:2;min-width:300px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          <div class="qt-stat-cell"><div class="qt-stat-v" id="qt-info-name">—</div><div class="qt-stat-l">Asset</div></div>
+          <div class="qt-stat-cell"><div class="qt-stat-v" id="qt-info-price">—</div><div class="qt-stat-l">Price</div></div>
+          <div class="qt-stat-cell"><div class="qt-stat-v" id="qt-info-chg">—</div><div class="qt-stat-l">24h Change</div></div>
+          <div class="qt-stat-cell"><div class="qt-stat-v" id="qt-info-vol">—</div><div class="qt-stat-l">Ann. Vol</div></div>
+          <div class="qt-stat-cell"><div class="qt-stat-v" id="qt-info-cat">—</div><div class="qt-stat-l">Category</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Tool selection checkboxes -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,243,208,0.4);font-family:'DM Mono',monospace;margin-bottom:10px">Select Models to Run</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="qt-tool-picks">
+        <label class="qt-pick" data-tool="garch"><input type="checkbox" value="garch" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">σ</span><span class="qt-pick-label">GARCH Vol</span></label>
+        <label class="qt-pick" data-tool="linreg"><input type="checkbox" value="linreg" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">∕</span><span class="qt-pick-label">Regression</span></label>
+        <label class="qt-pick" data-tool="nn"><input type="checkbox" value="nn" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">◉</span><span class="qt-pick-label">Neural Net</span></label>
+        <label class="qt-pick" data-tool="arima"><input type="checkbox" value="arima" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">≈</span><span class="qt-pick-label">ARIMA</span></label>
+        <label class="qt-pick" data-tool="hmm"><input type="checkbox" value="hmm" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">◈</span><span class="qt-pick-label">HMM Regimes</span></label>
+        <label class="qt-pick" data-tool="kalman"><input type="checkbox" value="kalman" checked onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">∿</span><span class="qt-pick-label">Kalman</span></label>
+        <label class="qt-pick" data-tool="mc"><input type="checkbox" value="mc" onchange="qtUpdateRunBtn()"><span class="qt-pick-icon">⟳</span><span class="qt-pick-label">Monte Carlo</span></label>
+      </div>
+    </div>
+
+    <!-- Row 3: Config status + Run button -->
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div id="qt-config-status" style="flex:1;font-size:10px;font-family:'DM Mono',monospace;color:rgba(167,243,208,0.45);min-width:200px">
+        Select an asset to auto-configure all models from live data.
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="qtSelectAll(true)" style="padding:8px 14px;border:1px solid rgba(34,197,94,0.2);border-radius:7px;background:transparent;color:rgba(167,243,208,0.5);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">ALL</button>
+        <button onclick="qtSelectAll(false)" style="padding:8px 14px;border:1px solid rgba(34,197,94,0.2);border-radius:7px;background:transparent;color:rgba(167,243,208,0.5);font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">NONE</button>
+        <button id="qt-autoconfig-btn" onclick="qtAutoConfigAll()" disabled
+          style="padding:11px 28px;background:linear-gradient(135deg,#16a34a,#22c55e);border:none;border-radius:9px;color:#020a02;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;opacity:0.35;transition:all .2s;box-shadow:0 4px 16px rgba(34,197,94,0.2)">
+          ⚡ RUN SIMULATION
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress bar (hidden until running) -->
+    <div id="qt-progress-wrap" style="display:none;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <div style="font-size:9px;font-family:'DM Mono',monospace;color:rgba(167,243,208,0.5)" id="qt-progress-label">Running...</div>
+        <div style="font-size:9px;font-family:'DM Mono',monospace;color:rgba(167,243,208,0.5)" id="qt-progress-pct">0%</div>
+      </div>
+      <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+        <div id="qt-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:2px;transition:width .4s ease"></div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+  .qt-stat-cell{background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);border-radius:8px;padding:9px 12px;text-align:center}
+  .qt-stat-v{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#f0fdf4;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qt-stat-l{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace}
+  .qt-pick{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:8px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;color:rgba(167,243,208,0.6);transition:all .15s;user-select:none}
+  .qt-pick:hover{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:rgba(167,243,208,0.9)}
+  .qt-pick input[type=checkbox]{display:none}
+  .qt-pick.active{background:rgba(34,197,94,0.14);border-color:rgba(34,197,94,0.45);color:#a7f3d0;box-shadow:0 0 10px rgba(34,197,94,0.1)}
+  .qt-pick-icon{font-size:12px;font-weight:700;opacity:.8}
+  .qt-pick-label{font-weight:500;letter-spacing:.3px}
+  </style>
 
 <!-- ── Quant Analysis Tools ─────────────────────────────────────────── -->
   <div class="opt-tools-wrap">
@@ -5107,15 +5579,30 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig">
+        <div id="qt-auto-badge-mc" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-mc">Select an asset above — AI derives win rate, R:R and risk from live volatility.</span></div>
+        <div class="qt-param-row" id="qt-params-mc">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-mc-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Win Rate</span><span class="qt-pv" id="qt-pv-mc-wr">—</span></div>
+          <div class="qt-param"><span class="qt-pl">R:R</span><span class="qt-pv" id="qt-pv-mc-rr">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Trades</span><span class="qt-pv" id="qt-pv-mc-trades">—</span></div>
+        </div>
+        <div class="opt-ig" style="grid-template-columns:1fr 1fr;margin-bottom:0">
           <div class="opt-inp-g"><label class="opt-il">Initial Balance ($)</label><input id="omc-bal" value="10000" type="number"></div>
-          <div class="opt-inp-g"><label class="opt-il">Risk per Trade (%)</label><input id="omc-risk" value="1" type="number" step="0.1"></div>
-          <div class="opt-inp-g"><label class="opt-il">Win Rate (%)</label><input id="omc-wr" value="55" type="number"></div>
-          <div class="opt-inp-g"><label class="opt-il">Risk : Reward</label><input id="omc-rr" value="2" type="number" step="0.1"></div>
-          <div class="opt-inp-g"><label class="opt-il">Number of Trades</label><input id="omc-trades" value="200" type="number"></div>
           <div class="opt-inp-g"><label class="opt-il">Simulations</label><input id="omc-sims" value="500" type="number"></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptMC()">RUN MONTE CARLO SIMULATION</button>
+        <input type="hidden" id="omc-wr" value="55"><input type="hidden" id="omc-rr" value="2"><input type="hidden" id="omc-trades" value="200"><input type="hidden" id="omc-risk" value="1">
+        <div class="qt-override-section" id="qt-ov-mc" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">Win Rate (%)</label><input id="omc-wr-m" value="55" type="number"></div>
+            <div class="opt-inp-g"><label class="opt-il">Risk:Reward</label><input id="omc-rr-m" value="2" type="number" step="0.1"></div>
+            <div class="opt-inp-g"><label class="opt-il">Risk/Trade (%)</label><input id="omc-risk-m" value="1" type="number" step="0.1"></div>
+            <div class="opt-inp-g"><label class="opt-il">Num Trades</label><input id="omc-trades-m" value="200" type="number"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptMC()">⚡ RUN MONTE CARLO</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('mc')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-mc"><div class="opt-sp"></div>Simulating equity paths...</div>
         <div class="opt-res" id="opt-r-mc">
           <div class="opt-stats-row opt-stats-4">
@@ -5146,12 +5633,24 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig">
-          <div class="opt-inp-g"><label class="opt-il">Asset</label><input id="ogarch-sym" value="Gold (XAU/USD)"></div>
-          <div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="ogarch-model"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select></div>
-          <div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="ogarch-fh" value="10" type="number"></div>
+        <div id="qt-auto-badge-garch" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-garch">Select an asset — model & horizon auto-selected from volatility regime.</span></div>
+        <div class="qt-param-row">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-garch-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Model</span><span class="qt-pv" id="qt-pv-garch-model">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Horizon</span><span class="qt-pv" id="qt-pv-garch-fh">—</span></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptGARCH()">FIT GARCH MODEL</button>
+        <input type="hidden" id="ogarch-sym" value=""><input type="hidden" id="ogarch-fh" value="10">
+        <select id="ogarch-model" style="display:none"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select>
+        <div class="qt-override-section" id="qt-ov-garch" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">Model Type</label><select id="ogarch-model-m"><option>GARCH(1,1)</option><option>EGARCH</option><option>GJR-GARCH</option></select></div>
+            <div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="ogarch-fh-m" value="10" type="number"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptGARCH()">⚡ FIT GARCH MODEL</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('garch')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-garch"><div class="opt-sp"></div>Estimating parameters...</div>
         <div class="opt-res" id="opt-r-garch">
           <div class="opt-stats-row opt-stats-4">
@@ -5183,13 +5682,26 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig2">
-          <div class="opt-inp-g"><label class="opt-il">Asset / Symbol</label><input id="olr-sym" value="BTC/USD"></div>
-          <div class="opt-inp-g"><label class="opt-il">Regression Type</label><select id="olr-type"><option>Linear</option><option>Logarithmic</option><option>Polynomial (2°)</option></select></div>
-          <div class="opt-inp-g"><label class="opt-il">Forecast Periods</label><input id="olr-fh" value="10" type="number"></div>
-          <div class="opt-inp-g"><label class="opt-il">Band Width (σ)</label><input id="olr-bw" value="2" type="number" step="0.5"></div>
+        <div id="qt-auto-badge-linreg" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-linreg">Select an asset — regression type and band width optimised from price history.</span></div>
+        <div class="qt-param-row">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-lr-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Type</span><span class="qt-pv" id="qt-pv-lr-type">—</span></div>
+          <div class="qt-param"><span class="qt-pl">σ Band</span><span class="qt-pv" id="qt-pv-lr-bw">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Horizon</span><span class="qt-pv" id="qt-pv-lr-fh">—</span></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptLinReg()">COMPUTE REGRESSION CHANNEL</button>
+        <input type="hidden" id="olr-sym" value=""><input type="hidden" id="olr-fh" value="10"><input type="hidden" id="olr-bw" value="2">
+        <select id="olr-type" style="display:none"><option>Linear</option><option>Logarithmic</option><option>Polynomial (2°)</option></select>
+        <div class="qt-override-section" id="qt-ov-linreg" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">Type</label><select id="olr-type-m"><option>Linear</option><option>Logarithmic</option><option>Polynomial (2°)</option></select></div>
+            <div class="opt-inp-g"><label class="opt-il">Band Width σ</label><input id="olr-bw-m" value="2" type="number" step="0.5"></div>
+            <div class="opt-inp-g"><label class="opt-il">Forecast Periods</label><input id="olr-fh-m" value="10" type="number"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptLinReg()">⚡ COMPUTE REGRESSION</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('linreg')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-linreg"><div class="opt-sp"></div>Fitting regression...</div>
         <div class="opt-res" id="opt-r-linreg">
           <div class="opt-stats-row opt-stats-4">
@@ -5215,14 +5727,28 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig">
-          <div class="opt-inp-g"><label class="opt-il">Asset</label><input id="onn-sym" value="ETH/USD"></div>
-          <div class="opt-inp-g"><label class="opt-il">Architecture</label><select id="onn-model"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select></div>
-          <div class="opt-inp-g"><label class="opt-il">Sequence Length</label><input id="onn-seq" value="60" type="number"></div>
-          <div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="onn-fh" value="5" type="number"></div>
-          <div class="opt-inp-g"><label class="opt-il">Input Features</label><select id="onn-feat"><option>Price + Volume</option><option>OHLCV + RSI + MACD</option><option>Full Feature Set</option></select></div>
+        <div id="qt-auto-badge-nn" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-nn">Select an asset — architecture and sequence length chosen by AI from data density.</span></div>
+        <div class="qt-param-row">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-nn-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Architecture</span><span class="qt-pv" id="qt-pv-nn-arch">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Seq Len</span><span class="qt-pv" id="qt-pv-nn-seq">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Horizon</span><span class="qt-pv" id="qt-pv-nn-fh">—</span></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptNN()">RUN NEURAL NETWORK</button>
+        <input type="hidden" id="onn-sym" value=""><input type="hidden" id="onn-seq" value="60"><input type="hidden" id="onn-fh" value="5">
+        <select id="onn-model" style="display:none"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select>
+        <select id="onn-feat" style="display:none"><option>Price + Volume</option><option>OHLCV + RSI + MACD</option><option>Full Feature Set</option></select>
+        <div class="qt-override-section" id="qt-ov-nn" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">Architecture</label><select id="onn-model-m"><option>LSTM</option><option>GRU</option><option>Transformer</option><option>BiLSTM</option></select></div>
+            <div class="opt-inp-g"><label class="opt-il">Sequence Length</label><input id="onn-seq-m" value="60" type="number"></div>
+            <div class="opt-inp-g"><label class="opt-il">Horizon</label><input id="onn-fh-m" value="5" type="number"></div>
+            <div class="opt-inp-g"><label class="opt-il">Features</label><select id="onn-feat-m"><option>Price + Volume</option><option>OHLCV + RSI + MACD</option><option>Full Feature Set</option></select></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptNN()">⚡ RUN NEURAL NETWORK</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('nn')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-nn"><div class="opt-sp"></div>Simulating model inference...</div>
         <div class="opt-res" id="opt-r-nn">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
@@ -5255,14 +5781,25 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig">
-          <div class="opt-inp-g"><label class="opt-il">Asset</label><input id="oarima-sym" value="EUR/USD"></div>
-          <div class="opt-inp-g"><label class="opt-il">p — AR Order</label><input id="oarima-p" value="2" type="number" min="0" max="5"></div>
-          <div class="opt-inp-g"><label class="opt-il">d — Integration</label><input id="oarima-d" value="1" type="number" min="0" max="2"></div>
-          <div class="opt-inp-g"><label class="opt-il">q — MA Order</label><input id="oarima-q" value="2" type="number" min="0" max="5"></div>
-          <div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="oarima-fh" value="10" type="number"></div>
+        <div id="qt-auto-badge-arima" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-arima">Select an asset — p, d, q orders auto-estimated via AIC minimisation on live closes.</span></div>
+        <div class="qt-param-row">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-arima-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Order p,d,q</span><span class="qt-pv" id="qt-pv-arima-order">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Horizon</span><span class="qt-pv" id="qt-pv-arima-fh">—</span></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptARIMA()">FIT ARIMA MODEL</button>
+        <input type="hidden" id="oarima-sym" value=""><input type="hidden" id="oarima-p" value="2"><input type="hidden" id="oarima-d" value="1"><input type="hidden" id="oarima-q" value="2"><input type="hidden" id="oarima-fh" value="10">
+        <div class="qt-override-section" id="qt-ov-arima" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">p — AR Order</label><input id="oarima-p-m" value="2" type="number" min="0" max="5"></div>
+            <div class="opt-inp-g"><label class="opt-il">d — Integration</label><input id="oarima-d-m" value="1" type="number" min="0" max="2"></div>
+            <div class="opt-inp-g"><label class="opt-il">q — MA Order</label><input id="oarima-q-m" value="2" type="number" min="0" max="5"></div>
+            <div class="opt-inp-g"><label class="opt-il">Horizon</label><input id="oarima-fh-m" value="10" type="number"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptARIMA()">⚡ FIT ARIMA MODEL</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('arima')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-arima"><div class="opt-sp"></div>Estimating ARIMA parameters...</div>
         <div class="opt-res" id="opt-r-arima">
           <div class="opt-stats-row opt-stats-4">
@@ -5314,14 +5851,27 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="opt-pclose" onclick="optCloseAll()">×</button>
       </div>
       <div class="opt-pb">
-        <div class="opt-ig">
-          <div class="opt-inp-g"><label class="opt-il">Asset</label><input id="okl-sym" value="Crude Oil (WTI)"></div>
-          <div class="opt-inp-g"><label class="opt-il">Model</label><select id="okl-model"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select></div>
-          <div class="opt-inp-g"><label class="opt-il">Process Noise Q</label><input id="okl-q" value="0.001" type="number" step="0.001"></div>
-          <div class="opt-inp-g"><label class="opt-il">Measurement Noise R</label><input id="okl-r" value="0.1" type="number" step="0.01"></div>
-          <div class="opt-inp-g"><label class="opt-il">Forecast Horizon</label><input id="okl-fh" value="10" type="number"></div>
+        <div id="qt-auto-badge-kalman" class="qt-auto-badge"><div class="qt-auto-dot"></div><span id="qt-auto-txt-kalman">Select an asset — Q/R noise ratio calibrated from live return variance.</span></div>
+        <div class="qt-param-row">
+          <div class="qt-param"><span class="qt-pl">Asset</span><span class="qt-pv" id="qt-pv-kl-sym">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Model</span><span class="qt-pv" id="qt-pv-kl-model">—</span></div>
+          <div class="qt-param"><span class="qt-pl">Q</span><span class="qt-pv" id="qt-pv-kl-q">—</span></div>
+          <div class="qt-param"><span class="qt-pl">R</span><span class="qt-pv" id="qt-pv-kl-r">—</span></div>
         </div>
-        <button class="opt-gbtn" onclick="runOptKalman()">APPLY KALMAN FILTER</button>
+        <input type="hidden" id="okl-sym" value=""><input type="hidden" id="okl-q" value="0.001"><input type="hidden" id="okl-r" value="0.1"><input type="hidden" id="okl-fh" value="10">
+        <select id="okl-model" style="display:none"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select>
+        <div class="qt-override-section" id="qt-ov-kalman" style="display:none">
+          <div class="opt-ig">
+            <div class="opt-inp-g"><label class="opt-il">Model</label><select id="okl-model-m"><option>Constant Velocity</option><option>Random Walk</option><option>Trend + Noise</option></select></div>
+            <div class="opt-inp-g"><label class="opt-il">Process Noise Q</label><input id="okl-q-m" value="0.001" type="number" step="0.001"></div>
+            <div class="opt-inp-g"><label class="opt-il">Measurement Noise R</label><input id="okl-r-m" value="0.1" type="number" step="0.01"></div>
+            <div class="opt-inp-g"><label class="opt-il">Horizon</label><input id="okl-fh-m" value="10" type="number"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="opt-gbtn" style="flex:1;margin-bottom:0" onclick="runOptKalman()">⚡ APPLY KALMAN FILTER</button>
+          <button class="qt-override-btn" onclick="qtToggleOverride('kalman')">Override</button>
+        </div>
         <div class="opt-ld" id="opt-ld-kalman"><div class="opt-sp"></div>Filtering signal...</div>
         <div class="opt-res" id="opt-r-kalman">
           <div class="opt-stats-row opt-stats-4">
@@ -5747,11 +6297,11 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- GLOBAL BOTTOM STRIP (fixed, shows on all pages) -->
 <div class="hp-strip" id="global-strip">
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Advanced Price Engine</b><span data-i18n="feat1Sub">Live Feed · Sub-Second Response</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#22c55e" stroke-width="1.1"/><path d="M5 7.5l2 2 3.5-4" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b data-i18n="feat1Title">Real-Time Prices</b><span data-i18n="feat1Sub">Binance WebSocket · Sub-second crypto</span></div></div>
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13 4.5v6l-5.5 3-5.5-3v-6z" stroke="#22c55e" stroke-width="1.1"/></svg><div><b data-i18n="feat2Title">Quant AI Analysis</b><span data-i18n="feat2Sub">5 Wall Street frameworks</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live Market News</b><span data-i18n="feat3Sub">Institutional Sources · Instant Updates</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live News Feed</b><span data-i18n="feat3Sub">Reuters · ForexLive · CoinTelegraph</span></div></div>
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
 </div>
