@@ -3449,7 +3449,7 @@ function runJournalBg(canvas){
       if(depth>0.35){
         ctx.globalAlpha=alpha*0.9;
         ctx.font=`${Math.max(7,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
+        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
         ctx.fillText(n.label, p.x+n.size*p.scale+3, p.y+3);
       }
     });
@@ -4059,7 +4059,7 @@ function runQuantBg(canvas){
     ...p, w:132, h:58,
     ox:(Math.random()-.5)*680, oy:(Math.random()-.5)*420, oz:-80+Math.random()*500,
     vy:-(0.22+Math.random()*.32), vx:(Math.random()-.5)*.08,
-    alpha:.04+Math.random()*.08, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
+    alpha:.16+Math.random()*.22, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
   }));
 
   // ── Streaming number rain (like Matrix but with financial data) ────────────
@@ -4067,7 +4067,7 @@ function runQuantBg(canvas){
   const drops=Array.from({length:COLS},()=>({
     y:Math.random()*H, speed:1.5+Math.random()*2.5,
     chars:'0123456789αβσωΔ∑∫±<>%'.split(''),
-    alpha:0.04+Math.random()*0.06,
+    alpha:0.14+Math.random()*0.18,
   }));
 
   // ── Sine wave grid (oscilloscope style) ───────────────────────────────────
@@ -4112,8 +4112,8 @@ function runQuantBg(canvas){
     waveT+=0.025; rotY+=0.0018;
 
     // Subtle wave grid at bottom
-    ctx.globalAlpha=0.04;
-    ctx.strokeStyle='#22c55e'; ctx.lineWidth=0.8;
+    ctx.globalAlpha=0.15;
+    ctx.strokeStyle='#22c55e'; ctx.lineWidth=1.2;
     for(let row=0;row<3;row++){
       ctx.beginPath();
       for(let x=0;x<W;x+=2){
@@ -4143,9 +4143,9 @@ function runQuantBg(canvas){
     EDGES.forEach(([i,j])=>{
       const a=NODES[i],b=NODES[j];
       const pa=project(a.x,a.y,a.z),pb=project(b.x,b.y,b.z);
-      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.05;
+      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.16;
       if(alpha<=0) return;
-      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=0.55;
+      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=1.0;
       ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
     });
 
@@ -4156,14 +4156,14 @@ function runQuantBg(canvas){
       if(depth<=0) return;
       n.pulse+=n.ps;
       const pulse=0.55+0.45*Math.sin(n.pulse);
-      const a=(n.bright?.65:.3)*depth*pulse;
+      const a=(n.bright?.92:.6)*depth*pulse;
       ctx.globalAlpha=a;
       ctx.fillStyle=n.bright?'#a7f3d0':'#4ade80';
       ctx.beginPath(); ctx.arc(p.x,p.y,n.sz*p.scale,0,Math.PI*2); ctx.fill();
       if(depth>.28){
         ctx.globalAlpha=a*.8;
         ctx.font=`${Math.max(6.5,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
+        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
         ctx.fillText(n.label,p.x+n.sz*p.scale+3,p.y+3);
       }
     });
@@ -5032,7 +5032,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- QUANT TOOLS PAGE -->
 <div id="page-quant" class="page" style="display:none">
-<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.65;display:none"></canvas>
+<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:1;display:none"></canvas>
 <div class="main" style="padding-bottom:80px;position:relative;z-index:1">
 
   <section class="hero z" style="padding-bottom:32px">
