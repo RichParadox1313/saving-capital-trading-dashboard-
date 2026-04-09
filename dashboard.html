@@ -2921,94 +2921,93 @@ function qScoreClass(sig){
 function buildQuantPanel(d){
   const q=d.quant||{};
   const raw=parseInt(q.score)||0;
-
-  // Convert -10..+10 to confidence 1..100
-  // Confidence = how strong the signal is regardless of direction
-  // Score ±10 = 100 confidence, score 0 = 1 confidence
   const absScore = Math.abs(raw);
   const confidence = Math.max(1, Math.round(absScore / 10 * 100));
-
-  // Direction
   const bullish = raw > 0;
   const bearish  = raw < 0;
   const neutral  = raw === 0;
 
-  // Signal label based on confidence + direction
-  let sig, sigCls, sigColor;
+  let sig, sigCls, sigColor, sigIcon;
   if(neutral || confidence < 20){
-    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8';
+    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8'; sigIcon='◈';
   } else if(bullish){
-    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; }
-    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; }
-    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; }
+    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; sigIcon='▲▲'; }
+    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; sigIcon='▲'; }
+    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; sigIcon='△'; }
   } else {
-    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
-    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; }
-    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; }
+    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; sigIcon='▼▼'; }
+    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; sigIcon='▼'; }
+    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; sigIcon='▽'; }
   }
 
-  // Confidence arc — SVG circular gauge
-  const r=38, cx=50, cy=50;
+  const gaugeColor = confidence>=75 ? sigColor : confidence>=45 ? sigColor : '#94a3b8';
+  const r=36, cx=50, cy=50;
   const arcLen=2*Math.PI*r;
   const filled=arcLen*(confidence/100);
   const dash=`${filled} ${arcLen-filled}`;
-  const rotation=-90; // start from top
 
-  const gaugeColor=confidence>=75?sigColor:confidence>=45?sigColor:'#94a3b8';
-  const trackColor='rgba(255,255,255,0.06)';
-
-  const gaugeSvg=`<svg viewBox="0 0 100 100" width="100" height="100" style="transform:rotate(${rotation}deg)">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${trackColor}" stroke-width="8"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}" stroke-width="8"
+  // Double-ring gauge SVG
+  const gaugeSvg=`<svg viewBox="0 0 100 100" width="110" height="110" style="transform:rotate(-90deg)">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="10"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}22" stroke-width="14"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${gaugeColor}" stroke-width="5"
       stroke-dasharray="${dash}" stroke-linecap="round"
-      style="transition:stroke-dasharray .8s ease,stroke .4s ease"/>
+      style="transition:stroke-dasharray .9s cubic-bezier(.4,0,.2,1),stroke .4s ease;filter:drop-shadow(0 0 4px ${gaugeColor}88)"/>
   </svg>`;
 
-  // Factor pills
+  // Factor rows — new icons + styled
   const factorMap={
-    momentum:    {icon:'⚡',label:'Momentum'},
-    meanReversion:{icon:'↩',label:'Mean Rev.'},
-    macroRegime: {icon:'🌍',label:'Macro'},
-    volRegime:   {icon:'📊',label:'Volatility'},
+    momentum:     {icon:'◆', label:'Momentum',   color:'#a78bfa'},
+    meanReversion:{icon:'⟳', label:'Mean Rev.',  color:'#60a5fa'},
+    macroRegime:  {icon:'◉', label:'Macro',       color:'#fbbf24'},
+    volRegime:    {icon:'▰', label:'Volatility',  color:'#34d399'},
   };
-  const factorPills=Object.entries(factorMap).map(([key,{icon,label}])=>{
+  const factorPills=Object.entries(factorMap).map(([key,{icon,label,color}])=>{
     const val=(q[key]||'').split('—')[0].split('–')[0].split('.')[0].trim().slice(0,18)||'—';
-    const fc=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy')?'green':
-              val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell')?'red':'';
-    return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
-      <span style="font-size:13px">${icon}</span>
-      <div>
-        <div class="qs-factor-name">${label}</div>
-        <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${val}</div>
+    const isGreen=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy');
+    const isRed=val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell');
+    const valColor=isGreen?'#4ade80':isRed?'#f87171':'rgba(167,243,208,0.55)';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;">
+      <div style="width:28px;height:28px;border-radius:6px;background:${color}18;border:1px solid ${color}33;display:flex;align-items:center;justify-content:center;font-size:12px;color:${color};flex-shrink:0;font-family:'DM Mono',monospace;font-weight:700">${icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,0.35);font-family:'DM Mono',monospace;margin-bottom:2px">${label}</div>
+        <div style="font-size:11px;font-family:'DM Mono',monospace;font-weight:600;color:${valColor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${val}</div>
       </div>
+      <div style="width:4px;height:28px;border-radius:2px;background:${valColor}44;flex-shrink:0"></div>
     </div>`;
   }).join('');
 
-  return `<div class="qs-panel">
-    <div class="qs-header">
-      <span class="qs-title">Confidence Score</span>
-      <button class="qs-info-btn" onclick="document.getElementById('qs-info-modal').classList.add('open')">ⓘ</button>
+  return `<div class="qs-panel" style="background:rgba(2,10,2,0.7);border:1px solid rgba(34,197,94,0.15);border-radius:14px;padding:18px 20px;backdrop-filter:blur(12px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:6px;height:6px;border-radius:50%;background:${gaugeColor};box-shadow:0 0 8px ${gaugeColor}"></div>
+        <span style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(167,243,208,0.4);font-family:'DM Mono',monospace">Quant Intelligence</span>
+      </div>
+      <button class="qs-info-btn" onclick="document.getElementById('qs-info-modal').classList.add('open')" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.06);color:rgba(167,243,208,0.4);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-weight:700">i</button>
     </div>
-    <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">
-      <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+      <div style="position:relative;width:110px;height:110px;flex-shrink:0">
         ${gaugeSvg}
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;line-height:1;color:${gaugeColor}">${confidence}</div>
-          <div style="font-size:7px;letter-spacing:1.5px;color:var(--t4);font-family:'DM Mono',monospace">/ 100</div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;color:${gaugeColor};text-shadow:0 0 20px ${gaugeColor}66">${confidence}</div>
+          <div style="font-size:7px;letter-spacing:2px;color:rgba(167,243,208,0.25);font-family:'DM Mono',monospace">/ 100</div>
         </div>
       </div>
       <div style="flex:1">
-        <div class="qs-signal ${sigCls}" style="margin-bottom:8px">${sig}</div>
-        <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;line-height:1.6">
-          Direction: <span style="color:${sigColor};font-weight:700">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
-          Quant score: <span style="color:var(--t2)">${raw>0?'+':''}${raw}/10</span>
+        <div style="display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:6px;margin-bottom:10px;background:${sigColor}18;border:1px solid ${sigColor}33">
+          <span style="font-size:10px;color:${sigColor};font-weight:700;letter-spacing:.5px">${sigIcon}</span>
+          <span style="font-size:10px;font-family:'DM Mono',monospace;font-weight:700;letter-spacing:1.5px;color:${sigColor}">${sig}</span>
         </div>
-        <div style="margin-top:8px;height:4px;border-radius:2px;background:var(--br);overflow:hidden">
-          <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}88,${gaugeColor});border-radius:2px;transition:width .8s ease"></div>
+        <div style="font-size:9px;font-family:'DM Mono',monospace;line-height:1.8;color:rgba(167,243,208,0.35)">
+          Direction <span style="color:${sigColor};font-weight:700;letter-spacing:.5px">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
+          Score <span style="color:rgba(167,243,208,0.7)">${raw>0?'+':''}${raw} / 10</span>
+        </div>
+        <div style="margin-top:10px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden">
+          <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}55,${gaugeColor});border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px ${gaugeColor}66"></div>
         </div>
       </div>
     </div>
-    <div class="qs-factors" style="grid-template-columns:1fr 1fr">${factorPills}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${factorPills}</div>
   </div>`;
 }
 
@@ -3449,7 +3448,7 @@ function runJournalBg(canvas){
       if(depth>0.35){
         ctx.globalAlpha=alpha*0.9;
         ctx.font=`${Math.max(7,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
         ctx.fillText(n.label, p.x+n.size*p.scale+3, p.y+3);
       }
     });
@@ -4059,7 +4058,7 @@ function runQuantBg(canvas){
     ...p, w:132, h:58,
     ox:(Math.random()-.5)*680, oy:(Math.random()-.5)*420, oz:-80+Math.random()*500,
     vy:-(0.22+Math.random()*.32), vx:(Math.random()-.5)*.08,
-    alpha:.16+Math.random()*.22, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
+    alpha:.04+Math.random()*.08, phase:Math.random()*Math.PI*2, ps:.004+Math.random()*.003,
   }));
 
   // ── Streaming number rain (like Matrix but with financial data) ────────────
@@ -4067,7 +4066,7 @@ function runQuantBg(canvas){
   const drops=Array.from({length:COLS},()=>({
     y:Math.random()*H, speed:1.5+Math.random()*2.5,
     chars:'0123456789αβσωΔ∑∫±<>%'.split(''),
-    alpha:0.14+Math.random()*0.18,
+    alpha:0.04+Math.random()*0.06,
   }));
 
   // ── Sine wave grid (oscilloscope style) ───────────────────────────────────
@@ -4112,8 +4111,8 @@ function runQuantBg(canvas){
     waveT+=0.025; rotY+=0.0018;
 
     // Subtle wave grid at bottom
-    ctx.globalAlpha=0.15;
-    ctx.strokeStyle='#22c55e'; ctx.lineWidth=1.2;
+    ctx.globalAlpha=0.04;
+    ctx.strokeStyle='#22c55e'; ctx.lineWidth=0.8;
     for(let row=0;row<3;row++){
       ctx.beginPath();
       for(let x=0;x<W;x+=2){
@@ -4143,9 +4142,9 @@ function runQuantBg(canvas){
     EDGES.forEach(([i,j])=>{
       const a=NODES[i],b=NODES[j];
       const pa=project(a.x,a.y,a.z),pb=project(b.x,b.y,b.z);
-      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.16;
+      const alpha=(1-Math.abs((a.z+b.z)/2)/380)*0.05;
       if(alpha<=0) return;
-      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=1.0;
+      ctx.strokeStyle=`rgba(34,197,94,${alpha})`; ctx.lineWidth=0.55;
       ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
     });
 
@@ -4156,14 +4155,14 @@ function runQuantBg(canvas){
       if(depth<=0) return;
       n.pulse+=n.ps;
       const pulse=0.55+0.45*Math.sin(n.pulse);
-      const a=(n.bright?.92:.6)*depth*pulse;
+      const a=(n.bright?.65:.3)*depth*pulse;
       ctx.globalAlpha=a;
       ctx.fillStyle=n.bright?'#a7f3d0':'#4ade80';
       ctx.beginPath(); ctx.arc(p.x,p.y,n.sz*p.scale,0,Math.PI*2); ctx.fill();
       if(depth>.28){
         ctx.globalAlpha=a*.8;
         ctx.font=`${Math.max(6.5,9*p.scale)}px "DM Mono",monospace`;
-        ctx.fillStyle=n.bright?'#f0fdf4':'#a7f3d0';
+        ctx.fillStyle=n.bright?'#d1fae5':'#86efac';
         ctx.fillText(n.label,p.x+n.sz*p.scale+3,p.y+3);
       }
     });
@@ -5032,7 +5031,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- QUANT TOOLS PAGE -->
 <div id="page-quant" class="page" style="display:none">
-<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:1;display:none"></canvas>
+<canvas id="quant-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.65;display:none"></canvas>
 <div class="main" style="padding-bottom:80px;position:relative;z-index:1">
 
   <section class="hero z" style="padding-bottom:32px">
