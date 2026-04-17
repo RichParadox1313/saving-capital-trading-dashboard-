@@ -363,13 +363,13 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .main{max-width:1280px;margin:0 auto;padding:24px clamp(16px,2.5vw,40px) 80px}
 
 /* TABS */
-.tabs{display:flex;gap:6px;margin-bottom:28px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.tabs{display:flex;gap:8px;margin-bottom:32px;justify-content:center;flex-wrap:wrap;padding:6px 24px}
 .tabs::-webkit-scrollbar{display:none}
-.tab-icon{font-size:13px;line-height:1}
-.tab{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;transition:all .18s;white-space:nowrap}
-.tab:hover{color:var(--t1);border-color:var(--br2);background:var(--s1);transform:translateY(-1px)}
-.tab.on{color:var(--g);border-color:rgba(34,197,94,0.35);background:rgba(34,197,94,0.07);box-shadow:0 0 12px rgba(34,197,94,0.08)}
-.tab.on .tab-icon{filter:drop-shadow(0 0 4px rgba(34,197,94,0.5))}
+.tab-icon{font-size:14px;line-height:1}
+.tab{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:12px 22px;background:var(--s2);border:1px solid var(--br);border-radius:10px;color:var(--t4);cursor:pointer;font-family:'DM Mono',monospace;font-weight:500;transition:all .2s;white-space:nowrap;flex:1;max-width:210px;min-width:130px;justify-content:center}
+.tab:hover{color:var(--t1);border-color:var(--br2);background:var(--s1);transform:translateY(-2px);box-shadow:0 4px 16px rgba(34,197,94,0.06)}
+.tab.on{color:var(--g);border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.08);box-shadow:0 0 18px rgba(34,197,94,0.1)}
+.tab.on .tab-icon{filter:drop-shadow(0 0 5px rgba(34,197,94,0.6))}
 .sec{display:none}.sec.on{display:block}
 
 /* GRID */
@@ -734,7 +734,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .main{padding:28px 12px 60px}
 
   /* Tabs — horizontally scrollable, no wrap */
-  .tabs{margin-bottom:16px;gap:4px;flex-wrap:nowrap}
+  .tabs{margin-bottom:20px;gap:6px;flex-wrap:wrap;padding:4px 16px;justify-content:center}
   .qs-factors{grid-template-columns:1fr 1fr}
   .qs-panel{padding:14px}
   .tab{font-size:9px;padding:10px 12px;letter-spacing:1px}
