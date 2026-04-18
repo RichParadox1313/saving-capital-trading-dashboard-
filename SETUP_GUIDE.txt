@@ -1,0 +1,173 @@
+# Saving Capital — Backend Setup Guide
+# Complete instructions to go live on Railway
+
+══════════════════════════════════════════════════════════
+STEP 1 — ADD POSTGRESQL TO RAILWAY
+══════════════════════════════════════════════════════════
+
+1. Go to your Railway project dashboard → https://railway.app
+2. Click "+ New" → "Database" → "PostgreSQL"
+3. Railway will automatically create a DATABASE_URL variable
+   and inject it into your server — you don't need to copy it manually.
+4. Done. The tables (users, subscriptions, payments) are created
+   automatically when the server starts for the first time.
+
+
+══════════════════════════════════════════════════════════
+STEP 2 — ADD PYTHON PACKAGES TO requirements.txt
+══════════════════════════════════════════════════════════
+
+Add these 2 lines to your existing requirements.txt:
+
+    asyncpg==0.29.0
+    python-multipart==0.0.9
+
+Your full requirements.txt should look like:
+
+    fastapi==0.115.0
+    uvicorn==0.30.6
+    aiohttp==3.9.5
+    anthropic==0.40.0
+    python-dotenv==1.0.1
+    asyncpg==0.29.0
+    python-multipart==0.0.9
+
+
+══════════════════════════════════════════════════════════
+STEP 3 — SET ENVIRONMENT VARIABLES IN RAILWAY
+══════════════════════════════════════════════════════════
+
+In Railway → your server service → Variables tab, add:
+
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Variable            │ Value                                                  │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ JWT_SECRET          │ 00e18e2c304ca11700e30999f2424b0e075a2422be5554849fe39d8dd61f60b2 │
+│ ADMIN_EMAIL         │ admin@savingcapital.com  (change to your email)        │
+│ ADMIN_PASSWORD      │ Choose a strong password (e.g. SavCap_Admin2025!)      │
+│ APP_URL             │ https://YOUR-APP-NAME.railway.app                      │
+│ NOWPAYMENTS_API_KEY │ (get from nowpayments.io after signup)                 │
+│ NOWPAYMENTS_IPN_SECRET │ (get from nowpayments.io → IPN settings)           │
+│ ANTHROPIC_API_KEY   │ (already set)                                          │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+⚠️  JWT_SECRET is the value generated for you above.
+    KEEP IT SECRET — it signs all user login tokens.
+    If you ever change it, all users will be logged out.
+
+
+══════════════════════════════════════════════════════════
+STEP 4 — UPDATE server.py (3 lines to add)
+══════════════════════════════════════════════════════════
+
+Open server.py and make these changes:
+
+A) At the TOP of server.py, after the existing imports, add:
+
+    from auth_payments import register_auth_routes, get_db
+
+B) After the line `app = FastAPI()`, add:
+
+    register_auth_routes(app)
+
+C) In the startup_event function, add one line:
+
+    @app.on_event("startup")
+    async def startup_event():
+        await get_db()          # ← ADD THIS LINE
+        print(f"[STARTUP] Dashboard path: ...")
+        ...rest of existing code...
+
+That's it. The auth_payments.py file handles everything else.
+
+
+══════════════════════════════════════════════════════════
+STEP 5 — GET NOWPAYMENTS API KEY
+══════════════════════════════════════════════════════════
+
+1. Go to https://nowpayments.io and sign up (free)
+2. Dashboard → API Keys → Create API Key → copy it
+3. Dashboard → IPN Settings → enter your webhook URL:
+   https://YOUR-APP.railway.app/payments/webhook
+4. Copy the IPN Secret key
+5. Paste both into Railway env vars (Step 3 above)
+
+NOWPayments accepts: BTC, ETH, SOL, BNB, USDT, USDC, and 100+ others.
+Your clients choose their preferred coin at checkout.
+
+
+══════════════════════════════════════════════════════════
+STEP 6 — DEPLOY FILES TO RAILWAY
+══════════════════════════════════════════════════════════
+
+Upload these files to your Railway project (same folder as server.py):
+
+  ✅ server.py          (updated with 3 new lines)
+  ✅ auth_payments.py   (new — handles all auth/payments/admin)
+  ✅ dashboard.html     (updated with login modal + payment UI)
+  ✅ admin.html         (new — admin console)
+  ✅ requirements.txt   (updated with asyncpg)
+
+Railway will auto-redeploy when files change.
+
+
+══════════════════════════════════════════════════════════
+STEP 7 — ACCESS YOUR ADMIN CONSOLE
+══════════════════════════════════════════════════════════
+
+Go to: https://YOUR-APP.railway.app/admin.html
+Login with the ADMIN_EMAIL and ADMIN_PASSWORD you set.
+
+From the admin console you can:
+  • See all users, plans, and revenue
+  • Ban/unban users instantly
+  • Grant or change subscription plans manually
+  • See payment history
+
+
+══════════════════════════════════════════════════════════
+HOW IT ALL WORKS (simple explanation)
+══════════════════════════════════════════════════════════
+
+JWT_SECRET — What is it?
+  A secret password that your server uses to sign login tokens.
+  When a user logs in, your server creates a token like a wristband
+  that proves "this person is logged in". The JWT_SECRET is what
+  makes the wristband impossible to fake. Keep it secret.
+
+DATABASE_URL — What is it?
+  The address of your PostgreSQL database on Railway.
+  Railway sets this automatically — you never need to touch it.
+
+ADMIN_PASSWORD — What is it?
+  The password you use to log into admin.html.
+  Choose something strong. This controls your entire user base.
+
+
+══════════════════════════════════════════════════════════
+SUBSCRIPTION LOGIC SUMMARY
+══════════════════════════════════════════════════════════
+
+Basic ($19/mo):
+  ✅ Market Intelligence (all prices, news, analysis)
+  ❌ Quant Tools (locked)
+  ❌ Trading Journal (locked)
+
+Pro ($49/mo):
+  ✅ Everything in Basic
+  ✅ Quant Tools (7 institutional models)
+  ✅ Trading Journal (MT5 sync, AI analysis)
+
+Payment flow:
+  1. User clicks Subscribe → chooses Basic or Pro
+  2. User selects crypto (USDT, BTC, ETH, etc.)
+  3. NOWPayments shows wallet address + amount
+  4. User sends crypto
+  5. NOWPayments confirms payment → webhook fires
+  6. Server activates subscription for 31 days
+  7. User gets access instantly
+
+Renewal:
+  Subscriptions expire after 31 days.
+  Users must pay again to renew (no auto-charge).
+  You can extend manually from the admin console.
