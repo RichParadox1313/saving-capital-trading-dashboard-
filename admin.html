@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saving Capital — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#22c55e;--gdim:rgba(34,197,94,0.08);
+  --bg:#030704;--s1:#070d07;--s2:#0b140b;
+  --t1:#f0fdf4;--t2:#a7f3d0;--t3:rgba(167,243,208,0.55);--t4:rgba(167,243,208,0.28);
+  --br:rgba(34,197,94,0.12);--br2:rgba(34,197,94,0.22);--br3:rgba(34,197,94,0.4);
+  --r:#ef4444;--rdim:rgba(239,68,68,0.09);--gold:#f59e0b;
+}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--br3);border-radius:2px}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:var(--s1);border:1px solid var(--br2);border-radius:16px;padding:40px;width:100%;max-width:380px}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;color:var(--g);margin-bottom:6px}
+.login-sub{font-size:11px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:32px}
+.login-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:6px;display:block}
+.login-input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:13px;padding:11px 14px;outline:none;margin-bottom:16px;transition:border .2s}
+.login-input:focus{border-color:var(--br3)}
+.login-btn{width:100%;padding:13px;background:var(--g);border:none;border-radius:9px;color:#030704;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:4px}
+.login-btn:hover{background:#16a34a}
+.login-err{font-size:12px;color:var(--r);margin-top:10px;display:none}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+nav{height:56px;background:rgba(3,7,4,0.97);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--g)}
+.nav-logo span{color:var(--t1)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border:1px solid rgba(239,68,68,0.3);border-radius:20px;color:var(--r);font-family:'DM Mono',monospace}
+.nav-logout{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--t4);padding:5px 12px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
+.nav-logout:hover{border-color:var(--r);color:var(--r)}
+.wrap{max-width:1300px;margin:0 auto;padding:32px 24px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:20px}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--g)}
+.stat-val.red{color:var(--r)}
+.stat-val.gold{color:var(--gold)}
+.stat-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-top:4px}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.section-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;flex:1}
+.search-input{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 14px;outline:none;width:220px;transition:border .2s}
+.search-input:focus{border-color:var(--br3)}
+.filter-select{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t3);font-family:'DM Mono',monospace;font-size:11px;padding:8px 12px;outline:none;cursor:pointer}
+.refresh-btn{padding:8px 16px;background:transparent;border:1px solid var(--br2);border-radius:8px;color:var(--t3);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.refresh-btn:hover{border-color:var(--g);color:var(--g)}
+
+/* TABLE */
+.table-wrap{background:var(--s1);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:32px}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--s2);padding:12px 16px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;font-weight:400;border-bottom:1px solid var(--br);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--br);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(34,197,94,0.03)}
+tbody td{padding:12px 16px;font-size:12px;color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap}
+.email-cell{color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+
+/* BADGES */
+.badge{display:inline-block;font-size:9px;padding:3px 9px;border-radius:20px;letter-spacing:1px;font-family:'DM Mono',monospace;font-weight:500}
+.badge-active{background:rgba(34,197,94,0.12);color:var(--g);border:1px solid rgba(34,197,94,0.2)}
+.badge-pending{background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2)}
+.badge-suspended{background:var(--rdim);color:var(--r);border:1px solid rgba(239,68,68,0.2)}
+.badge-pro{background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.2)}
+.badge-basic{background:rgba(34,197,94,0.07);color:var(--t3);border:1px solid var(--br)}
+.badge-banned{background:var(--rdim);color:var(--r);border:1px solid rgba(239,68,68,0.3)}
+
+/* ACTION BUTTONS */
+.action-wrap{display:flex;gap:6px;align-items:center}
+.act-btn{padding:4px 11px;border-radius:6px;font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid var(--br);background:transparent;color:var(--t4);transition:all .15s;letter-spacing:.5px}
+.act-btn:hover{border-color:var(--br2);color:var(--t1)}
+.act-btn.ban{border-color:rgba(239,68,68,0.25);color:rgba(239,68,68,0.6)}
+.act-btn.ban:hover{background:var(--rdim);border-color:var(--r);color:var(--r)}
+.act-btn.unban{border-color:rgba(34,197,94,0.25);color:rgba(34,197,94,0.6)}
+.act-btn.unban:hover{background:var(--gdim);border-color:var(--g);color:var(--g)}
+.act-btn.upgrade{border-color:rgba(139,92,246,0.25);color:rgba(139,92,246,0.6)}
+.act-btn.upgrade:hover{background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.4);color:#a78bfa}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--br2);border-radius:16px;padding:28px;width:100%;max-width:400px}
+.modal-title{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:6px}
+.modal-sub{font-size:12px;color:var(--t4);margin-bottom:20px}
+.modal-input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:10px 13px;outline:none;margin-bottom:12px}
+.modal-input:focus{border-color:var(--br3)}
+.modal-select{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:10px 13px;outline:none;margin-bottom:12px;cursor:pointer}
+.modal-btns{display:flex;gap:10px;margin-top:4px}
+.modal-btn{flex:1;padding:11px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;border:none}
+.modal-btn.primary{background:var(--g);color:#030704}
+.modal-btn.primary:hover{background:#16a34a}
+.modal-btn.secondary{background:transparent;border:1px solid var(--br2);color:var(--t4)}
+.modal-btn.secondary:hover{border-color:var(--br3);color:var(--t1)}
+.modal-btn.danger{background:var(--r);color:#fff}
+.modal-btn.danger:hover{background:#dc2626}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s1);border:1px solid var(--br2);border-radius:10px;padding:12px 20px;font-size:12px;font-family:'DM Mono',monospace;color:var(--t1);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(34,197,94,0.4);color:var(--g)}
+.toast.error{border-color:rgba(239,68,68,0.4);color:var(--r)}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px;color:var(--t4);font-size:12px;font-family:'DM Mono',monospace}
+.loading-row td{text-align:center;padding:32px;color:var(--t4);font-family:'DM Mono',monospace;font-size:11px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">SAVING <span style="color:var(--t1)">CAPITAL</span></div>
+    <div class="login-sub">Admin Console</div>
+    <label class="login-label">Email</label>
+    <input class="login-input" id="a-email" type="email" placeholder="admin@savingcapital.com" autocomplete="username">
+    <label class="login-label">Password</label>
+    <input class="login-input" id="a-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">SIGN IN</button>
+    <div class="login-err" id="a-err">Invalid credentials</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav>
+    <div class="nav-logo">SAVING <span>CAPITAL</span></div>
+    <div class="nav-right">
+      <div class="nav-badge">ADMIN</div>
+      <span style="font-size:11px;color:var(--t4);font-family:'DM Mono',monospace" id="nav-email"></span>
+      <button class="nav-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-val" id="st-users">—</div><div class="stat-lbl">Total Users</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-active">—</div><div class="stat-lbl">Active Subs</div></div>
+      <div class="stat-card"><div class="stat-val gold" id="st-revenue">—</div><div class="stat-lbl">Revenue This Month</div></div>
+      <div class="stat-card"><div class="stat-val red" id="st-banned">—</div><div class="stat-lbl">Banned Users</div></div>
+    </div>
+
+    <!-- Sub breakdown -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px">
+      <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="stat-lbl" style="margin-bottom:4px">Basic ($19/mo)</div><div class="stat-val" id="st-basic" style="font-size:1.5rem">—</div></div>
+        <div style="font-size:2rem;opacity:.2">₿</div>
+      </div>
+      <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="stat-lbl" style="margin-bottom:4px">Pro ($49/mo)</div><div class="stat-val" id="st-pro" style="font-size:1.5rem;color:#a78bfa">—</div></div>
+        <div style="font-size:2rem;opacity:.2">★</div>
+      </div>
+    </div>
+
+    <!-- Users table -->
+    <div class="toolbar">
+      <div class="section-title">All Users</div>
+      <input class="search-input" id="search" placeholder="Search email..." oninput="filterUsers()">
+      <select class="filter-select" id="filter-plan" onchange="filterUsers()">
+        <option value="">All plans</option>
+        <option value="basic">Basic</option>
+        <option value="pro">Pro</option>
+      </select>
+      <select class="filter-select" id="filter-status" onchange="filterUsers()">
+        <option value="">All statuses</option>
+        <option value="active">Active</option>
+        <option value="pending">Pending</option>
+        <option value="suspended">Suspended</option>
+      </select>
+      <button class="refresh-btn" onclick="loadUsers()">↻ Refresh</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Expires</th>
+            <th>Revenue</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr class="loading-row"><td colspan="8">Loading users...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Ban Modal -->
+<div class="modal-bg" id="ban-modal">
+  <div class="modal">
+    <div class="modal-title">Ban User</div>
+    <div class="modal-sub" id="ban-modal-sub">This will suspend access immediately.</div>
+    <input class="modal-input" id="ban-reason" placeholder="Reason (optional, shown to admin only)">
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('ban-modal')">Cancel</button>
+      <button class="modal-btn danger" onclick="confirmBan()">Ban User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grant Plan Modal -->
+<div class="modal-bg" id="plan-modal">
+  <div class="modal">
+    <div class="modal-title">Grant / Change Plan</div>
+    <div class="modal-sub" id="plan-modal-sub">Set subscription manually (no payment required).</div>
+    <select class="modal-select" id="plan-select">
+      <option value="basic">Basic — $19/mo</option>
+      <option value="pro">Pro — $49/mo</option>
+    </select>
+    <select class="modal-select" id="plan-months">
+      <option value="1">1 month</option>
+      <option value="3">3 months</option>
+      <option value="6">6 months</option>
+      <option value="12">12 months</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('plan-modal')">Cancel</button>
+      <button class="modal-btn primary" onclick="confirmPlan()">Grant Access</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let adminToken = sessionStorage.getItem('sc_admin_token') || '';
+let allUsers = [];
+let actionUserId = null;
+
+// ── Login ────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('a-email').value.trim();
+  const pass  = document.getElementById('a-pass').value;
+  const err   = document.getElementById('a-err');
+  err.style.display = 'none';
+  try {
+    const r = await fetch(`${API}/auth/admin/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Login failed');
+    adminToken = d.token;
+    sessionStorage.setItem('sc_admin_token', adminToken);
+    document.getElementById('nav-email').textContent = email;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadStats();
+    loadUsers();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('sc_admin_token');
+  location.reload();
+}
+
+// Check existing token on load
+if (adminToken) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadStats();
+  loadUsers();
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+function authHeaders() {
+  return {'Content-Type':'application/json','Authorization':`Bearer ${adminToken}`};
+}
+
+async function apiGet(path) {
+  const r = await fetch(`${API}${path}`, {headers: authHeaders()});
+  if (r.status === 403) { logout(); throw new Error('Session expired'); }
+  return r.json();
+}
+
+async function apiPost(path, body) {
+  const r = await fetch(`${API}${path}`, {
+    method:'POST', headers: authHeaders(), body: JSON.stringify(body)
+  });
+  if (r.status === 403) { logout(); throw new Error('Session expired'); }
+  return r.json();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const d = await apiGet('/admin/stats');
+    document.getElementById('st-users').textContent   = d.total_users;
+    document.getElementById('st-active').textContent  = d.active_subs;
+    document.getElementById('st-revenue').textContent = `$${d.month_revenue.toFixed(0)}`;
+    document.getElementById('st-banned').textContent  = d.banned_users;
+    document.getElementById('st-basic').textContent   = d.basic_active;
+    document.getElementById('st-pro').textContent     = d.pro_active;
+  } catch(e) { console.error(e); }
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  document.getElementById('users-tbody').innerHTML =
+    '<tr class="loading-row"><td colspan="8">Loading...</td></tr>';
+  try {
+    allUsers = await apiGet('/admin/users');
+    renderUsers(allUsers);
+  } catch(e) {
+    document.getElementById('users-tbody').innerHTML =
+      `<tr class="loading-row"><td colspan="8">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function filterUsers() {
+  const q      = document.getElementById('search').value.toLowerCase();
+  const plan   = document.getElementById('filter-plan').value;
+  const status = document.getElementById('filter-status').value;
+  const filtered = allUsers.filter(u => {
+    if (q && !u.email.toLowerCase().includes(q)) return false;
+    if (plan && u.plan !== plan) return false;
+    if (status && u.status !== status) return false;
+    return true;
+  });
+  renderUsers(filtered);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="8">No users found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => {
+    const planBadge   = `<span class="badge badge-${u.plan||'basic'}">${(u.plan||'basic').toUpperCase()}</span>`;
+    const statusBadge = u.banned
+      ? `<span class="badge badge-banned">BANNED</span>`
+      : `<span class="badge badge-${u.status||'pending'}">${(u.status||'pending').toUpperCase()}</span>`;
+    const expires = u.expires_at ? new Date(u.expires_at).toLocaleDateString() : '—';
+    const joined  = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+    const revenue = u.total_paid > 0 ? `$${u.total_paid.toFixed(0)}` : '—';
+    const banBtn = u.banned
+      ? `<button class="act-btn unban" onclick="openUnban(${u.id},'${u.email}')">Unban</button>`
+      : `<button class="act-btn ban"   onclick="openBan(${u.id},'${u.email}')">Ban</button>`;
+    return `<tr>
+      <td style="color:var(--t4)">#${u.id}</td>
+      <td class="email-cell">${u.email}</td>
+      <td>${planBadge}</td>
+      <td>${statusBadge}</td>
+      <td>${expires}</td>
+      <td style="color:var(--gold)">${revenue}</td>
+      <td>${joined}</td>
+      <td><div class="action-wrap">
+        ${banBtn}
+        <button class="act-btn upgrade" onclick="openPlan(${u.id},'${u.email}')">Plan</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Ban ───────────────────────────────────────────────────────────────────────
+let banMode = 'ban';
+function openBan(id, email) {
+  actionUserId = id; banMode = 'ban';
+  document.getElementById('ban-modal-sub').textContent = `Banning: ${email}`;
+  document.getElementById('ban-reason').value = '';
+  document.getElementById('ban-modal').classList.add('open');
+}
+function openUnban(id, email) {
+  actionUserId = id; banMode = 'unban';
+  document.getElementById('ban-modal-sub').textContent = `Unban and restore access for: ${email}`;
+  document.getElementById('ban-reason').value = '';
+  document.querySelector('#ban-modal .modal-btn.danger').textContent = 'Unban User';
+  document.getElementById('ban-modal').classList.add('open');
+}
+async function confirmBan() {
+  const reason = document.getElementById('ban-reason').value;
+  const endpoint = banMode === 'ban' ? '/admin/ban' : '/admin/unban';
+  try {
+    await apiPost(endpoint, {user_id: actionUserId, reason});
+    closeModal('ban-modal');
+    toast(banMode === 'ban' ? 'User banned' : 'User unbanned', banMode === 'ban' ? 'error' : 'success');
+    loadUsers(); loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Plan ──────────────────────────────────────────────────────────────────────
+function openPlan(id, email) {
+  actionUserId = id;
+  document.getElementById('plan-modal-sub').textContent = `User: ${email}`;
+  document.getElementById('plan-modal').classList.add('open');
+}
+async function confirmPlan() {
+  const plan   = document.getElementById('plan-select').value;
+  const months = parseInt(document.getElementById('plan-months').value);
+  try {
+    await apiPost('/admin/set-plan', {user_id: actionUserId, plan, months});
+    closeModal('plan-modal');
+    toast(`${plan.toUpperCase()} granted for ${months} month(s)`, 'success');
+    loadUsers(); loadStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+
+let toastTimer;
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Enter key on login ────────────────────────────────────────────────────────
+document.getElementById('a-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('a-pass').focus();
+});
+</script>
+</body>
+</html>
