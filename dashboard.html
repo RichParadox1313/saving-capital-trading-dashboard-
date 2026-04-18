@@ -2359,6 +2359,96 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .qt-combo-flow{font-size:10px;color:var(--g);font-family:'DM Mono',monospace;margin-bottom:6px}
 .qt-combo-desc{font-size:10px;color:var(--t4);line-height:1.6}
 @media(max-width:768px){.qt-workflow{grid-template-columns:1fr 1fr}.qt-combo{grid-template-columns:1fr}}
+
+/* ═══════════════════════════════════════
+   AUTH — Login / Signup / Payment / Gate
+═══════════════════════════════════════ */
+#sc-auth-overlay{position:fixed;inset:0;background:rgba(2,6,2,0.92);backdrop-filter:blur(12px);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px}
+.sc-auth-box{background:var(--s1);border:1px solid var(--br2);border-radius:20px;padding:36px 32px;width:100%;max-width:400px;position:relative}
+.sc-auth-logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:3px;color:var(--g);margin-bottom:2px}
+.sc-auth-logo b{color:var(--t1);font-weight:400}
+.sc-auth-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:28px}
+.sc-auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:3px}
+.sc-auth-tab{flex:1;padding:9px;border:none;background:transparent;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.sc-auth-tab.on{background:var(--g);color:#030704;font-weight:500}
+.sc-auth-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:7px;display:block}
+.sc-auth-input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:9px;color:var(--t1);font-family:'DM Mono',monospace;font-size:13px;padding:12px 14px;outline:none;margin-bottom:14px;transition:border .2s;box-sizing:border-box}
+.sc-auth-input:focus{border-color:var(--br3)}
+.sc-auth-btn{width:100%;padding:14px;background:var(--g);border:none;border-radius:10px;color:#030704;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:4px}
+.sc-auth-btn:hover{background:#16a34a;transform:translateY(-1px)}
+.sc-auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.sc-auth-err{font-size:11px;color:var(--r);margin-top:10px;display:none;font-family:'DM Mono',monospace;text-align:center}
+.sc-auth-footer{text-align:center;margin-top:16px;font-size:10px;color:var(--t4);font-family:'DM Mono',monospace}
+.sc-auth-footer span{color:var(--g);cursor:pointer}
+.sc-auth-footer span:hover{text-decoration:underline}
+
+/* NAV AUTH AREA */
+.sc-nav-auth{display:flex;align-items:center;gap:10px}
+.sc-nav-user{font-size:10px;font-family:'DM Mono',monospace;color:var(--t3);letter-spacing:.5px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-nav-plan{font-size:9px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;letter-spacing:1px}
+.sc-nav-plan.pro{background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+.sc-nav-plan.basic{background:var(--gdim);color:var(--g);border:1px solid var(--br)}
+.sc-nav-btn{padding:6px 14px;border-radius:7px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;border:1px solid var(--br2);background:transparent;color:var(--t3);transition:all .2s}
+.sc-nav-btn:hover{border-color:var(--g);color:var(--g)}
+.sc-nav-btn.logout{border-color:rgba(239,68,68,0.2);color:rgba(239,68,68,0.5)}
+.sc-nav-btn.logout:hover{border-color:var(--r);color:var(--r)}
+.sc-nav-btn.subscribe{background:var(--g);color:#030704;border-color:var(--g);font-weight:600}
+.sc-nav-btn.subscribe:hover{background:#16a34a}
+
+/* PRO GATE — shown instead of page content */
+.sc-pro-gate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 24px}
+.sc-gate-icon{font-size:2.5rem;margin-bottom:16px;opacity:.4}
+.sc-gate-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;color:var(--t1);margin-bottom:10px}
+.sc-gate-sub{font-size:14px;color:var(--t3);max-width:440px;line-height:1.7;margin-bottom:28px;font-weight:300}
+.sc-gate-plans{display:flex;gap:14px;margin-bottom:28px;flex-wrap:wrap;justify-content:center}
+.sc-gate-plan{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:20px 24px;min-width:160px;text-align:center;cursor:pointer;transition:all .2s}
+.sc-gate-plan:hover{border-color:var(--br2);transform:translateY(-2px)}
+.sc-gate-plan.featured{border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.06)}
+.sc-gate-plan-name{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;color:var(--t4);margin-bottom:6px}
+.sc-gate-plan-price{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--g);margin-bottom:2px}
+.sc-gate-plan.featured .sc-gate-plan-price{color:#a78bfa}
+.sc-gate-plan-period{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:12px}
+.sc-gate-plan-feats{font-size:11px;color:var(--t3);line-height:1.8;text-align:left}
+.sc-gate-plan-feats span{display:block}
+.sc-gate-plan-feats span::before{content:'✓ ';color:var(--g)}
+.sc-gate-plan.featured .sc-gate-plan-feats span::before{color:#a78bfa}
+.sc-gate-cta{padding:14px 36px;background:var(--g);border:none;border-radius:10px;color:#030704;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.sc-gate-cta:hover{background:#16a34a;transform:translateY(-1px)}
+
+/* PAYMENT MODAL */
+#sc-pay-modal{position:fixed;inset:0;background:rgba(2,6,2,0.92);backdrop-filter:blur(12px);z-index:8500;display:none;align-items:center;justify-content:center;padding:20px}
+#sc-pay-modal.open{display:flex}
+.sc-pay-box{background:var(--s1);border:1px solid var(--br2);border-radius:20px;padding:32px;width:100%;max-width:440px}
+.sc-pay-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--t1);margin-bottom:4px}
+.sc-pay-sub{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:24px;letter-spacing:.5px}
+.sc-pay-plans{display:flex;gap:10px;margin-bottom:20px}
+.sc-pay-plan{flex:1;padding:14px;background:var(--s2);border:1px solid var(--br);border-radius:10px;cursor:pointer;transition:all .2s;text-align:center}
+.sc-pay-plan:hover{border-color:var(--br2)}
+.sc-pay-plan.on{border-color:var(--g);background:var(--gdim)}
+.sc-pay-plan-n{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;color:var(--t4);margin-bottom:4px}
+.sc-pay-plan-p{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--g)}
+.sc-pay-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:8px}
+.sc-coin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.sc-coin{padding:10px 8px;background:var(--s2);border:1px solid var(--br);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s;font-size:11px;font-family:'DM Mono',monospace;color:var(--t3)}
+.sc-coin:hover{border-color:var(--br2);color:var(--t1)}
+.sc-coin.on{border-color:var(--g);background:var(--gdim);color:var(--g)}
+.sc-pay-btn{width:100%;padding:14px;background:var(--g);border:none;border-radius:10px;color:#030704;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.sc-pay-btn:hover{background:#16a34a}
+.sc-pay-btn:disabled{opacity:.4;cursor:not-allowed}
+.sc-pay-close{position:absolute;top:16px;right:16px;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--t4);padding:4px 10px;cursor:pointer;font-size:11px}
+.sc-pay-close:hover{border-color:var(--r);color:var(--r)}
+
+/* PAYMENT ADDRESS SCREEN */
+.sc-pay-addr{display:none;text-align:center}
+.sc-pay-addr.show{display:block}
+.sc-pay-amount{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--g);margin-bottom:4px}
+.sc-pay-amount-sub{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:20px}
+.sc-addr-box{background:var(--s2);border:1px solid var(--br2);border-radius:10px;padding:14px 16px;margin-bottom:12px;word-break:break-all;font-family:'DM Mono',monospace;font-size:12px;color:var(--t2);text-align:left;cursor:pointer;transition:border .2s}
+.sc-addr-box:hover{border-color:var(--g)}
+.sc-addr-copy{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:16px}
+.sc-pay-waiting{display:flex;align-items:center;gap:8px;justify-content:center;font-size:11px;color:var(--t4);font-family:'DM Mono',monospace}
+.sc-pay-waiting-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.5s infinite}
+
 </style>
 </head>
 <body>
@@ -2395,6 +2485,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
         <span class="live-data-txt" id="live-data-txt">LIVE</span>
       </div>
     </div>
+    <div id="sc-nav-auth-area" class="sc-nav-auth"></div>
   </div>
 </nav>
 
@@ -2420,6 +2511,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <button class="hp-np" id="np-quant" onclick="goPage('quant')">Quant Tools</button>
   </div>
   <div class="hp-nav-r">
+    <div id="sc-nav-auth-area-hp" style="display:flex;align-items:center;gap:10px"></div>
     <div class="hp-live"><span class="hp-dot"></span>LIVE</div>
     <div class="hp-clk" id="clk2">—</div>
   </div>
@@ -2447,7 +2539,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
     <p class="hp-body">120+ assets. Institutional-grade quantitative analysis powered by Bridgewater, RenTech and Citadel frameworks — running in real time.</p>
 
     <div class="hp-actions">
-      <button class="hp-cta" onclick="goPage('markets')">
+      <button class="hp-cta" onclick="scUser ? goPage('markets') : scShowAuth()">
         Launch Platform
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -7290,5 +7382,375 @@ setLang(localStorage.getItem('sc_lang')||'en');
   </div>
   <div class="nt-dot"><div class="ldot"></div></div>
 </div>
+
+<!-- ══ AUTH OVERLAY ══════════════════════════════════════════════════════════ -->
+<div id="sc-auth-overlay" style="display:none">
+  <div class="sc-auth-box">
+    <div class="sc-auth-logo">SAVING <b>CAPITAL</b></div>
+    <div class="sc-auth-sub">Market Intelligence Platform</div>
+    <div class="sc-auth-tabs">
+      <button class="sc-auth-tab on" onclick="scAuthTab('login')">Sign In</button>
+      <button class="sc-auth-tab" onclick="scAuthTab('signup')">Create Account</button>
+    </div>
+    <div id="sc-login-form">
+      <label class="sc-auth-label">Email</label>
+      <input class="sc-auth-input" id="sc-login-email" type="email" placeholder="you@email.com" autocomplete="email">
+      <label class="sc-auth-label">Password</label>
+      <input class="sc-auth-input" id="sc-login-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')scDoLogin()">
+      <button class="sc-auth-btn" onclick="scDoLogin()" id="sc-login-btn">SIGN IN</button>
+      <div class="sc-auth-err" id="sc-login-err"></div>
+      <div class="sc-auth-footer">No account? <span onclick="scAuthTab('signup')">Create one free</span></div>
+    </div>
+    <div id="sc-signup-form" style="display:none">
+      <label class="sc-auth-label">Email</label>
+      <input class="sc-auth-input" id="sc-signup-email" type="email" placeholder="you@email.com" autocomplete="email">
+      <label class="sc-auth-label">Password (min 8 chars)</label>
+      <input class="sc-auth-input" id="sc-signup-pass" type="password" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')scDoSignup()">
+      <button class="sc-auth-btn" onclick="scDoSignup()" id="sc-signup-btn">CREATE ACCOUNT</button>
+      <div class="sc-auth-err" id="sc-signup-err"></div>
+      <div class="sc-auth-footer">Already have an account? <span onclick="scAuthTab('login')">Sign in</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT MODAL ═════════════════════════════════════════════════════════ -->
+<div id="sc-pay-modal">
+  <div class="sc-pay-box" style="position:relative">
+    <button class="sc-pay-close" onclick="scClosePayment()">✕</button>
+
+    <!-- Step 1: Choose plan + coin -->
+    <div id="sc-pay-step1">
+      <div class="sc-pay-title">SUBSCRIBE</div>
+      <div class="sc-pay-sub">Choose your plan and payment currency</div>
+      <div class="sc-pay-plans">
+        <div class="sc-pay-plan on" id="sc-pp-basic" onclick="scSelectPlan('basic')">
+          <div class="sc-pay-plan-n">Basic</div>
+          <div class="sc-pay-plan-p">$19</div>
+          <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace">/month · Markets</div>
+        </div>
+        <div class="sc-pay-plan" id="sc-pp-pro" onclick="scSelectPlan('pro')" style="border-color:rgba(139,92,246,0.3)">
+          <div class="sc-pay-plan-n" style="color:#a78bfa">Pro</div>
+          <div class="sc-pay-plan-p" style="color:#a78bfa">$49</div>
+          <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace">/month · Everything</div>
+        </div>
+      </div>
+      <div class="sc-pay-label">Pay with</div>
+      <div class="sc-coin-grid">
+        <div class="sc-coin on" data-coin="usdttrc20" onclick="scSelectCoin(this)">USDT<div style="font-size:9px;opacity:.5">TRC20</div></div>
+        <div class="sc-coin" data-coin="usdcerc20" onclick="scSelectCoin(this)">USDC<div style="font-size:9px;opacity:.5">ERC20</div></div>
+        <div class="sc-coin" data-coin="btc" onclick="scSelectCoin(this)">BTC<div style="font-size:9px;opacity:.5">Bitcoin</div></div>
+        <div class="sc-coin" data-coin="eth" onclick="scSelectCoin(this)">ETH<div style="font-size:9px;opacity:.5">Ethereum</div></div>
+        <div class="sc-coin" data-coin="sol" onclick="scSelectCoin(this)">SOL<div style="font-size:9px;opacity:.5">Solana</div></div>
+        <div class="sc-coin" data-coin="bnbbsc" onclick="scSelectCoin(this)">BNB<div style="font-size:9px;opacity:.5">BSC</div></div>
+      </div>
+      <button class="sc-pay-btn" onclick="scCreatePayment()" id="sc-pay-go-btn">GENERATE PAYMENT ADDRESS</button>
+      <div class="sc-auth-err" id="sc-pay-err" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Step 2: Send payment -->
+    <div id="sc-pay-step2" style="display:none">
+      <div class="sc-pay-title">SEND PAYMENT</div>
+      <div class="sc-pay-sub" id="sc-pay-step2-sub">Send exact amount to the address below</div>
+      <div class="sc-pay-amount" id="sc-pay-display-amount">—</div>
+      <div class="sc-pay-amount-sub" id="sc-pay-display-coin">—</div>
+      <div class="sc-addr-box" id="sc-pay-address" onclick="scCopyAddress()" title="Click to copy">—</div>
+      <div class="sc-addr-copy" id="sc-copy-hint">Click address to copy</div>
+      <div style="font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:16px;line-height:1.6">
+        Send <strong style="color:var(--t1)" id="sc-pay-exact">—</strong> to the address above.<br>
+        Your subscription activates automatically once the transaction confirms on-chain.
+      </div>
+      <div class="sc-pay-waiting">
+        <div class="sc-pay-waiting-dot"></div>
+        Waiting for payment confirmation...
+      </div>
+      <div style="margin-top:16px;text-align:center">
+        <button style="background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;text-decoration:underline" onclick="scCheckPayment()">I've sent it — check status</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Confirmed -->
+    <div id="sc-pay-step3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:3rem;margin-bottom:16px">✓</div>
+      <div class="sc-pay-title" style="color:var(--g)">PAYMENT CONFIRMED</div>
+      <div style="font-size:13px;color:var(--t3);margin:12px 0 24px;line-height:1.7">Your subscription is now active.<br>Welcome to Saving Capital.</div>
+      <button class="sc-pay-btn" onclick="scClosePayment();location.reload()">LAUNCH DASHBOARD</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ══ SAVING CAPITAL AUTH SYSTEM ══════════════════════════════════════════════
+
+let scUser = null;
+let scPayOrderId = null;
+let scPayPlan = 'basic';
+let scPayCoin = 'usdttrc20';
+let scPayCheckInterval = null;
+
+// ── Init ────────────────────────────────────────────────────────────────────
+async function scInit() {
+  const token = localStorage.getItem('sc_token');
+  if (!token) { scShowAuth(); return; }
+  try {
+    const r = await fetch('/auth/me', {headers:{'Authorization':'Bearer '+token}});
+    const d = await r.json();
+    if (d.authenticated) {
+      scUser = d;
+      scUpdateNav();
+      // Check URL for payment success
+      if (location.search.includes('payment=success')) scCheckPaymentFromUrl();
+    } else {
+      localStorage.removeItem('sc_token');
+      scShowAuth();
+    }
+  } catch(e) { scShowAuth(); }
+}
+
+// ── Auth UI ─────────────────────────────────────────────────────────────────
+function scShowAuth() {
+  document.getElementById('sc-auth-overlay').style.display = 'flex';
+}
+function scHideAuth() {
+  document.getElementById('sc-auth-overlay').style.display = 'none';
+}
+function scAuthTab(tab) {
+  document.querySelectorAll('.sc-auth-tab').forEach((t,i) => t.classList.toggle('on', (i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('sc-login-form').style.display  = tab==='login'  ? 'block' : 'none';
+  document.getElementById('sc-signup-form').style.display = tab==='signup' ? 'block' : 'none';
+}
+
+async function scDoLogin() {
+  const email = document.getElementById('sc-login-email').value.trim();
+  const pass  = document.getElementById('sc-login-pass').value;
+  const err   = document.getElementById('sc-login-err');
+  const btn   = document.getElementById('sc-login-btn');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'SIGNING IN...';
+  try {
+    const r = await fetch('/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Login failed');
+    localStorage.setItem('sc_token', d.token);
+    scUser = {authenticated:true, email:d.email, plan:d.plan, status:d.status};
+    scHideAuth();
+    scUpdateNav();
+  } catch(e) {
+    err.textContent = e.message; err.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'SIGN IN'; }
+}
+
+async function scDoSignup() {
+  const email = document.getElementById('sc-signup-email').value.trim();
+  const pass  = document.getElementById('sc-signup-pass').value;
+  const err   = document.getElementById('sc-signup-err');
+  const btn   = document.getElementById('sc-signup-btn');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'CREATING ACCOUNT...';
+  try {
+    const r = await fetch('/auth/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Signup failed');
+    localStorage.setItem('sc_token', d.token);
+    scUser = {authenticated:true, email:d.email, plan:'basic', status:'pending'};
+    scHideAuth();
+    scUpdateNav();
+    // Show payment modal immediately after signup
+    setTimeout(() => scOpenPayment(), 600);
+  } catch(e) {
+    err.textContent = e.message; err.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'CREATE ACCOUNT'; }
+}
+
+function scLogout() {
+  localStorage.removeItem('sc_token');
+  scUser = null;
+  scUpdateNav();
+  scShowAuth();
+  goPage('home');
+}
+
+// ── Nav update ───────────────────────────────────────────────────────────────
+function scUpdateNav() {
+  const areas = [
+    document.getElementById('sc-nav-auth-area'),
+    document.getElementById('sc-nav-auth-area-hp')
+  ];
+  if (!scUser) {
+    areas.forEach(a => { if(a) a.innerHTML = `<button class="sc-nav-btn subscribe" onclick="scShowAuth()">Sign In</button>`; });
+    return;
+  }
+  const isActive = scUser.status === 'active';
+  const planBadge = isActive
+    ? `<span class="sc-nav-plan ${scUser.plan}">${scUser.plan.toUpperCase()}</span>`
+    : `<span class="sc-nav-plan basic" style="color:var(--gold);border-color:rgba(245,158,11,0.3)">UNSUBSCRIBED</span>`;
+  const navHTML = `
+    <span class="sc-nav-user">${scUser.email}</span>
+    ${planBadge}
+    ${!isActive ? `<button class="sc-nav-btn subscribe" onclick="scOpenPayment()">Subscribe</button>` : ''}
+    <button class="sc-nav-btn logout" onclick="scLogout()">Logout</button>
+  `;
+  areas.forEach(a => { if(a) a.innerHTML = navHTML; });
+}
+
+// ── Page gating ──────────────────────────────────────────────────────────────
+function scCanAccess(page) {
+  if (!scUser) return false;
+  if (page === 'home' || page === 'markets') return true;  // all users
+  if (page === 'quant' || page === 'journal-page') {
+    return scUser.status === 'active' && scUser.plan === 'pro';
+  }
+  return true;
+}
+
+function scShowGate(page) {
+  const titles = { quant: 'Quant Tools', 'journal-page': 'Trading Journal' };
+  const el = document.getElementById('page-' + page);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="sc-pro-gate">
+      <div class="sc-gate-icon">🔒</div>
+      <div class="sc-gate-title">PRO REQUIRED</div>
+      <div class="sc-gate-sub">
+        ${titles[page]} is available on the Pro plan. Upgrade now to unlock all 7 institutional quant models, the AI trading journal, and MT5 auto-sync.
+      </div>
+      <div class="sc-gate-plans">
+        <div class="sc-gate-plan" onclick="scOpenPayment('basic')">
+          <div class="sc-gate-plan-name">Basic</div>
+          <div class="sc-gate-plan-price">$19</div>
+          <div class="sc-gate-plan-period">/month</div>
+          <div class="sc-gate-plan-feats">
+            <span>Live market prices</span>
+            <span>120+ assets</span>
+            <span>AI market analysis</span>
+            <span>Live news feed</span>
+          </div>
+        </div>
+        <div class="sc-gate-plan featured" onclick="scOpenPayment('pro')">
+          <div class="sc-gate-plan-name" style="color:#a78bfa">Pro</div>
+          <div class="sc-gate-plan-price" style="color:#a78bfa">$49</div>
+          <div class="sc-gate-plan-period">/month</div>
+          <div class="sc-gate-plan-feats" style="color:#c4b5fd">
+            <span>Everything in Basic</span>
+            <span>7 Quant models</span>
+            <span>AI Trading Journal</span>
+            <span>MT5 auto-sync</span>
+          </div>
+        </div>
+      </div>
+      <button class="sc-gate-cta" onclick="scOpenPayment('pro')">UPGRADE TO PRO →</button>
+    </div>
+  `;
+}
+
+// Patch goPage to enforce gates
+const _origGoPage = goPage;
+window.goPage = function(page) {
+  if (!scUser && page !== 'home') {
+    scShowAuth();
+    return;
+  }
+  if (!scCanAccess(page)) {
+    _origGoPage(page);
+    scShowGate(page);
+    return;
+  }
+  _origGoPage(page);
+};
+
+// ── Payment ──────────────────────────────────────────────────────────────────
+function scOpenPayment(plan) {
+  if (plan) scSelectPlan(plan);
+  document.getElementById('sc-pay-step1').style.display = 'block';
+  document.getElementById('sc-pay-step2').style.display = 'none';
+  document.getElementById('sc-pay-step3').style.display = 'none';
+  document.getElementById('sc-pay-err').style.display   = 'none';
+  document.getElementById('sc-pay-modal').classList.add('open');
+}
+function scClosePayment() {
+  document.getElementById('sc-pay-modal').classList.remove('open');
+  if (scPayCheckInterval) { clearInterval(scPayCheckInterval); scPayCheckInterval = null; }
+}
+function scSelectPlan(plan) {
+  scPayPlan = plan;
+  document.getElementById('sc-pp-basic').classList.toggle('on', plan==='basic');
+  document.getElementById('sc-pp-pro').classList.toggle('on', plan==='pro');
+}
+function scSelectCoin(el) {
+  document.querySelectorAll('.sc-coin').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  scPayCoin = el.dataset.coin;
+}
+async function scCreatePayment() {
+  const btn = document.getElementById('sc-pay-go-btn');
+  const err = document.getElementById('sc-pay-err');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'GENERATING...';
+  const token = localStorage.getItem('sc_token');
+  try {
+    const r = await fetch('/payments/create', {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({plan: scPayPlan, pay_currency: scPayCoin})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Payment creation failed');
+    scPayOrderId = d.order_id;
+    document.getElementById('sc-pay-display-amount').textContent = `${d.pay_amount} ${d.pay_currency.toUpperCase()}`;
+    document.getElementById('sc-pay-display-coin').textContent   = `≈ $${d.price_amount} USD`;
+    document.getElementById('sc-pay-exact').textContent          = `${d.pay_amount} ${d.pay_currency.toUpperCase()}`;
+    document.getElementById('sc-pay-address').textContent        = d.pay_address;
+    document.getElementById('sc-pay-step1').style.display = 'none';
+    document.getElementById('sc-pay-step2').style.display = 'block';
+    // Poll every 15s for confirmation
+    scPayCheckInterval = setInterval(scCheckPayment, 15000);
+    // Open NOWPayments hosted page as backup
+    if (d.invoice_url) window.open(d.invoice_url, '_blank');
+  } catch(e) {
+    err.textContent = e.message; err.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = 'GENERATE PAYMENT ADDRESS'; }
+}
+function scCopyAddress() {
+  const addr = document.getElementById('sc-pay-address').textContent;
+  navigator.clipboard.writeText(addr).then(() => {
+    document.getElementById('sc-copy-hint').textContent = '✓ Copied to clipboard!';
+    setTimeout(()=>{ document.getElementById('sc-copy-hint').textContent = 'Click address to copy'; }, 2500);
+  });
+}
+async function scCheckPayment() {
+  if (!scPayOrderId) return;
+  const token = localStorage.getItem('sc_token');
+  try {
+    const r = await fetch(`/payments/status/${scPayOrderId}`, {headers:{'Authorization':'Bearer '+token}});
+    const d = await r.json();
+    if (d.status === 'finished' || d.status === 'confirmed' || d.status === 'partially_paid') {
+      if (scPayCheckInterval) { clearInterval(scPayCheckInterval); scPayCheckInterval = null; }
+      document.getElementById('sc-pay-step2').style.display = 'none';
+      document.getElementById('sc-pay-step3').style.display = 'block';
+      // Refresh user session
+      const me = await fetch('/auth/me', {headers:{'Authorization':'Bearer '+token}});
+      const mu = await me.json();
+      if (mu.authenticated) { scUser = mu; scUpdateNav(); }
+    }
+  } catch(e) {}
+}
+async function scCheckPaymentFromUrl() {
+  // Triggered after redirect from NOWPayments success_url
+  const token = localStorage.getItem('sc_token');
+  const me = await fetch('/auth/me', {headers:{'Authorization':'Bearer '+token}});
+  const d  = await me.json();
+  if (d.authenticated) { scUser = d; scUpdateNav(); }
+  history.replaceState({}, '', '/');
+}
+
+// ── Start ────────────────────────────────────────────────────────────────────
+scInit();
+</script>
+
 </body>
 </html>
