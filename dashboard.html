@@ -7384,8 +7384,9 @@ setLang(localStorage.getItem('sc_lang')||'en');
 </div>
 
 <!-- ══ AUTH OVERLAY ══════════════════════════════════════════════════════════ -->
-<div id="sc-auth-overlay" style="display:none">
-  <div class="sc-auth-box">
+<div id="sc-auth-overlay" style="display:none" onclick="if(event.target===this)scHideAuth()">
+  <div class="sc-auth-box" style="position:relative">
+    <button onclick="scHideAuth()" style="position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--t4);width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--br)';this.style.color='var(--t4)'">✕</button>
     <div class="sc-auth-logo">SAVING <b>CAPITAL</b></div>
     <div class="sc-auth-sub">Market Intelligence Platform</div>
     <div class="sc-auth-tabs">
@@ -7773,6 +7774,15 @@ async function scCheckPaymentFromUrl() {
 
 // ── Start ────────────────────────────────────────────────────────────────────
 scInit();
+
+// Close auth modal on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('sc-auth-overlay');
+    if (overlay && overlay.style.display !== 'none') scHideAuth();
+    scClosePayment();
+  }
+});
 </script>
 
 </body>
