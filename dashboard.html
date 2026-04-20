@@ -2543,7 +2543,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
         Launch Platform
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <button class="hp-cta2" onclick="goPage('journal-page')" data-i18n="journalBtn">Trading Journal</button>
+      <button class="hp-cta2" onclick="scUser ? goPage('journal-page') : (scAuthTab('signup'),scShowAuth())" data-i18n="journalBtn">Trading Journal</button>
     </div>
 
     <div class="hp-tag-row">
@@ -7491,20 +7491,28 @@ let scPayCheckInterval = null;
 // ── Init ────────────────────────────────────────────────────────────────────
 async function scInit() {
   const token = localStorage.getItem('sc_token');
-  if (!token) { scShowAuth(); return; }
+  if (!token) {
+    // No token — show home page freely, no login modal
+    scUpdateNav();
+    return;
+  }
   try {
     const r = await fetch('/auth/me', {headers:{'Authorization':'Bearer '+token}});
     const d = await r.json();
     if (d.authenticated) {
       scUser = d;
       scUpdateNav();
-      // Check URL for payment success
       if (location.search.includes('payment=success')) scCheckPaymentFromUrl();
     } else {
       localStorage.removeItem('sc_token');
-      scShowAuth();
+      scUser = null;
+      scUpdateNav();
     }
-  } catch(e) { scShowAuth(); }
+  } catch(e) {
+    // Network error — still show home page, don't force login
+    scUser = null;
+    scUpdateNav();
+  }
 }
 
 // ── Auth UI ─────────────────────────────────────────────────────────────────
@@ -7583,7 +7591,10 @@ function scUpdateNav() {
     document.getElementById('sc-nav-auth-area-hp')
   ];
   if (!scUser) {
-    areas.forEach(a => { if(a) a.innerHTML = `<button class="sc-nav-btn subscribe" onclick="scShowAuth()">Sign In</button>`; });
+    areas.forEach(a => { if(a) a.innerHTML = `
+      <button class="sc-nav-btn" onclick="scShowAuth()" style="margin-right:6px">Sign In</button>
+      <button class="sc-nav-btn subscribe" onclick="scAuthTab('signup');scShowAuth()">Get Started</button>
+    `; });
     return;
   }
   const isActive = scUser.status === 'active';
@@ -7652,7 +7663,19 @@ function scShowGate(page) {
 // Patch goPage to enforce gates
 const _origGoPage = goPage;
 window.goPage = function(page) {
-  if (!scUser && page !== 'home') {
+  // Home page — always free, no login needed
+  if (page === 'home') {
+    _origGoPage(page);
+    return;
+  }
+  // Markets page — require login but not subscription
+  if (page === 'markets') {
+    if (!scUser) { scShowAuth(); return; }
+    _origGoPage(page);
+    return;
+  }
+  // Quant + Journal — require Pro subscription
+  if (!scUser) {
     scShowAuth();
     return;
   }
