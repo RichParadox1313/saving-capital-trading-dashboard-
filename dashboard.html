@@ -2363,24 +2363,45 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 /* ═══════════════════════════════════════
    AUTH — Login / Signup / Payment / Gate
 ═══════════════════════════════════════ */
-#sc-auth-overlay{position:fixed;inset:0;background:rgba(2,6,2,0.92);backdrop-filter:blur(12px);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px}
-.sc-auth-box{background:var(--s1);border:1px solid var(--br2);border-radius:20px;padding:36px 32px;width:100%;max-width:400px;position:relative}
-.sc-auth-logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:3px;color:var(--g);margin-bottom:2px}
+#sc-auth-overlay{position:fixed;inset:0;background:rgba(1,4,1,0.95);backdrop-filter:blur(20px);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px;animation:sc-fade-in .25s ease}
+@keyframes sc-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes sc-slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.sc-auth-box{display:flex;width:100%;max-width:820px;min-height:520px;border-radius:24px;overflow:hidden;border:1px solid var(--br2);animation:sc-slide-up .3s ease;position:relative;box-shadow:0 0 80px rgba(34,197,94,0.06)}
+.sc-auth-left{width:340px;flex-shrink:0;background:linear-gradient(160deg,#050f05 0%,#071207 50%,#040c04 100%);padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;border-right:1px solid var(--br)}
+.sc-auth-left::before{content:none}.sc-auth-left::after{content:none}
+.sc-auth-brand{position:relative;z-index:1}
+.sc-auth-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:4px;color:var(--g);line-height:1;margin-bottom:4px}
 .sc-auth-logo b{color:var(--t1);font-weight:400}
-.sc-auth-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:28px}
+.sc-auth-tagline{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace}
+.sc-auth-features{position:relative;z-index:1;margin:32px 0}
+.sc-auth-feat{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px}
+.sc-auth-feat-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px rgba(34,197,94,0.5)}
+.sc-auth-feat-text{font-size:12px;color:var(--t3);line-height:1.5}
+.sc-auth-feat-text strong{color:var(--t1);font-weight:500;display:block;margin-bottom:1px;font-size:13px}
+.sc-auth-stats{display:flex;gap:20px;position:relative;z-index:1;padding-top:20px;border-top:1px solid var(--br)}
+.sc-auth-stat-n{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--g)}
+.sc-auth-stat-l{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-top:1px}
+.sc-auth-right{flex:1;background:var(--s1);padding:40px 36px;display:flex;flex-direction:column;justify-content:center;position:relative}
+.sc-auth-right-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:3px;color:var(--t1);margin-bottom:4px}
+.sc-auth-right-sub{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:28px}
 .sc-auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:3px}
-.sc-auth-tab{flex:1;padding:9px;border:none;background:transparent;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
-.sc-auth-tab.on{background:var(--g);color:#030704;font-weight:500}
+.sc-auth-tab{flex:1;padding:10px;border:none;background:transparent;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.sc-auth-tab.on{background:var(--g);color:#030704;font-weight:600}
 .sc-auth-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:7px;display:block}
-.sc-auth-input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:9px;color:var(--t1);font-family:'DM Mono',monospace;font-size:13px;padding:12px 14px;outline:none;margin-bottom:14px;transition:border .2s;box-sizing:border-box}
-.sc-auth-input:focus{border-color:var(--br3)}
-.sc-auth-btn{width:100%;padding:14px;background:var(--g);border:none;border-radius:10px;color:#030704;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:4px}
-.sc-auth-btn:hover{background:#16a34a;transform:translateY(-1px)}
-.sc-auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.sc-auth-err{font-size:11px;color:var(--r);margin-top:10px;display:none;font-family:'DM Mono',monospace;text-align:center}
-.sc-auth-footer{text-align:center;margin-top:16px;font-size:10px;color:var(--t4);font-family:'DM Mono',monospace}
-.sc-auth-footer span{color:var(--g);cursor:pointer}
+.sc-auth-input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:10px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;padding:13px 16px;outline:none;margin-bottom:14px;transition:all .2s;box-sizing:border-box}
+.sc-auth-input:focus{border-color:var(--br3);background:var(--s3)}
+.sc-auth-input::placeholder{color:var(--t4)}
+.sc-auth-btn{width:100%;padding:15px;background:var(--g);border:none;border-radius:11px;color:#030704;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px}
+.sc-auth-btn:hover{background:#16a34a;transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,0.2)}
+.sc-auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.sc-auth-err{font-size:11px;color:var(--r);margin-top:10px;display:none;font-family:'DM Mono',monospace;text-align:center;padding:8px;background:var(--rdim);border-radius:6px;border:1px solid rgba(239,68,68,0.15)}
+.sc-auth-footer{text-align:center;margin-top:18px;font-size:11px;color:var(--t4);font-family:'DM Sans',sans-serif}
+.sc-auth-footer span{color:var(--g);cursor:pointer;font-weight:500}
 .sc-auth-footer span:hover{text-decoration:underline}
+.sc-auth-divider{display:flex;align-items:center;gap:12px;margin:6px 0 18px}
+.sc-auth-divider::before,.sc-auth-divider::after{content:'';flex:1;height:1px;background:var(--br)}
+.sc-auth-divider span{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:1px}
+@media(max-width:640px){.sc-auth-left{display:none}.sc-auth-box{max-width:420px}}
 
 /* NAV AUTH AREA */
 .sc-nav-auth{display:flex;align-items:center;gap:10px}
@@ -7385,32 +7406,90 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- ══ AUTH OVERLAY ══════════════════════════════════════════════════════════ -->
 <div id="sc-auth-overlay" style="display:none" onclick="if(event.target===this)scHideAuth()">
-  <div class="sc-auth-box" style="position:relative">
-    <button onclick="scHideAuth()" style="position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--t4);width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--br)';this.style.color='var(--t4)'">✕</button>
-    <div class="sc-auth-logo">SAVING <b>CAPITAL</b></div>
-    <div class="sc-auth-sub">Market Intelligence Platform</div>
-    <div class="sc-auth-tabs">
-      <button class="sc-auth-tab on" onclick="scAuthTab('login')">Sign In</button>
-      <button class="sc-auth-tab" onclick="scAuthTab('signup')">Create Account</button>
+  <div class="sc-auth-box">
+
+    <!-- LEFT PANEL -->
+    <div class="sc-auth-left">
+      <canvas id="sc-auth-canvas" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.25;pointer-events:none;z-index:0"></canvas>
+      <div class="sc-auth-brand" style="position:relative;z-index:1">
+        <div class="sc-auth-logo">SAVING <b>CAPITAL</b></div>
+        <div class="sc-auth-tagline">Market Intelligence Platform</div>
+      </div>
+      <div class="sc-auth-features" style="position:relative;z-index:1">
+        <div class="sc-auth-feat">
+          <div class="sc-auth-feat-dot"></div>
+          <div class="sc-auth-feat-text"><strong>120+ Live Assets</strong>Crypto, Forex, Stocks &amp; Commodities in real time</div>
+        </div>
+        <div class="sc-auth-feat">
+          <div class="sc-auth-feat-dot"></div>
+          <div class="sc-auth-feat-text"><strong>Wall Street Quant AI</strong>Bridgewater, RenTech &amp; Citadel frameworks</div>
+        </div>
+        <div class="sc-auth-feat">
+          <div class="sc-auth-feat-dot"></div>
+          <div class="sc-auth-feat-text"><strong>7 Institutional Models</strong>GARCH, ARIMA, Neural Net, Kalman &amp; more</div>
+        </div>
+        <div class="sc-auth-feat">
+          <div class="sc-auth-feat-dot"></div>
+          <div class="sc-auth-feat-text"><strong>AI Trading Journal</strong>MT5 sync · P&amp;L tracking · Psychology tags</div>
+        </div>
+      </div>
+      <div class="sc-auth-stats" style="position:relative;z-index:1">
+        <div><div class="sc-auth-stat-n">120+</div><div class="sc-auth-stat-l">Assets</div></div>
+        <div><div class="sc-auth-stat-n">$19</div><div class="sc-auth-stat-l">From /mo</div></div>
+        <div><div class="sc-auth-stat-n">24/7</div><div class="sc-auth-stat-l">Live data</div></div>
+      </div>
     </div>
-    <div id="sc-login-form">
-      <label class="sc-auth-label">Email</label>
-      <input class="sc-auth-input" id="sc-login-email" type="email" placeholder="you@email.com" autocomplete="email">
-      <label class="sc-auth-label">Password</label>
-      <input class="sc-auth-input" id="sc-login-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')scDoLogin()">
-      <button class="sc-auth-btn" onclick="scDoLogin()" id="sc-login-btn">SIGN IN</button>
-      <div class="sc-auth-err" id="sc-login-err"></div>
-      <div class="sc-auth-footer">No account? <span onclick="scAuthTab('signup')">Create one free</span></div>
+
+    <!-- RIGHT PANEL -->
+    <div class="sc-auth-right">
+      <button onclick="scHideAuth()" style="position:absolute;top:16px;right:16px;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--t4);width:30px;height:30px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.borderColor='var(--r)';this.style.color='var(--r)'" onmouseout="this.style.borderColor='var(--br)';this.style.color='var(--t4)'">✕</button>
+
+      <div id="sc-login-panel">
+        <div class="sc-auth-right-title">WELCOME BACK</div>
+        <div class="sc-auth-right-sub">Sign in to your account</div>
+        <div class="sc-auth-tabs">
+          <button class="sc-auth-tab on" onclick="scAuthTab('login')">Sign In</button>
+          <button class="sc-auth-tab" onclick="scAuthTab('signup')">Create Account</button>
+        </div>
+        <div id="sc-login-form">
+          <label class="sc-auth-label">Email Address</label>
+          <input class="sc-auth-input" id="sc-login-email" type="email" placeholder="you@email.com" autocomplete="email">
+          <label class="sc-auth-label">Password</label>
+          <input class="sc-auth-input" id="sc-login-pass" type="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')scDoLogin()">
+          <button class="sc-auth-btn" onclick="scDoLogin()" id="sc-login-btn">
+            <span>SIGN IN</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="sc-auth-err" id="sc-login-err"></div>
+          <div class="sc-auth-footer">Don't have an account? <span onclick="scAuthTab('signup')">Create one free →</span></div>
+        </div>
+      </div>
+
+      <div id="sc-signup-panel" style="display:none">
+        <div class="sc-auth-right-title">GET STARTED</div>
+        <div class="sc-auth-right-sub">Create your free account today</div>
+        <div class="sc-auth-tabs">
+          <button class="sc-auth-tab" onclick="scAuthTab('login')">Sign In</button>
+          <button class="sc-auth-tab on" onclick="scAuthTab('signup')">Create Account</button>
+        </div>
+        <div id="sc-signup-form">
+          <label class="sc-auth-label">Email Address</label>
+          <input class="sc-auth-input" id="sc-signup-email" type="email" placeholder="you@email.com" autocomplete="email">
+          <label class="sc-auth-label">Password <span style="color:var(--t4);font-size:9px">(min 8 characters)</span></label>
+          <input class="sc-auth-input" id="sc-signup-pass" type="password" placeholder="Create a strong password" autocomplete="new-password" onkeydown="if(event.key==='Enter')scDoSignup()">
+          <button class="sc-auth-btn" onclick="scDoSignup()" id="sc-signup-btn">
+            <span>CREATE FREE ACCOUNT</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="sc-auth-err" id="sc-signup-err"></div>
+          <div class="sc-auth-footer" style="margin-top:12px">
+            By signing up you agree to our terms of service.<br>
+            Already have an account? <span onclick="scAuthTab('login')">Sign in →</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="sc-signup-form" style="display:none">
-      <label class="sc-auth-label">Email</label>
-      <input class="sc-auth-input" id="sc-signup-email" type="email" placeholder="you@email.com" autocomplete="email">
-      <label class="sc-auth-label">Password (min 8 chars)</label>
-      <input class="sc-auth-input" id="sc-signup-pass" type="password" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')scDoSignup()">
-      <button class="sc-auth-btn" onclick="scDoSignup()" id="sc-signup-btn">CREATE ACCOUNT</button>
-      <div class="sc-auth-err" id="sc-signup-err"></div>
-      <div class="sc-auth-footer">Already have an account? <span onclick="scAuthTab('login')">Sign in</span></div>
-    </div>
+
   </div>
 </div>
 
@@ -7524,9 +7603,10 @@ function scHideAuth() {
   document.getElementById('sc-auth-overlay').style.display = 'none';
 }
 function scAuthTab(tab) {
-  document.querySelectorAll('.sc-auth-tab').forEach((t,i) => t.classList.toggle('on', (i===0&&tab==='login')||(i===1&&tab==='signup')));
-  document.getElementById('sc-login-form').style.display  = tab==='login'  ? 'block' : 'none';
-  document.getElementById('sc-signup-form').style.display = tab==='signup' ? 'block' : 'none';
+  const loginPanel  = document.getElementById('sc-login-panel');
+  const signupPanel = document.getElementById('sc-signup-panel');
+  if (loginPanel)  loginPanel.style.display  = tab==='login'  ? 'block' : 'none';
+  if (signupPanel) signupPanel.style.display = tab==='signup' ? 'block' : 'none';
 }
 
 async function scDoLogin() {
@@ -7783,6 +7863,165 @@ document.addEventListener('keydown', function(e) {
     scClosePayment();
   }
 });
+</script>
+
+
+<script>
+(function() {
+  function initAuthCanvas() {
+    const canvas = document.getElementById('sc-auth-canvas');
+    if (!canvas || !window.THREE) return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.z = 4;
+
+    // Floating particles — green glowing dots
+    const particleCount = 120;
+    const positions = new Float32Array(particleCount * 3);
+    const sizes     = new Float32Array(particleCount);
+    const speeds    = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 8;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 8;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+      sizes[i]   = Math.random() * 3 + 1;
+      speeds.push({
+        x: (Math.random() - 0.5) * 0.003,
+        y: (Math.random() - 0.5) * 0.003,
+        z: (Math.random() - 0.5) * 0.002,
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    pGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    const pMat = new THREE.PointsMaterial({
+      color: 0x22c55e,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.35,
+      sizeAttenuation: true,
+    });
+
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    // Wireframe dodecahedron — slowly rotating
+    const geoD = new THREE.DodecahedronGeometry(1.1, 0);
+    const matD = new THREE.MeshBasicMaterial({
+      color: 0x22c55e,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.04,
+    });
+    const dodec = new THREE.Mesh(geoD, matD);
+    scene.add(dodec);
+
+    // Inner icosahedron — counter-rotating
+    const geoI = new THREE.IcosahedronGeometry(0.65, 0);
+    const matI = new THREE.MeshBasicMaterial({
+      color: 0x4ade80,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.06,
+    });
+    const icosa = new THREE.Mesh(geoI, matI);
+    scene.add(icosa);
+
+    // Connecting lines between nearby particles
+    const linePositions = [];
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x22c55e,
+      transparent: true,
+      opacity: 0.03,
+    });
+
+    // Static connection lines (a few fixed ones for performance)
+    for (let i = 0; i < 18; i++) {
+      const a = Math.floor(Math.random() * particleCount);
+      const b = Math.floor(Math.random() * particleCount);
+      const lg = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(positions[a*3], positions[a*3+1], positions[a*3+2]),
+        new THREE.Vector3(positions[b*3], positions[b*3+1], positions[b*3+2])
+      ]);
+      scene.add(new THREE.Line(lg, lineMat));
+    }
+
+    function resize() {
+      const w = canvas.parentElement?.clientWidth  || 340;
+      const h = canvas.parentElement?.clientHeight || 520;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+
+    let frame = 0;
+    let animId;
+    function animate() {
+      animId = requestAnimationFrame(animate);
+      frame++;
+
+      // Rotate geometry
+      dodec.rotation.x += 0.002;
+      dodec.rotation.y += 0.003;
+      icosa.rotation.x -= 0.003;
+      icosa.rotation.y -= 0.002;
+
+      // Drift particles
+      const pos = pGeo.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        speeds[i].pulse += 0.02;
+        pos[i*3]   += speeds[i].x;
+        pos[i*3+1] += speeds[i].y;
+        pos[i*3+2] += speeds[i].z;
+        // Wrap around bounds
+        if (Math.abs(pos[i*3])   > 4) speeds[i].x *= -1;
+        if (Math.abs(pos[i*3+1]) > 4) speeds[i].y *= -1;
+        if (Math.abs(pos[i*3+2]) > 2) speeds[i].z *= -1;
+      }
+      pGeo.attributes.position.needsUpdate = true;
+
+      // Pulse opacity
+      pMat.opacity = 0.2 + Math.sin(frame * 0.02) * 0.08;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Stop when modal closes, restart when opens
+    const observer = new MutationObserver(() => {
+      const overlay = document.getElementById('sc-auth-overlay');
+      if (!overlay) return;
+      if (overlay.style.display === 'none') {
+        cancelAnimationFrame(animId);
+      } else {
+        resize();
+        animate();
+      }
+    });
+    const overlay = document.getElementById('sc-auth-overlay');
+    if (overlay) observer.observe(overlay, { attributes: true, attributeFilter: ['style'] });
+
+    window.addEventListener('resize', resize);
+  }
+
+  // Wait for Three.js + DOM
+  if (document.readyState === 'complete') {
+    setTimeout(initAuthCanvas, 300);
+  } else {
+    window.addEventListener('load', () => setTimeout(initAuthCanvas, 300));
+  }
+})();
 </script>
 
 </body>
