@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp, anthropic
+from auth_payments import register_auth_routes, get_db, close_db
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -23,16 +24,31 @@ from fastapi.middleware.gzip import GZipMiddleware
 app = FastAPI()
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+register_auth_routes(app)
 
 @app.on_event("startup")
 async def startup_event():
-    print(f"[STARTUP] Dashboard path: {DASHBOARD_PATH}, exists: {DASHBOARD_PATH.exists()}")
+    # Step 1: Connect database (auth/payments system)
+    try:
+        await get_db()
+        print("[STARTUP] Database connected")
+    except Exception as e:
+        print(f"[STARTUP] WARNING: Database not available: {e}")
+    # Step 2: Load dashboard HTML
+    global _DASHBOARD_HTML
+    try:
+        _DASHBOARD_HTML = DASHBOARD_PATH.read_text(encoding="utf-8")
+        print(f"[STARTUP] Dashboard loaded: {len(_DASHBOARD_HTML):,} bytes")
+    except Exception as e:
+        print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
+        _DASHBOARD_HTML = ""
+    # Step 3: Pre-load market prices
     print("[STARTUP] Pre-loading all prices...")
     try:
         data = await load_all_prices()
         price_cache.update({"data": data, "ts": time.time()})
         loaded = sum(1 for v in data.values() if v.get("price"))
-        print(f"[STARTUP] Done — {loaded}/120+ assets loaded")
+        print(f"[STARTUP] Done — {loaded} assets loaded")
     except Exception as e:
         print(f"[STARTUP] Price pre-load failed: {e}")
 
@@ -177,17 +193,17 @@ YAHOO_ASSETS = [
     {"yahoo":"USDAED=X",  "id":"USDAED",  "name":"USD/AED",      "sym":"USDAED",  "tab":"forex", "desc":"Dollar vs UAE Dirham"},
     {"yahoo":"USDSAR=X",  "id":"USDSAR",  "name":"USD/SAR",      "sym":"USDSAR",  "tab":"forex", "desc":"Dollar vs Saudi Riyal"},
     # ── Major Indexes ──────────────────────────────────────────────────────────
-    {"yahoo":"^GSPC",     "id":"SPX",     "name":"S&P 500",      "sym":"SPX",     "tab":"indexes", "desc":"US Large Cap Index"},
-    {"yahoo":"^DJI",      "id":"DJI",     "name":"Dow Jones",    "sym":"DJI",     "tab":"indexes", "desc":"US Blue Chip Index"},
-    {"yahoo":"^IXIC",     "id":"NASDAQ",  "name":"NASDAQ",       "sym":"NASDAQ",  "tab":"indexes", "desc":"US Tech Index"},
-    {"yahoo":"^RUT",      "id":"RUT",     "name":"Russell 2000", "sym":"RUT",     "tab":"indexes", "desc":"US Small Cap Index"},
-    {"yahoo":"^VIX",      "id":"VIX",     "name":"VIX",          "sym":"VIX",     "tab":"indexes", "desc":"Volatility Index"},
-    {"yahoo":"^FTSE",     "id":"FTSE",    "name":"FTSE 100",     "sym":"FTSE",    "tab":"indexes", "desc":"UK Index"},
-    {"yahoo":"^GDAXI",    "id":"DAX",     "name":"DAX",          "sym":"DAX",     "tab":"indexes", "desc":"German Index"},
-    {"yahoo":"^FCHI",     "id":"CAC",     "name":"CAC 40",       "sym":"CAC",     "tab":"indexes", "desc":"French Index"},
-    {"yahoo":"^N225",     "id":"NIKKEI",  "name":"Nikkei 225",   "sym":"NIKKEI",  "tab":"indexes", "desc":"Japan Index"},
-    {"yahoo":"^HSI",      "id":"HSI",     "name":"Hang Seng",    "sym":"HSI",     "tab":"indexes", "desc":"Hong Kong Index"},
-    {"yahoo":"000001.SS", "id":"SSE",     "name":"Shanghai",     "sym":"SSE",     "tab":"indexes", "desc":"China Index"},
+    {"yahoo":"^GSPC",     "id":"SPX",     "name":"S&P 500",      "sym":"SPX",     "tab":"stocks", "desc":"US Large Cap Index"},
+    {"yahoo":"^DJI",      "id":"DJI",     "name":"Dow Jones",    "sym":"DJI",     "tab":"stocks", "desc":"US Blue Chip Index"},
+    {"yahoo":"^IXIC",     "id":"NASDAQ",  "name":"NASDAQ",       "sym":"NASDAQ",  "tab":"stocks", "desc":"US Tech Index"},
+    {"yahoo":"^RUT",      "id":"RUT",     "name":"Russell 2000", "sym":"RUT",     "tab":"stocks", "desc":"US Small Cap Index"},
+    {"yahoo":"^VIX",      "id":"VIX",     "name":"VIX",          "sym":"VIX",     "tab":"stocks", "desc":"Volatility Index"},
+    {"yahoo":"^FTSE",     "id":"FTSE",    "name":"FTSE 100",     "sym":"FTSE",    "tab":"stocks", "desc":"UK Index"},
+    {"yahoo":"^GDAXI",    "id":"DAX",     "name":"DAX",          "sym":"DAX",     "tab":"stocks", "desc":"German Index"},
+    {"yahoo":"^FCHI",     "id":"CAC",     "name":"CAC 40",       "sym":"CAC",     "tab":"stocks", "desc":"French Index"},
+    {"yahoo":"^N225",     "id":"NIKKEI",  "name":"Nikkei 225",   "sym":"NIKKEI",  "tab":"stocks", "desc":"Japan Index"},
+    {"yahoo":"^HSI",      "id":"HSI",     "name":"Hang Seng",    "sym":"HSI",     "tab":"stocks", "desc":"Hong Kong Index"},
+    {"yahoo":"000001.SS", "id":"SSE",     "name":"Shanghai",     "sym":"SSE",     "tab":"stocks", "desc":"China Index"},
     # ── Top 30 Stocks by Market Cap ────────────────────────────────────────────
     {"yahoo":"AAPL",      "id":"AAPL",    "name":"Apple",        "sym":"AAPL",    "tab":"stocks", "desc":"Consumer Tech"},
     {"yahoo":"NVDA",      "id":"NVDA",    "name":"NVIDIA",       "sym":"NVDA",    "tab":"stocks", "desc":"AI & Semiconductors"},
@@ -1921,12 +1937,12 @@ async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
     return JSONResponse({"ok": True})
 
 @app.put("/api/journal/{trade_id}")
-async def update_trade(trade_id: str, trade: TradeEntry, user_id: str = ""):
-    trades = load_user_journal(user_id)
+async def update_trade(trade_id: str, trade: TradeEntry):
+    trades = load_journal()
     for i, t in enumerate(trades):
         if t["id"] == trade_id:
             trades[i] = trade.dict()
-            save_user_journal(trades, user_id)
+            save_journal(trades)
             return JSONResponse({"ok": True})
     raise HTTPException(404, "Trade not found")
 
@@ -2044,7 +2060,7 @@ Return ONLY valid JSON (no markdown, no backticks):
 async def delete_trade(trade_id: str, user_id: str = ""):
     trades = load_user_journal(user_id)
     trades = [t for t in trades if t["id"] != trade_id]
-    save_user_journal(trades, user_id)
+    save_journal(trades)
     return JSONResponse({"ok": True})
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
@@ -2525,91 +2541,6 @@ async def tools_analyse(req: ToolRequest, request: Request):
         raise HTTPException(500, f"Tool analysis error: {e}")
 
 
-@app.get("/api/closes/{asset_id}")
-async def get_closes(asset_id: str, bars: int = 60):
-    """
-    Return extended price history (closes) for quant tool computations.
-    Tries to return 60-200 bars depending on asset type.
-    Crypto: Binance klines. Others: from cache closes + Stooq fallback.
-    """
-    bars = min(max(bars, 20), 200)
-
-    # Check cache first
-    cached = price_cache["data"].get(asset_id, {})
-    cached_closes = cached.get("closes", [])
-
-    # Crypto — fetch from Binance for longer history
-    BINANCE_MAP = {
-        "bitcoin":"BTCUSDT","ethereum":"ETHUSDT","ripple":"XRPUSDT",
-        "solana":"SOLUSDT","binancecoin":"BNBUSDT","dogecoin":"DOGEUSDT",
-        "cardano":"ADAUSDT","avalanche-2":"AVAXUSDT","chainlink":"LINKUSDT",
-        "polkadot":"DOTUSDT","the-open-network":"TONUSDT","shiba-inu":"SHIBUSDT",
-        "litecoin":"LTCUSDT","tron":"TRXUSDT","pol-polygon-ecosystem-token":"POLUSDT",
-        "uniswap":"UNIUSDT","stellar":"XLMUSDT","near":"NEARUSDT",
-        "arbitrum":"ARBUSDT","aptos":"APTUSDT","internet-computer":"ICPUSDT",
-        "filecoin":"FILUSDT","render-token":"RENDERUSDT","injective-protocol":"INJUSDT",
-        "monero":"XMRUSDT","sui":"SUIUSDT","pepe":"PEPEUSDT",
-        "fetch-ai":"FETUSDT","sei-network":"SEIUSDT","bittensor":"TAOUSDT",
-    }
-
-    if asset_id in BINANCE_MAP:
-        try:
-            sym = BINANCE_MAP[asset_id]
-            # 8h candles, limit=bars*3 → gives bars trading days worth of data
-            async with aiohttp.ClientSession() as s:
-                async with s.get(
-                    "https://api.binance.com/api/v3/klines",
-                    params={"symbol": sym, "interval": "8h", "limit": bars * 3},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as r:
-                    if r.status == 200:
-                        klines = await r.json()
-                        closes = [round(float(k[4]), 8) for k in klines if k[4]]
-                        if closes:
-                            # Update the cache too
-                            if asset_id in price_cache["data"]:
-                                price_cache["data"][asset_id]["closes"] = closes[-60:]
-                            return JSONResponse({"id": asset_id, "closes": closes, "bars": len(closes), "source": "binance"})
-        except Exception as e:
-            print(f"  /closes/{asset_id} Binance error: {e}")
-
-    # Non-crypto — try Stooq for extended history
-    yahoo_asset = next((a for a in YAHOO_ASSETS if a["id"] == asset_id), None)
-    if yahoo_asset:
-        stooq_sym = _yahoo_to_stooq(yahoo_asset["yahoo"])
-        if stooq_sym:
-            try:
-                d2 = datetime.utcnow().strftime("%Y%m%d")
-                d1 = (datetime.utcnow() - timedelta(days=max(bars * 2, 120))).strftime("%Y%m%d")
-                url = f"https://stooq.com/q/d/l/?s={stooq_sym}&d1={d1}&d2={d2}&i=d"
-                jar = aiohttp.CookieJar(unsafe=True)
-                async with aiohttp.ClientSession(cookie_jar=jar) as s:
-                    async with s.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=TIMEOUT_SLOW) as r:
-                        if r.status == 200:
-                            text = await r.text()
-                            lines = text.strip().split("\n")[1:]
-                            closes = []
-                            for line in lines:
-                                cols = line.split(",")
-                                if len(cols) >= 5 and cols[4] and cols[4] not in ("null", "N/A", ""):
-                                    try:
-                                        closes.append(round(float(cols[4]), 6))
-                                    except:
-                                        pass
-                            if closes:
-                                if asset_id in price_cache["data"]:
-                                    price_cache["data"][asset_id]["closes"] = closes[-60:]
-                                return JSONResponse({"id": asset_id, "closes": closes, "bars": len(closes), "source": "stooq"})
-            except Exception as e:
-                print(f"  /closes/{asset_id} Stooq error: {e}")
-
-    # Fallback — return whatever we have in cache
-    if cached_closes:
-        return JSONResponse({"id": asset_id, "closes": cached_closes, "bars": len(cached_closes), "source": "cache"})
-
-    raise HTTPException(404, f"No price history available for {asset_id}")
-
-
 @app.get("/img/{filename}")
 async def serve_img(filename: str):
     import re
@@ -2620,17 +2551,14 @@ async def serve_img(filename: str):
         raise HTTPException(404, "Image not found")
     return FileResponse(p, headers={"Cache-Control": "public, max-age=86400"})
 
-# Load dashboard HTML at startup into memory so it survives if file gets wiped
+# Dashboard HTML is loaded in startup_event above
 _DASHBOARD_HTML: str = ""
-@app.on_event("startup")
-async def load_dashboard():
-    global _DASHBOARD_HTML
-    try:
-        _DASHBOARD_HTML = DASHBOARD_PATH.read_text(encoding="utf-8")
-        print(f"[STARTUP] Dashboard loaded: {len(_DASHBOARD_HTML):,} bytes")
-    except Exception as e:
-        print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
-        _DASHBOARD_HTML = ""
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_db()
+    print("[SHUTDOWN] Database pool closed")
+
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     if _DASHBOARD_HTML:
