@@ -3,3 +3,5 @@ uvicorn==0.30.6
 aiohttp==3.9.5
 anthropic==0.40.0
 python-dotenv==1.0.1
+asyncpg==0.29.0
+python-multipart==0.0.9
