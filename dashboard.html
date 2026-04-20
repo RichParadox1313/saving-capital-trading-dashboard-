@@ -7569,10 +7569,31 @@ let scPayCoin = 'usdttrc20';
 let scPayCheckInterval = null;
 
 // ── Init ────────────────────────────────────────────────────────────────────
+// ── Admin bypass key — change this to something only you know ──────────────
+const SC_ADMIN_BYPASS_KEY = 'savingcapital_owner_2025';
+
 async function scInit() {
+  // Check for admin bypass — ?admin=KEY in URL or stored in localStorage
+  const urlParams  = new URLSearchParams(location.search);
+  const bypassKey  = urlParams.get('admin') || localStorage.getItem('sc_admin_bypass');
+  if (bypassKey === SC_ADMIN_BYPASS_KEY) {
+    localStorage.setItem('sc_admin_bypass', SC_ADMIN_BYPASS_KEY);
+    // Remove key from URL bar so it's not visible
+    if (urlParams.get('admin')) history.replaceState({}, '', location.pathname);
+    scUser = {
+      authenticated: true,
+      email: 'owner@savingcapital.tech',
+      plan: 'pro',
+      status: 'active',
+      is_owner: true
+    };
+    scUpdateNav();
+    console.log('[SC] Owner bypass active — full Pro access');
+    return;
+  }
+
   const token = localStorage.getItem('sc_token');
   if (!token) {
-    // No token — show home page freely, no login modal
     scUpdateNav();
     return;
   }
@@ -7589,11 +7610,13 @@ async function scInit() {
       scUpdateNav();
     }
   } catch(e) {
-    // Network error — still show home page, don't force login
     scUser = null;
     scUpdateNav();
   }
 }
+
+// Logout bypass — clear it too
+const _origLogout = typeof scLogout !== 'undefined' ? scLogout : null;
 
 // ── Auth UI ─────────────────────────────────────────────────────────────────
 function scShowAuth() {
@@ -7659,6 +7682,7 @@ async function scDoSignup() {
 
 function scLogout() {
   localStorage.removeItem('sc_token');
+  localStorage.removeItem('sc_admin_bypass');
   scUser = null;
   scUpdateNav();
   scShowAuth();
@@ -7679,14 +7703,17 @@ function scUpdateNav() {
     return;
   }
   const isActive = scUser.status === 'active';
-  const planBadge = isActive
-    ? `<span class="sc-nav-plan ${scUser.plan}">${scUser.plan.toUpperCase()}</span>`
-    : `<span class="sc-nav-plan basic" style="color:var(--gold);border-color:rgba(245,158,11,0.3)">UNSUBSCRIBED</span>`;
+  const isOwner  = scUser.is_owner === true;
+  const planBadge = isOwner
+    ? `<span class="sc-nav-plan pro" style="background:rgba(245,158,11,0.15);color:var(--gold);border-color:rgba(245,158,11,0.35)">OWNER</span>`
+    : isActive
+      ? `<span class="sc-nav-plan ${scUser.plan}">${scUser.plan.toUpperCase()}</span>`
+      : `<span class="sc-nav-plan basic" style="color:var(--gold);border-color:rgba(245,158,11,0.3)">UNSUBSCRIBED</span>`;
   const navHTML = `
     <span class="sc-nav-user">${scUser.email}</span>
     ${planBadge}
-    ${!isActive ? `<button class="sc-nav-btn subscribe" onclick="scOpenPayment()">Subscribe</button>` : ''}
-    <button class="sc-nav-btn logout" onclick="scLogout()">Logout</button>
+    ${!isActive && !isOwner ? `<button class="sc-nav-btn subscribe" onclick="scOpenPayment()">Subscribe</button>` : ''}
+    <button class="sc-nav-btn logout" onclick="scLogout()">${isOwner ? 'Exit Owner Mode' : 'Logout'}</button>
   `;
   areas.forEach(a => { if(a) a.innerHTML = navHTML; });
 }
