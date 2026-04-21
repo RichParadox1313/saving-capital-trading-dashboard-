@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Saving Capital — Market Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -2600,7 +2600,140 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-mt5-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);flex-shrink:0}
 .jv2-mt5-card{background:var(--s2);border:1px solid var(--br2);border-radius:12px;padding:14px 18px;margin-bottom:16px}
 
+
+/* ═══════════════════════════════════════════════
+   iOS SAFARI FIXES
+═══════════════════════════════════════════════ */
+
+/* Fix 1: Prevent iOS zoom on input focus */
+input, select, textarea {
+  font-size: 16px !important;
+}
+/* But keep mono font inputs looking right */
+.jinput, .jselect, .sc-auth-input, .mt5-form input, .mt5-form select,
+.jv2-search, .jv2-filter-sel {
+  font-size: 16px !important;
+}
+
+/* Fix 2: Safe area insets for notch/home bar */
+body {
+  padding-bottom: max(52px, env(safe-area-inset-bottom, 52px));
+}
+nav, .hp-nav {
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+}
+.hp-strip, .news-ticker {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Fix 3: Prevent rubber-band overscroll showing white */
+html {
+  background: #030704;
+  overscroll-behavior: none;
+}
+
+/* Fix 4: Fix 100vh on iOS (address bar eats space) */
+.page, .jv2-wrap {
+  min-height: -webkit-fill-available;
+}
+body {
+  min-height: -webkit-fill-available;
+}
+
+/* Fix 5: Tap highlight removal */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix 6: Smooth scrolling on iOS */
+.jv2-tabs, .tabs, .jtable-wrap, .jv2-table-wrap, .jv2-eco-table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix 7: Fix backdrop-filter on older iOS */
+nav, .hp-nav, .jv2-topbar, #sc-auth-overlay, #sc-pay-modal {
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Fix 8: Fix position:sticky on iOS */
+nav { position: -webkit-sticky; position: sticky; }
+.jv2-topbar { position: -webkit-sticky; position: sticky; }
+
+/* Fix 9: Mobile nav — hide clock and extras on very small screens */
+@media (max-width: 390px) {
+  .clk, .live-data-badge, .tz-wrap { display: none; }
+  .nav-pages { gap: 1px; }
+  .npbtn { font-size: 7px; padding: 4px 6px; }
+  .nlogo { font-size: 1rem; }
+}
+
+/* Fix 10: Journal page on mobile */
+@media (max-width: 480px) {
+  .jv2-topbar { flex-wrap: wrap; height: auto; padding: 8px 14px; gap: 8px; }
+  .jv2-topbar-left { width: 100%; }
+  .jv2-topbar-right { width: 100%; justify-content: flex-end; }
+  .jv2-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .jv2-main { padding: 12px 14px 80px; }
+  .jv2-stats-grid { grid-template-columns: 1fr 1fr; }
+  .jv2-stat { padding: 10px 12px; }
+  .jv2-stat-val { font-size: 15px; }
+  .jv2-two-col { grid-template-columns: 1fr; gap: 10px; }
+  .jv2-cal2-grid { font-size: 10px; }
+  .jv2-cal2-day { min-height: 56px; padding: 5px; }
+  .jv2-cal2-daypnl { font-size: 0.85rem; }
+  .mt5-form { grid-template-columns: 1fr; }
+  .sc-auth-box { border-radius: 16px; }
+  .sc-pay-box { border-radius: 16px; }
+}
+
+/* Fix 11: Home page hero on small iOS */
+@media (max-width: 390px) {
+  .hp-h1 { font-size: clamp(2.8rem, 14vw, 4rem); }
+  .hp-actions { flex-direction: column; }
+  .hp-cta, .hp-cta2 { width: 100%; text-align: center; justify-content: center; }
+  .hp-nums { gap: 12px; }
+  .hp-firms { display: none; }
+}
+
+/* Fix 12: Market tab buttons on iPhone */
+@media (max-width: 480px) {
+  .tabs { padding: 4px 12px; gap: 6px; }
+  .tab { min-width: 0; flex: 1; padding: 10px 10px; font-size: 9px; letter-spacing: 1px; }
+  .agrid { grid-template-columns: 1fr; }
+}
+
+/* Fix 13: Fix select elements on iOS */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(167,243,208,0.4)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 28px !important;
+}
+
+/* Fix 14: Fix buttons on iOS — prevent grey flash */
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Fix 15: Fix modals on iOS — prevent background scroll */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
 </style>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#030704">
 </head>
 <body>
 <canvas id="bgc"></canvas>
@@ -7865,9 +7998,11 @@ const _origLogout = typeof scLogout !== 'undefined' ? scLogout : null;
 // ── Auth UI ─────────────────────────────────────────────────────────────────
 function scShowAuth() {
   document.getElementById('sc-auth-overlay').style.display = 'flex';
+  document.body.classList.add('modal-open');
 }
 function scHideAuth() {
   document.getElementById('sc-auth-overlay').style.display = 'none';
+  document.body.classList.remove('modal-open');
 }
 function scAuthTab(tab) {
   const loginPanel  = document.getElementById('sc-login-panel');
