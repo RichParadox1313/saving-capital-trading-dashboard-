@@ -18,8 +18,8 @@
   --br:rgba(34,197,94,0.12);--br2:rgba(34,197,94,0.22);--br3:rgba(34,197,94,0.4);
   --r:#ef4444;--rdim:rgba(239,68,68,0.09);--gold:#f59e0b;--golddim:rgba(245,158,11,0.1);
 }
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:52px}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden;background:#030704}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;overflow-y:auto;width:100%;max-width:100vw;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:52px}
 ::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--br3);border-radius:2px}
 #bgc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07}
 .z{position:relative}
@@ -57,7 +57,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .home-h1 i{color:var(--g);font-style:normal;display:block}
 .home-sub{font-size:16px;color:var(--t3);max-width:600px;line-height:1.8;margin-bottom:32px;font-weight:300;animation:fu .6s .16s ease both}
 .home-btns{display:flex;gap:14px;flex-wrap:wrap;animation:fu .6s .24s ease both}
-.hbtn{display:flex;align-items:center;gap:14px;padding:16px 24px;border-radius:12px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;transition:all .2s;min-width:260px}
+.hbtn{display:flex;align-items:center;gap:14px;padding:16px 24px;border-radius:12px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;transition:all .2s;min-width:0;width:100%}
 .hbtn-primary{background:var(--g);color:#030704}
 .hbtn-primary:hover{background:#16a34a;transform:translateY(-2px)}
 .hbtn-secondary{background:var(--s1);border:1px solid var(--br2);color:var(--t1)}
@@ -150,7 +150,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 
 /* RIGHT: holographic charts visual */
 .hp-right{position:relative;display:flex;align-items:center;justify-content:center;height:580px}
-.hp-visual-wrap{position:relative;width:560px;height:560px;display:flex;align-items:center;justify-content:center;overflow:visible}
+.hp-visual-wrap{position:relative;width:min(560px,90vw);height:min(560px,90vw);display:flex;align-items:center;justify-content:center;overflow:visible}
 
 /* Ambient glow behind the panels */
 .hp-visual-glow{
@@ -242,7 +242,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 
 /* STRIP */
 .hp-strip{position:fixed;bottom:0;left:0;width:100%;z-index:300;display:flex;align-items:center;flex-wrap:nowrap;background:rgba(2,5,2,.97);backdrop-filter:blur(28px);border-top:1px solid rgba(34,197,94,.12);padding:12px 40px;gap:0}
-.hp-sf{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;padding:4px 0}
+.hp-sf{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:4px 0}
 .hp-sf b{display:block;font-size:12px;font-weight:600;color:var(--t1);font-family:'Syne',sans-serif;margin-bottom:2px}
 .hp-sf span{font-size:10px;color:rgba(167,243,208,.26);font-family:'DM Mono',monospace}
 .hp-sdiv{width:1px;background:rgba(34,197,94,.07);margin:0 28px;height:40px;flex-shrink:0}
@@ -2602,131 +2602,164 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 
 /* ═══════════════════════════════════════════════
-   iOS SAFARI FIXES
+   MOBILE & iOS SAFARI — COMPLETE FIX
 ═══════════════════════════════════════════════ */
 
-/* Fix 1: Prevent iOS zoom on input focus */
-input, select, textarea {
-  font-size: 16px !important;
-}
-/* But keep mono font inputs looking right */
-.jinput, .jselect, .sc-auth-input, .mt5-form input, .mt5-form select,
-.jv2-search, .jv2-filter-sel {
-  font-size: 16px !important;
+/* ── Core resets ── */
+*,-webkit-tap-highlight-color:transparent;
+*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+html{background:#030704;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden;width:100%;max-width:100vw;position:relative}
+
+/* ── Prevent ALL horizontal scroll ── */
+html,body{overflow-x:hidden !important;max-width:100% !important}
+.page,.jv2-wrap,.main,.hp-hero,.home-wrap{max-width:100% !important;overflow-x:hidden}
+
+/* ── Safe area for notch / home bar ── */
+body{padding-bottom:max(60px,env(safe-area-inset-bottom,60px))}
+nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.hp-nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.hp-strip{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.news-ticker{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+
+/* ── webkit prefixes ── */
+nav,,.hp-nav,.jv2-topbar,#sc-auth-overlay,#sc-pay-modal,.jmodal-bg{-webkit-backdrop-filter:blur(20px)}
+.jv2-tabs,.tabs,.jv2-table-wrap,.jv2-eco-table-wrap,.jtable-wrap{-webkit-overflow-scrolling:touch}
+
+/* ── Input zoom fix (iOS zooms if < 16px) ── */
+input,select,textarea{font-size:16px !important}
+
+/* ── Select arrow ── */
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(167,243,208,0.4)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:28px !important}
+
+/* ── Button flash fix ── */
+button{-webkit-appearance:none;appearance:none;cursor:pointer}
+
+/* ── Modal scroll lock ── */
+body.modal-open{overflow:hidden;position:fixed;width:100%;height:100%}
+
+/* ══════════════════════════════════════════
+   TABLET (max 768px)
+══════════════════════════════════════════ */
+@media(max-width:768px){
+
+  /* Nav */
+  nav{padding:0 12px;height:52px}
+  .nav-pages{gap:1px}
+  .npbtn{font-size:8px;padding:5px 8px;letter-spacing:.5px}
+  .nlogo{font-size:1.1rem;letter-spacing:2px}
+  .nr{gap:8px}
+  .clk{display:none}
+  .live-data-badge .live-data-txt{display:none}
+
+  /* Home page */
+  .hp-nav{padding:0 16px;height:56px}
+  .hp-np{font-size:8px;padding:5px 10px}
+  .hp-hero{grid-template-columns:1fr;padding:72px 20px 40px;gap:24px;min-height:auto}
+  .hp-right{display:none}
+  .hp-h1{font-size:clamp(2.8rem,11vw,5rem)}
+  .hp-body{font-size:13px;max-width:100%}
+  .hp-actions{flex-direction:column;gap:10px}
+  .hp-cta,.hp-cta2{width:100%;justify-content:center;text-align:center}
+  .hp-nums{flex-wrap:wrap;gap:10px}
+  .hp-num{min-width:calc(50% - 5px);flex:none}
+  .hp-firms{font-size:10px;flex-wrap:wrap;gap:6px}
+  .hp-strip{flex-wrap:wrap;gap:12px;padding:12px 16px}
+  .hp-sdiv{display:none}
+  .hp-sf{flex:none;width:calc(50% - 6px)}
+
+  /* Markets */
+  .tabs{padding:4px 12px;gap:6px;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+  .tab{min-width:auto;flex:none;padding:10px 14px;font-size:9px;letter-spacing:1px;max-width:none}
+  .agrid{grid-template-columns:1fr 1fr}
+  .main{padding:16px 12px 80px}
+  .pbar{grid-template-columns:1fr 1fr;gap:0}
+  .sstrip{grid-template-columns:repeat(3,1fr)}
+
+  /* Journal V2 */
+  .jv2-topbar{flex-wrap:wrap;height:auto;padding:10px 12px;gap:8px}
+  .jv2-topbar-left{width:100%;flex-wrap:wrap;gap:8px}
+  .jv2-topbar-right{width:100%;justify-content:flex-end}
+  .jv2-logo{font-size:0.9rem}
+  .jv2-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .jv2-tab{flex:none;padding:6px 12px;font-size:9px;white-space:nowrap}
+  .jv2-main{padding:12px 12px 80px}
+  .jv2-stats-grid{grid-template-columns:1fr 1fr}
+  .jv2-two-col{grid-template-columns:1fr}
+  .jv2-cal2-day{min-height:60px;padding:5px}
+  .jv2-cal2-daypnl{font-size:0.8rem}
+  .jv2-cal2-dow{font-size:8px;padding:6px 4px}
+  .mt5-form{grid-template-columns:1fr}
+
+  /* Auth modal */
+  .sc-auth-left{display:none}
+  .sc-auth-box{max-width:100%;border-radius:16px}
+  .sc-auth-right{padding:28px 20px}
+
+  /* Payment modal */
+  .sc-pay-box{margin:0 12px;padding:24px 18px}
+  .sc-coin-grid{grid-template-columns:repeat(3,1fr)}
+
+  /* News ticker */
+  .news-ticker{display:none}
 }
 
-/* Fix 2: Safe area insets for notch/home bar */
-body {
-  padding-bottom: max(52px, env(safe-area-inset-bottom, 52px));
-}
-nav, .hp-nav {
-  padding-left: max(24px, env(safe-area-inset-left));
-  padding-right: max(24px, env(safe-area-inset-right));
-}
-.hp-strip, .news-ticker {
-  padding-left: max(16px, env(safe-area-inset-left));
-  padding-right: max(16px, env(safe-area-inset-right));
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
+/* ══════════════════════════════════════════
+   PHONE (max 480px)
+══════════════════════════════════════════ */
+@media(max-width:480px){
+
+  /* Nav — minimal */
+  .nav-pages{display:none}
+  nav{justify-content:space-between}
+  #sc-nav-auth-area{gap:6px}
+  .sc-nav-user{display:none}
+  .sc-nav-btn{padding:5px 10px;font-size:9px}
+
+  /* Home */
+  .hp-h1{font-size:clamp(2.4rem,13vw,3.8rem)}
+  .hp-tag-row{display:none}
+  .hp-num strong{font-size:1.4rem}
+  .hp-eyebrow{font-size:9px}
+
+  /* Markets */
+  .agrid{grid-template-columns:1fr}
+  .tabs{padding:4px 8px;gap:4px}
+  .tab{padding:9px 10px;font-size:8px}
+
+  /* Stats bar */
+  .pbar{grid-template-columns:1fr 1fr}
+  .sstrip{grid-template-columns:1fr 1fr 1fr}
+  .sbox{padding:10px 8px}
+  .sn{font-size:1rem}
+
+  /* Journal */
+  .jv2-stats-grid{grid-template-columns:1fr 1fr}
+  .jv2-stat-val{font-size:14px}
+  .jv2-stat-label{font-size:8px}
+  .jv2-cal2-grid{font-size:9px}
+  .jv2-cal2-day{min-height:48px;padding:4px}
+  .jv2-cal2-daypnl{font-size:0.75rem}
+  .jv2-cal2-trades{font-size:8px}
+  .jv2-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .jv2-table{min-width:600px}
+
+  /* Auth */
+  #sc-auth-overlay{padding:12px}
+  .sc-auth-right{padding:24px 16px}
+  .sc-auth-right-title{font-size:1.3rem}
 }
 
-/* Fix 3: Prevent rubber-band overscroll showing white */
-html {
-  background: #030704;
-  overscroll-behavior: none;
-}
-
-/* Fix 4: Fix 100vh on iOS (address bar eats space) */
-.page, .jv2-wrap {
-  min-height: -webkit-fill-available;
-}
-body {
-  min-height: -webkit-fill-available;
-}
-
-/* Fix 5: Tap highlight removal */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Fix 6: Smooth scrolling on iOS */
-.jv2-tabs, .tabs, .jtable-wrap, .jv2-table-wrap, .jv2-eco-table-wrap {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Fix 7: Fix backdrop-filter on older iOS */
-nav, .hp-nav, .jv2-topbar, #sc-auth-overlay, #sc-pay-modal {
-  -webkit-backdrop-filter: blur(20px);
-}
-
-/* Fix 8: Fix position:sticky on iOS */
-nav { position: -webkit-sticky; position: sticky; }
-.jv2-topbar { position: -webkit-sticky; position: sticky; }
-
-/* Fix 9: Mobile nav — hide clock and extras on very small screens */
-@media (max-width: 390px) {
-  .clk, .live-data-badge, .tz-wrap { display: none; }
-  .nav-pages { gap: 1px; }
-  .npbtn { font-size: 7px; padding: 4px 6px; }
-  .nlogo { font-size: 1rem; }
-}
-
-/* Fix 10: Journal page on mobile */
-@media (max-width: 480px) {
-  .jv2-topbar { flex-wrap: wrap; height: auto; padding: 8px 14px; gap: 8px; }
-  .jv2-topbar-left { width: 100%; }
-  .jv2-topbar-right { width: 100%; justify-content: flex-end; }
-  .jv2-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .jv2-main { padding: 12px 14px 80px; }
-  .jv2-stats-grid { grid-template-columns: 1fr 1fr; }
-  .jv2-stat { padding: 10px 12px; }
-  .jv2-stat-val { font-size: 15px; }
-  .jv2-two-col { grid-template-columns: 1fr; gap: 10px; }
-  .jv2-cal2-grid { font-size: 10px; }
-  .jv2-cal2-day { min-height: 56px; padding: 5px; }
-  .jv2-cal2-daypnl { font-size: 0.85rem; }
-  .mt5-form { grid-template-columns: 1fr; }
-  .sc-auth-box { border-radius: 16px; }
-  .sc-pay-box { border-radius: 16px; }
-}
-
-/* Fix 11: Home page hero on small iOS */
-@media (max-width: 390px) {
-  .hp-h1 { font-size: clamp(2.8rem, 14vw, 4rem); }
-  .hp-actions { flex-direction: column; }
-  .hp-cta, .hp-cta2 { width: 100%; text-align: center; justify-content: center; }
-  .hp-nums { gap: 12px; }
-  .hp-firms { display: none; }
-}
-
-/* Fix 12: Market tab buttons on iPhone */
-@media (max-width: 480px) {
-  .tabs { padding: 4px 12px; gap: 6px; }
-  .tab { min-width: 0; flex: 1; padding: 10px 10px; font-size: 9px; letter-spacing: 1px; }
-  .agrid { grid-template-columns: 1fr; }
-}
-
-/* Fix 13: Fix select elements on iOS */
-select {
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(167,243,208,0.4)'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 28px !important;
-}
-
-/* Fix 14: Fix buttons on iOS — prevent grey flash */
-button {
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-}
-
-/* Fix 15: Fix modals on iOS — prevent background scroll */
-body.modal-open {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
+/* ══════════════════════════════════════════
+   SMALL PHONE (max 390px — iPhone SE etc)
+══════════════════════════════════════════ */
+@media(max-width:390px){
+  .hp-h1{font-size:2.4rem}
+  .hp-nums{gap:8px}
+  .hp-num{width:calc(50% - 4px)}
+  .hp-firms,.hp-tag-row{display:none}
+  .jv2-stats-grid{grid-template-columns:1fr}
+  .jv2-stat-val{font-size:16px}
 }
 
 </style>
@@ -8166,14 +8199,11 @@ window.goPage = function(page) {
     return;
   }
   _origGoPage(page);
-  // Journal — load data and render V2
+  // Journal — load data and render all panels
   if (page === 'journal-page') {
-    // Immediately show MT5 form and stats (no async needed)
+    // Show MT5 form immediately
     if (typeof jv2RenderMT5Block === 'function') jv2RenderMT5Block();
-    if (typeof jv2RenderStats === 'function') jv2RenderStats();
-    if (typeof jv2RenderDailyTable === 'function') jv2RenderDailyTable();
-    if (typeof jv2RenderDiscipline === 'function') jv2RenderDiscipline();
-    // Then fetch trades async
+    // Fetch trades then render everything
     setTimeout(async () => {
       try {
         const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
@@ -8181,12 +8211,15 @@ window.goPage = function(page) {
       } catch(e) {
         jTrades = JSON.parse(localStorage.getItem('sc_journal') || '[]');
       }
+      // Render all panels so they're ready when user clicks tabs
       if (typeof jv2RenderStats === 'function') {
         jv2RenderStats();
         jv2RenderDailyTable();
         jv2RenderDiscipline();
+        jv2RenderCal();
+        jv2RenderTrades();
       }
-    }, 100);
+    }, 80);
   }
 };
 
@@ -8469,9 +8502,10 @@ function jv2SetTab(tab) {
   const panel = document.getElementById('jv2-panel-' + tab);
   if (btn) btn.classList.add('active');
   if (panel) panel.classList.add('active');
-
+  // Always re-render on tab click to ensure fresh data
+  if (tab === 'overview')      { jv2RenderStats(); jv2RenderDailyTable(); jv2RenderDiscipline(); }
   if (tab === 'calendar')      setTimeout(jv2RenderCal, 50);
-  if (tab === 'charts')        setTimeout(jv2RenderCharts, 50);
+  if (tab === 'charts')        setTimeout(jv2RenderCharts, 80);
   if (tab === 'calendar_eco')  jv2LoadEco();
   if (tab === 'trades')        jv2RenderTrades();
 }
@@ -8675,6 +8709,9 @@ function jv2RenderCal() {
   const monthPnlEl = document.getElementById('jv2-cal2-monthpnl');
   const tradingDaysEl = document.getElementById('jv2-cal2-tradingdays');
   if (!grid) return;
+  // Set default month label immediately so it's not stuck at "—"
+  const _months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if (monthEl && monthEl.textContent === '—') monthEl.textContent = _months[jv2CalMonth] + ' ' + jv2CalYear;
 
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const year = jv2CalYear, month = jv2CalMonth;
@@ -8798,9 +8835,25 @@ function jv2SetEquityMode(mode) {
 }
 
 function jv2RenderCharts() {
-  if (typeof Chart === 'undefined') return;
+  if (typeof Chart === 'undefined') {
+    console.warn('[SC] Chart.js not loaded');
+    return;
+  }
   const closed = jTrades.filter(t=>t.status==='CLOSED').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  if (!closed.length) return;
+  if (!closed.length) {
+    // Show empty state in all chart canvases
+    ['jv2-equity-chart','jv2-wl-chart','jv2-asset-chart'].forEach(id => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = 'rgba(167,243,208,0.2)';
+      ctx.font = '12px DM Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('No trade data yet — connect MT5 or add trades manually', canvas.width/2, canvas.height/2);
+    });
+    return;
+  }
 
   // Equity curve
   const base = 10000;
@@ -8982,12 +9035,13 @@ window.loadJournal = async function() {
   } catch(e) {
     jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]');
   }
-  // Render V2 panels if they exist
-  if (typeof jv2RenderMT5Block === 'function' && document.getElementById('jv2-stats')) {
+  if (typeof jv2RenderStats === 'function' && document.getElementById('jv2-stats')) {
     jv2RenderMT5Block();
     jv2RenderStats();
     jv2RenderDailyTable();
     jv2RenderDiscipline();
+    jv2RenderCal();
+    jv2RenderTrades();
   }
   setTimeout(populateBrokers, 50);
 };
