@@ -2470,6 +2470,133 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .sc-pay-waiting{display:flex;align-items:center;gap:8px;justify-content:center;font-size:11px;color:var(--t4);font-family:'DM Mono',monospace}
 .sc-pay-waiting-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.5s infinite}
 
+
+/* ═══════════════════════════════════════════════
+   JOURNAL V2 — Professional Trading Journal
+═══════════════════════════════════════════════ */
+.jv2-wrap{min-height:100vh;background:var(--bg);padding-top:56px}
+.jv2-topbar{position:sticky;top:56px;z-index:100;background:rgba(3,7,4,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;gap:16px}
+.jv2-topbar-left{display:flex;align-items:center;gap:20px;flex:1;min-width:0}
+.jv2-topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.jv2-logo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--t1);white-space:nowrap}
+.jv2-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.jv2-tabs::-webkit-scrollbar{display:none}
+.jv2-tab{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.jv2-tab:hover{color:var(--t1)}
+.jv2-tab.active{background:var(--gdim);color:var(--g);border:1px solid var(--br)}
+.jv2-btn-primary{padding:7px 16px;background:var(--g);border:none;border-radius:7px;color:#030704;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.jv2-btn-primary:hover{background:#16a34a}
+.jv2-panel{display:none}
+.jv2-panel.active{display:block}
+.jv2-main{max-width:1200px;margin:0 auto;padding:24px 24px 80px}
+.jv2-section-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px;letter-spacing:.3px}
+
+/* Stats grid */
+.jv2-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.jv2-stat{background:var(--s1);padding:16px 18px}
+.jv2-stat-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.jv2-stat-val{font-size:20px;font-weight:600;color:var(--t1);font-family:'DM Mono',monospace}
+.jv2-stat-val.pos{color:#4ade80}
+.jv2-stat-val.neg{color:#f87171}
+.jv2-stat-val.neu{color:var(--gold)}
+
+/* Two col layout */
+.jv2-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:768px){.jv2-two-col{grid-template-columns:1fr}.jv2-stats-grid{grid-template-columns:1fr}}
+
+/* Cards */
+.jv2-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:18px 20px}
+.jv2-card-title{font-size:12px;font-weight:600;color:var(--t1);letter-spacing:.3px;margin-bottom:4px}
+
+/* Discipline gauge */
+.jv2-discipline-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
+.jv2-disc-legend{display:flex;gap:12px;font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:12px}
+.jv2-disc-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
+.jv2-disc-pct{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--t1);margin-top:-20px}
+.jv2-disc-label{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:1px}
+
+/* Daily summary table */
+.jv2-daily-table{width:100%;border-collapse:collapse;font-size:12px}
+.jv2-daily-table th{text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;padding:6px 8px;border-bottom:1px solid var(--br)}
+.jv2-daily-table td{padding:8px 8px;border-bottom:1px solid rgba(34,197,94,0.06);font-family:'DM Mono',monospace;font-size:12px;color:var(--t2)}
+.jv2-daily-table tr:last-child td{border-bottom:none}
+.jv2-daily-table td:first-child{color:var(--g);font-weight:600}
+.jv2-daily-pnl-pos{color:#4ade80;font-weight:600}
+.jv2-daily-pnl-neg{color:#f87171;font-weight:600}
+
+/* Calendar V2 */
+.jv2-cal2-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.jv2-cal2-month{font-size:16px;font-weight:500;color:var(--t1);min-width:140px;text-align:center}
+.jv2-cal2-nav{background:var(--s1);border:1px solid var(--br);color:var(--t3);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.jv2-cal2-nav:hover{border-color:var(--g);color:var(--g)}
+.jv2-cal2-today{background:transparent;border:1px solid var(--br);color:var(--t4);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s}
+.jv2-cal2-today:hover{border-color:var(--g);color:var(--g)}
+.jv2-cal2-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.jv2-cal2-dow{background:var(--s2);padding:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;text-align:center}
+.jv2-cal2-day{background:var(--s1);min-height:80px;padding:8px;position:relative;cursor:default;transition:background .15s}
+.jv2-cal2-day:hover{background:var(--s2)}
+.jv2-cal2-day.other-month{background:var(--bg);opacity:.4}
+.jv2-cal2-day.today .jv2-cal2-daynum{color:var(--g);font-weight:700}
+.jv2-cal2-daynum{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:6px}
+.jv2-cal2-daypnl{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;margin-bottom:2px}
+.jv2-cal2-daypnl.pos{color:#4ade80}
+.jv2-cal2-daypnl.neg{color:#f87171}
+.jv2-cal2-trades{font-size:9px;color:var(--t4);font-family:'DM Mono',monospace}
+.jv2-cal2-day.has-trades{background:rgba(34,197,94,0.04)}
+.jv2-cal2-day.has-trades.neg-day{background:rgba(239,68,68,0.04)}
+
+/* Trades table */
+.jv2-trades-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.jv2-search{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 14px;outline:none;width:200px;transition:border .2s}
+.jv2-search:focus{border-color:var(--br3)}
+.jv2-filter-sel{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t3);font-family:'DM Mono',monospace;font-size:11px;padding:8px 12px;outline:none;cursor:pointer}
+.jv2-table-wrap{overflow-x:auto;border:1px solid var(--br);border-radius:12px}
+.jv2-table{width:100%;border-collapse:collapse;font-size:12px}
+.jv2-table th{background:var(--s2);padding:10px 14px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;border-bottom:1px solid var(--br);white-space:nowrap}
+.jv2-table td{padding:10px 14px;border-bottom:1px solid rgba(34,197,94,0.06);color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap}
+.jv2-table tr:last-child td{border-bottom:none}
+.jv2-table tr:hover td{background:rgba(34,197,94,0.03)}
+.jv2-td-pos{color:#4ade80;font-weight:600}
+.jv2-td-neg{color:#f87171;font-weight:600}
+.jv2-dir-long{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:4px;font-size:9px;letter-spacing:1px}
+.jv2-dir-short{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);padding:2px 8px;border-radius:4px;font-size:9px;letter-spacing:1px}
+
+/* Chart buttons */
+.jv2-chart-btn{background:transparent;border:1px solid var(--br);color:var(--t4);padding:5px 14px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s}
+.jv2-chart-btn.active{background:var(--g);color:#030704;border-color:var(--g)}
+
+/* Economic Calendar */
+.jv2-eco-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.jv2-eco-title{font-size:16px;font-weight:500;color:var(--t1)}
+.jv2-eco-date{font-size:13px;color:var(--t3);font-weight:500}
+.jv2-eco-filters{display:flex;gap:8px;margin-bottom:16px}
+.jv2-eco-filter{background:transparent;border:1px solid var(--br);color:var(--t4);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s;display:flex;align-items:center;gap:6px}
+.jv2-eco-filter.active{border-color:var(--g);color:var(--g);background:var(--gdim)}
+.jv2-eco-imp{display:inline-block;width:8px;height:8px;border-radius:50%}
+.jv2-eco-imp.high{background:#ef4444}
+.jv2-eco-imp.medium{background:#f59e0b}
+.jv2-eco-imp.low{background:#22c55e}
+.jv2-eco-table-wrap{border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.jv2-eco-table{width:100%;border-collapse:collapse;font-size:12px}
+.jv2-eco-table th{background:var(--s2);padding:10px 14px;text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;border-bottom:1px solid var(--br)}
+.jv2-eco-table td{padding:11px 14px;border-bottom:1px solid rgba(34,197,94,0.06);color:var(--t2);font-size:12px}
+.jv2-eco-table tr:last-child td{border-bottom:none}
+.jv2-eco-table tr:hover td{background:rgba(34,197,94,0.03)}
+.jv2-eco-high td:first-child{border-left:3px solid #ef4444}
+.jv2-eco-medium td:first-child{border-left:3px solid #f59e0b}
+.jv2-eco-low td:first-child{border-left:3px solid rgba(34,197,94,0.4)}
+.jv2-eco-flag{font-size:16px;margin-right:6px}
+.jv2-eco-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3)}
+.jv2-eco-time-countdown{font-size:9px;color:var(--g);font-family:'DM Mono',monospace}
+.jv2-eco-actual-pos{color:#4ade80;font-family:'DM Mono',monospace;font-weight:600}
+.jv2-eco-actual-neg{color:#f87171;font-family:'DM Mono',monospace;font-weight:600}
+.jv2-eco-val{font-family:'DM Mono',monospace;color:var(--t2)}
+
+/* MT5 bar */
+.jv2-mt5-connected{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);font-family:'DM Mono',monospace}
+.jv2-mt5-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);flex-shrink:0}
+.jv2-mt5-card{background:var(--s2);border:1px solid var(--br2);border-radius:12px;padding:18px 20px;margin-bottom:20px}
+
 </style>
 </head>
 <body>
@@ -7122,25 +7249,190 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
 <!-- JOURNAL PAGE -->
 <div id="page-journal-page" class="page" style="display:none">
-<canvas id="journal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.55;display:none"></canvas>
-  <!-- Journal Hero Intro -->
-  <div class="jrnl-hero" style="position:relative;z-index:1">
-    <div class="jrnl-hero-inner">
-      <div class="jrnl-hero-badge">PROFESSIONAL TRADING JOURNAL</div>
-      <h1 class="jrnl-hero-title">Track. Analyse. <span class="jrnl-hero-accent">Improve.</span></h1>
-      <p class="jrnl-hero-sub">Your personal trading command center — powered by institutional-grade AI. Log every trade, analyse performance with Wall Street quant frameworks, and sync directly from your MT5 account in real time.</p>
-      <div class="jrnl-hero-feats">
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">MT5</div><div><div class="jrnl-hf-t">Auto-Sync</div><div class="jrnl-hf-s">Live trade import from MetaTrader 5</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">AI</div><div><div class="jrnl-hf-t">Trade Analysis</div><div class="jrnl-hf-s">Quant-grade feedback on every trade</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">R:R</div><div><div class="jrnl-hf-t">Risk Management</div><div class="jrnl-hf-s">SL/TP · Risk:Reward · P&amp;L tracking</div></div></div>
-        <div class="jrnl-hero-feat"><div class="jrnl-hf-icon">PSY</div><div><div class="jrnl-hf-t">Psychology Tags</div><div class="jrnl-hf-s">Track discipline, FOMO, and patterns</div></div></div>
+<div class="jv2-wrap">
+
+  <!-- TOP BAR -->
+  <div class="jv2-topbar">
+    <div class="jv2-topbar-left">
+      <div class="jv2-logo">Trading Journal</div>
+      <div class="jv2-tabs">
+        <button class="jv2-tab active" onclick="jv2SetTab('overview')" id="jv2-tab-overview">Overview</button>
+        <button class="jv2-tab" onclick="jv2SetTab('calendar')" id="jv2-tab-calendar">Daily PnL</button>
+        <button class="jv2-tab" onclick="jv2SetTab('trades')" id="jv2-tab-trades">Closed Trades</button>
+        <button class="jv2-tab" onclick="jv2SetTab('charts')" id="jv2-tab-charts">Charts</button>
+        <button class="jv2-tab" onclick="jv2SetTab('calendar_eco')" id="jv2-tab-calendar_eco">Economic Calendar</button>
+      </div>
+    </div>
+    <div class="jv2-topbar-right">
+      <div id="jv2-mt5-status-bar"></div>
+      <button class="jv2-btn-primary" onclick="openQuickPick('jv2-qpick')">+ Add Trade ▾</button>
+      <div class="qpick-wrap" id="jv2-qpick" style="position:relative">
+        <div class="qpick-menu" id="jv2-qpick-menu" style="right:0;left:auto;top:8px">
+          <button class="qpick-item" onclick="openJModal(null,'Forex')"><div><div class="qpick-label">Forex</div><div class="qpick-sub">EUR/USD · GBP/USD · USD/JPY</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Crypto')"><div><div class="qpick-label">Crypto</div><div class="qpick-sub">BTC · ETH · SOL</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Gold')"><div><div class="qpick-label">Gold / Commodities</div><div class="qpick-sub">XAUUSD · XAGUSD · Oil</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Stocks')"><div><div class="qpick-label">Stocks</div><div class="qpick-sub">AAPL · NVDA · TSLA</div></div></button>
+          <button class="qpick-item" onclick="openJModal(null,'Indices')"><div><div class="qpick-label">Indices</div><div class="qpick-sub">SPX · DAX · NASDAQ</div></div></button>
+          <div class="qpick-divider"></div>
+          <button class="qpick-item" onclick="openJModal(null,'Other')"><div><div class="qpick-label">Other</div><div class="qpick-sub">Any asset</div></div></button>
+        </div>
       </div>
     </div>
   </div>
-  <!-- Journal Panel -->
-  <div class="main" style="padding-bottom:80px;position:relative;z-index:2">
-    <div id="journal-standalone"></div>
+
+  <!-- ── OVERVIEW TAB ── -->
+  <div class="jv2-panel active" id="jv2-panel-overview">
+    <div class="jv2-main">
+
+      <!-- MT5 Connect / Status -->
+      <div id="jv2-mt5-block"></div>
+
+      <!-- Statistics -->
+      <div class="jv2-section-title">Statistics</div>
+      <div class="jv2-stats-grid" id="jv2-stats"></div>
+
+      <!-- Two columns: Discipline + Daily Summary -->
+      <div class="jv2-two-col">
+        <!-- Discipline Score -->
+        <div class="jv2-card">
+          <div class="jv2-card-title">Your Stats <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;margin-left:4px">DISCIPLINE</span></div>
+          <div class="jv2-discipline-wrap">
+            <div class="jv2-disc-legend">
+              <span><span class="jv2-disc-dot" style="background:#ef4444"></span>0 – 30%</span>
+              <span><span class="jv2-disc-dot" style="background:#f59e0b"></span>30 – 80%</span>
+              <span><span class="jv2-disc-dot" style="background:#22c55e"></span>80 – 100%</span>
+            </div>
+            <canvas id="jv2-disc-canvas" width="260" height="140"></canvas>
+            <div class="jv2-disc-pct" id="jv2-disc-pct">—</div>
+            <div class="jv2-disc-label" id="jv2-disc-label">No data</div>
+          </div>
+        </div>
+
+        <!-- Daily Summary -->
+        <div class="jv2-card">
+          <div class="jv2-card-title">Daily Summary</div>
+          <table class="jv2-daily-table">
+            <thead><tr><th>Date</th><th>Trades</th><th>Lots</th><th>Result</th></tr></thead>
+            <tbody id="jv2-daily-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
+
+  <!-- ── DAILY PNL CALENDAR TAB ── -->
+  <div class="jv2-panel" id="jv2-panel-calendar">
+    <div class="jv2-main">
+      <div class="jv2-cal2-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="jv2-cal2-nav" onclick="jv2CalPrev()">‹</button>
+          <div class="jv2-cal2-month" id="jv2-cal2-month">—</div>
+          <button class="jv2-cal2-nav" onclick="jv2CalNext()">›</button>
+          <button class="jv2-cal2-today" onclick="jv2CalToday()">Today</button>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center">
+          <div style="font-size:12px;color:var(--t4)">Monthly stats: <span id="jv2-cal2-monthpnl" style="font-family:'DM Mono',monospace;font-weight:600">—</span></div>
+          <div style="font-size:12px;color:var(--t4)">Trading days: <span id="jv2-cal2-tradingdays" style="color:var(--t1);font-family:'DM Mono',monospace">—</span></div>
+        </div>
+      </div>
+      <div class="jv2-cal2-grid" id="jv2-cal2-grid"></div>
+      <div style="font-size:10px;color:var(--t4);text-align:center;margin-top:12px;font-family:'DM Mono',monospace">Trades are shown in platform time which may differ from your local time</div>
+    </div>
+  </div>
+
+  <!-- ── CLOSED TRADES TAB ── -->
+  <div class="jv2-panel" id="jv2-panel-trades">
+    <div class="jv2-main">
+      <div class="jv2-trades-toolbar">
+        <input class="jv2-search" id="jv2-search" placeholder="Search asset..." oninput="jv2FilterTrades()">
+        <select class="jv2-filter-sel" id="jv2-filter-dir" onchange="jv2FilterTrades()">
+          <option value="">All directions</option>
+          <option value="LONG">Long</option>
+          <option value="SHORT">Short</option>
+        </select>
+        <select class="jv2-filter-sel" id="jv2-filter-result" onchange="jv2FilterTrades()">
+          <option value="">All results</option>
+          <option value="win">Winners</option>
+          <option value="loss">Losers</option>
+        </select>
+      </div>
+      <div class="jv2-table-wrap">
+        <table class="jv2-table" id="jv2-trades-table">
+          <thead><tr>
+            <th>Date</th><th>Asset</th><th>Direction</th>
+            <th>Entry</th><th>Exit</th><th>Lots</th>
+            <th>SL</th><th>TP</th><th>R:R</th>
+            <th>P&amp;L</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="jv2-trades-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARTS TAB ── -->
+  <div class="jv2-panel" id="jv2-panel-charts">
+    <div class="jv2-main">
+      <div class="jv2-two-col">
+        <div class="jv2-card" style="grid-column:1/-1">
+          <div class="jv2-card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Equity / Balance Curve</span>
+            <div style="display:flex;gap:8px">
+              <button class="jv2-chart-btn active" id="jv2-eq-abs" onclick="jv2SetEquityMode('abs')">Absolute</button>
+              <button class="jv2-chart-btn" id="jv2-eq-pct" onclick="jv2SetEquityMode('pct')">%</button>
+            </div>
+          </div>
+          <div style="position:relative;height:280px;margin-top:12px">
+            <canvas id="jv2-equity-chart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="jv2-two-col" style="margin-top:16px">
+        <div class="jv2-card">
+          <div class="jv2-card-title">Win / Loss Distribution</div>
+          <div style="position:relative;height:200px;margin-top:12px">
+            <canvas id="jv2-wl-chart"></canvas>
+          </div>
+        </div>
+        <div class="jv2-card">
+          <div class="jv2-card-title">P&amp;L by Asset</div>
+          <div style="position:relative;height:200px;margin-top:12px">
+            <canvas id="jv2-asset-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ECONOMIC CALENDAR TAB ── -->
+  <div class="jv2-panel" id="jv2-panel-calendar_eco">
+    <div class="jv2-main">
+      <div class="jv2-eco-header">
+        <div class="jv2-eco-title">Economic Calendar</div>
+        <div class="jv2-eco-date" id="jv2-eco-date"></div>
+      </div>
+      <div class="jv2-eco-filters">
+        <button class="jv2-eco-filter active" onclick="jv2EcoFilter('all',this)">All</button>
+        <button class="jv2-eco-filter" onclick="jv2EcoFilter('high',this)"><span class="jv2-eco-imp high"></span>High</button>
+        <button class="jv2-eco-filter" onclick="jv2EcoFilter('medium',this)"><span class="jv2-eco-imp medium"></span>Medium</button>
+        <button class="jv2-eco-filter" onclick="jv2EcoFilter('low',this)"><span class="jv2-eco-imp low"></span>Low</button>
+      </div>
+      <div class="jv2-eco-table-wrap">
+        <table class="jv2-eco-table">
+          <thead><tr>
+            <th>Description</th><th>Instrument</th><th>Date</th>
+            <th>Actual</th><th>Forecast</th><th>Previous</th>
+          </tr></thead>
+          <tbody id="jv2-eco-body"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-family:'DM Mono',monospace;font-size:11px">Loading economic events...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- Keep old journal-standalone for backward compat -->
+<div id="journal-standalone" style="display:none"></div>
 </div>
 
 
@@ -8049,6 +8341,568 @@ document.addEventListener('keydown', function(e) {
     window.addEventListener('load', () => setTimeout(initAuthCanvas, 300));
   }
 })();
+</script>
+
+
+<script>
+// ═══════════════════════════════════════════════
+//  JOURNAL V2 — Professional Trading Journal
+// ═══════════════════════════════════════════════
+
+let jv2Tab = 'overview';
+let jv2CalYear = new Date().getFullYear();
+let jv2CalMonth = new Date().getMonth();
+let jv2EquityMode = 'abs';
+let jv2EcoCurrentFilter = 'all';
+let jv2EcoEvents = [];
+let jv2Charts = {};
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function jv2SetTab(tab) {
+  jv2Tab = tab;
+  document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.jv2-panel').forEach(p => p.classList.remove('active'));
+  const btn = document.getElementById('jv2-tab-' + tab);
+  const panel = document.getElementById('jv2-panel-' + tab);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+
+  if (tab === 'calendar') jv2RenderCal();
+  if (tab === 'charts') jv2RenderCharts();
+  if (tab === 'calendar_eco') jv2LoadEco();
+  if (tab === 'trades') jv2RenderTrades();
+}
+
+// ── Main render — called when journal loads ───────────────────────────────────
+function renderJournal() {
+  const con = document.getElementById('journal-standalone');
+  if (con) con.innerHTML = '';
+  jv2RenderMT5Block();
+  jv2RenderStats();
+  jv2RenderDailyTable();
+  jv2RenderDiscipline();
+  if (jv2Tab === 'calendar') jv2RenderCal();
+  if (jv2Tab === 'trades')   jv2RenderTrades();
+  if (jv2Tab === 'charts')   jv2RenderCharts();
+}
+
+// ── MT5 Block ─────────────────────────────────────────────────────────────────
+function jv2RenderMT5Block() {
+  const block = document.getElementById('jv2-mt5-block');
+  const statusBar = document.getElementById('jv2-mt5-status-bar');
+  if (!block) return;
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
+  if (mt5Info) {
+    if (statusBar) statusBar.innerHTML = `<div class="jv2-mt5-connected"><div class="jv2-mt5-dot"></div><span>${mt5Info.broker || mt5Info.server} · #${mt5Info.login}</span><a href="#" onclick="syncMT5();return false" style="color:var(--g);margin-left:6px">↻ Sync</a><a href="#" onclick="disconnectMT5();return false" style="color:var(--t4);margin-left:8px;font-size:9px">Disconnect</a></div>`;
+    block.innerHTML = '';
+  } else {
+    if (statusBar) statusBar.innerHTML = '';
+    block.innerHTML = `
+      <div class="jv2-mt5-card">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--t1);margin-bottom:4px">Connect MT5 Account</div>
+        <div style="font-size:12px;color:var(--t4);margin-bottom:16px;line-height:1.6">Enter your MetaTrader 5 credentials to automatically sync trades. Credentials are sent securely and never stored.</div>
+        <div class="mt5-form">
+          <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number"/></div>
+          <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="MT5 password" type="password"/></div>
+          <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
+          <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
+          <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
+        </div>
+        <div class="mt5-status" id="mt5-status"></div>
+      </div>`;
+    setTimeout(populateBrokers, 50);
+  }
+}
+
+// ── Statistics ────────────────────────────────────────────────────────────────
+function jv2CalcStats() {
+  const closed = jTrades.filter(t => t.status === 'CLOSED');
+  const wins   = closed.filter(t => (t.pnl || 0) > 0);
+  const losses = closed.filter(t => (t.pnl || 0) < 0);
+  const totalPnl  = closed.reduce((s, t) => s + (t.pnl || 0), 0);
+  const winRate   = closed.length ? (wins.length / closed.length * 100) : 0;
+  const avgWin    = wins.length   ? wins.reduce((s,t) => s+(t.pnl||0),0) / wins.length : 0;
+  const avgLoss   = losses.length ? Math.abs(losses.reduce((s,t) => s+(t.pnl||0),0) / losses.length) : 0;
+  const avgRRR    = avgLoss > 0 ? avgWin / avgLoss : 0;
+  const totalLots = jTrades.reduce((s,t) => s + (parseFloat(t.size) || 0), 0);
+  const expectancy = closed.length ? totalPnl / closed.length : 0;
+  const grossWin  = wins.reduce((s,t) => s+(t.pnl||0),0);
+  const grossLoss = Math.abs(losses.reduce((s,t) => s+(t.pnl||0),0));
+  const profitFactor = grossLoss > 0 ? grossWin / grossLoss : 0;
+
+  // Sharpe (simplified — daily returns)
+  const dailyPnl = {};
+  closed.forEach(t => {
+    const d = (t.date||'').slice(0,10);
+    if (d) dailyPnl[d] = (dailyPnl[d]||0) + (t.pnl||0);
+  });
+  const returns = Object.values(dailyPnl);
+  const meanR   = returns.length ? returns.reduce((a,b)=>a+b,0)/returns.length : 0;
+  const stdR    = returns.length > 1 ? Math.sqrt(returns.reduce((s,r)=>s+Math.pow(r-meanR,2),0)/(returns.length-1)) : 1;
+  const sharpe  = stdR > 0 ? (meanR / stdR) : 0;
+
+  const equity  = 10000 + totalPnl; // Base $10k account
+
+  return {closed, wins, losses, totalPnl, winRate, avgWin, avgLoss, avgRRR,
+          totalLots, expectancy, profitFactor, sharpe, equity, grossWin, grossLoss};
+}
+
+function jv2RenderStats() {
+  const el = document.getElementById('jv2-stats');
+  if (!el) return;
+  const s = jv2CalcStats();
+  const pnlCls = s.totalPnl >= 0 ? 'pos' : 'neg';
+
+  const stats = [
+    {label:'Equity', val: '$' + s.equity.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}), cls:''},
+    {label:'Balance', val: '$' + s.equity.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}), cls:''},
+    {label:'Win Rate', val: s.closed.length ? s.winRate.toFixed(2)+'%' : '—', cls: s.winRate>=50?'pos':'neg'},
+    {label:'Average Profit', val: s.avgWin > 0 ? '$'+s.avgWin.toFixed(2) : '—', cls:'pos'},
+    {label:'Average Loss', val: s.avgLoss > 0 ? '-$'+s.avgLoss.toFixed(2) : '—', cls:'neg'},
+    {label:'Number of Trades', val: s.closed.length, cls:''},
+    {label:'Lots', val: s.totalLots.toFixed(2), cls:''},
+    {label:'Sharpe Ratio', val: s.closed.length ? s.sharpe.toFixed(2) : '—', cls: s.sharpe>0?'pos':s.sharpe<0?'neg':''},
+    {label:'Average RRR', val: s.avgRRR > 0 ? s.avgRRR.toFixed(2) : '—', cls:''},
+    {label:'Expectancy', val: s.closed.length ? (s.expectancy>=0?'$':'-$')+Math.abs(s.expectancy).toFixed(2) : '—', cls: s.expectancy>=0?'pos':'neg'},
+    {label:'Profit Factor', val: s.closed.length ? s.profitFactor.toFixed(2) : '—', cls: s.profitFactor>=1?'pos':'neg'},
+    {label:'Total P&L', val: (s.totalPnl>=0?'+$':'-$')+Math.abs(s.totalPnl).toFixed(2), cls: pnlCls},
+  ];
+
+  el.innerHTML = stats.map(s => `
+    <div class="jv2-stat">
+      <div class="jv2-stat-label">${s.label}</div>
+      <div class="jv2-stat-val ${s.cls}">${s.val}</div>
+    </div>`).join('');
+}
+
+// ── Discipline Score gauge ────────────────────────────────────────────────────
+function jv2RenderDiscipline() {
+  const canvas = document.getElementById('jv2-disc-canvas');
+  const pctEl  = document.getElementById('jv2-disc-pct');
+  const lblEl  = document.getElementById('jv2-disc-label');
+  if (!canvas) return;
+
+  const closed = jTrades.filter(t => t.status === 'CLOSED');
+  if (!closed.length) { if(pctEl) pctEl.textContent='—'; return; }
+
+  // Score based on: win rate, avg RRR, stops used, consistency
+  const s = jv2CalcStats();
+  let score = 0;
+  score += Math.min(s.winRate, 70) / 70 * 35;           // Win rate (max 35pts)
+  score += Math.min(s.avgRRR, 3) / 3 * 30;              // RRR (max 30pts)
+  const hasSL = closed.filter(t => t.sl).length / closed.length;
+  score += hasSL * 20;                                    // Stop use (max 20pts)
+  score += Math.min(s.profitFactor, 2) / 2 * 15;        // Profit factor (max 15pts)
+  score = Math.min(Math.round(score), 100);
+
+  if (pctEl) pctEl.textContent = score + '%';
+  if (lblEl) lblEl.textContent = score >= 80 ? 'Excellent' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Needs Work';
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H - 10, r = Math.min(W, H*1.8) / 2 - 10;
+  const startA = Math.PI, endA = 2 * Math.PI;
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startA, endA);
+  ctx.strokeStyle = 'rgba(34,197,94,0.1)';
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Color gradient arc
+  const scoreA = startA + (score / 100) * Math.PI;
+  const color = score >= 80 ? '#22c55e' : score >= 30 ? '#f59e0b' : '#ef4444';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startA, scoreA);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Tick marks
+  for (let i = 0; i <= 10; i++) {
+    const a = startA + (i / 10) * Math.PI;
+    const x1 = cx + (r-10) * Math.cos(a), y1 = cy + (r-10) * Math.sin(a);
+    const x2 = cx + (r+2)  * Math.cos(a), y2 = cy + (r+2)  * Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'rgba(34,197,94,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Labels 0%, 50%, 100%
+  ctx.fillStyle = 'rgba(167,243,208,0.4)';
+  ctx.font = '10px DM Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('0%',   cx - r - 4, cy + 14);
+  ctx.fillText('50%',  cx,         cy - r - 6);
+  ctx.fillText('100%', cx + r + 4, cy + 14);
+}
+
+// ── Daily Summary table ───────────────────────────────────────────────────────
+function jv2RenderDailyTable() {
+  const tbody = document.getElementById('jv2-daily-body');
+  if (!tbody) return;
+  const byDate = {};
+  jTrades.filter(t => t.status === 'CLOSED').forEach(t => {
+    const d = (t.date||'').slice(0,10);
+    if (!d) return;
+    if (!byDate[d]) byDate[d] = {trades:0, lots:0, pnl:0};
+    byDate[d].trades++;
+    byDate[d].lots += parseFloat(t.size)||0;
+    byDate[d].pnl  += t.pnl||0;
+  });
+  const sorted = Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).slice(0,8);
+  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--t4);font-size:11px">No closed trades yet</td></tr>'; return; }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  tbody.innerHTML = sorted.map(([d, v]) => {
+    const dt = new Date(d+'T00:00:00');
+    const label = dt.getDate() + ' ' + months[dt.getMonth()];
+    const pnlCls = v.pnl >= 0 ? 'jv2-daily-pnl-pos' : 'jv2-daily-pnl-neg';
+    const pnlStr = (v.pnl>=0?'$':'-$') + Math.abs(v.pnl).toFixed(2);
+    return `<tr><td>${label}</td><td>${v.trades}</td><td>${v.lots.toFixed(2)}</td><td class="${pnlCls}">${pnlStr}</td></tr>`;
+  }).join('');
+}
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+function jv2RenderCal() {
+  const grid = document.getElementById('jv2-cal2-grid');
+  const monthEl = document.getElementById('jv2-cal2-month');
+  const monthPnlEl = document.getElementById('jv2-cal2-monthpnl');
+  const tradingDaysEl = document.getElementById('jv2-cal2-tradingdays');
+  if (!grid) return;
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const year = jv2CalYear, month = jv2CalMonth;
+  const first = new Date(year, month, 1);
+  const last  = new Date(year, month+1, 0);
+  const now   = new Date();
+
+  if (monthEl) monthEl.textContent = months[month] + ' ' + year;
+
+  // Group trades by date
+  const byDate = {};
+  jTrades.filter(t=>t.status==='CLOSED').forEach(t => {
+    const d = (t.date||'').slice(0,10);
+    if (!d) return;
+    if (!byDate[d]) byDate[d] = {trades:0, lots:0, pnl:0};
+    byDate[d].trades++;
+    byDate[d].lots += parseFloat(t.size)||0;
+    byDate[d].pnl  += t.pnl||0;
+  });
+
+  // Month stats
+  const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+  const monthDays = Object.entries(byDate).filter(([d]) => d.startsWith(prefix));
+  const monthPnl  = monthDays.reduce((s,[,v]) => s+v.pnl, 0);
+  const tradingDays = monthDays.length;
+  if (monthPnlEl) {
+    monthPnlEl.textContent = (monthPnl>=0?'+$':'-$') + Math.abs(monthPnl).toFixed(2);
+    monthPnlEl.style.color = monthPnl >= 0 ? '#4ade80' : '#f87171';
+  }
+  if (tradingDaysEl) tradingDaysEl.textContent = tradingDays;
+
+  let html = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="jv2-cal2-dow">${d}</div>`).join('');
+
+  // Leading empty
+  const startDow = (first.getDay() + 6) % 7;
+  for (let i=0; i<startDow; i++) {
+    const pd = new Date(year, month, -startDow+i+1);
+    html += `<div class="jv2-cal2-day other-month"><div class="jv2-cal2-daynum">${pd.getDate()}</div></div>`;
+  }
+
+  for (let day=1; day<=last.getDate(); day++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const data = byDate[dateStr];
+    const isToday = year===now.getFullYear() && month===now.getMonth() && day===now.getDate();
+    const hasTrades = !!data;
+    const isNeg = data && data.pnl < 0;
+
+    let inner = `<div class="jv2-cal2-daynum">${day}</div>`;
+    if (data) {
+      const pnlStr = (data.pnl>=0?'$':'-$') + Math.abs(data.pnl).toFixed(2);
+      inner += `<div class="jv2-cal2-daypnl ${data.pnl>=0?'pos':'neg'}">${pnlStr}</div>`;
+      inner += `<div class="jv2-cal2-trades">Trades: ${data.trades}</div>`;
+    }
+    html += `<div class="jv2-cal2-day${isToday?' today':''}${hasTrades?' has-trades':''}${isNeg?' neg-day':''}">${inner}</div>`;
+  }
+
+  const lastDow = (last.getDay()+6)%7;
+  for (let i=lastDow+1; i<7; i++) {
+    html += `<div class="jv2-cal2-day other-month"><div class="jv2-cal2-daynum">${i-lastDow}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function jv2CalPrev(){ if(jv2CalMonth===0){jv2CalMonth=11;jv2CalYear--;}else{jv2CalMonth--;} jv2RenderCal(); }
+function jv2CalNext(){ if(jv2CalMonth===11){jv2CalMonth=0;jv2CalYear++;}else{jv2CalMonth++;} jv2RenderCal(); }
+function jv2CalToday(){ jv2CalYear=new Date().getFullYear(); jv2CalMonth=new Date().getMonth(); jv2RenderCal(); }
+
+// ── Closed Trades table ───────────────────────────────────────────────────────
+function jv2RenderTrades(trades) {
+  const tbody = document.getElementById('jv2-trades-body');
+  if (!tbody) return;
+  const list = trades || jTrades.filter(t=>t.status==='CLOSED');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:'DM Mono',monospace">No closed trades yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(t => {
+    const pnlCls = t.pnl!=null ? (t.pnl>=0?'jv2-td-pos':'jv2-td-neg') : '';
+    const pnlStr = t.pnl!=null ? (t.pnl>=0?'+$':'-$')+Math.abs(t.pnl).toFixed(2) : '—';
+    const dirCls = t.direction==='LONG' ? 'jv2-dir-long' : 'jv2-dir-short';
+    return `<tr>
+      <td>${t.date||'—'}</td>
+      <td style="color:var(--t1);font-weight:600">${t.asset||t.symbol||'—'}</td>
+      <td><span class="${dirCls}">${t.direction||'—'}</span></td>
+      <td>${t.entry?parseFloat(t.entry).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
+      <td>${t.exit?parseFloat(t.exit).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
+      <td>${t.size!=null?parseFloat(t.size).toFixed(2):'—'}</td>
+      <td style="color:#f87171">${t.sl?parseFloat(t.sl).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
+      <td style="color:#4ade80">${t.tp?parseFloat(t.tp).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
+      <td>${t.rr?'1:'+t.rr:'—'}</td>
+      <td class="${pnlCls}">${pnlStr}</td>
+      <td><span class="jstatus-closed">CLOSED</span></td>
+      <td style="display:flex;gap:5px">
+        <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
+        <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade('${t.id}')">AI</button>
+        <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function jv2FilterTrades() {
+  const q   = (document.getElementById('jv2-search')?.value||'').toLowerCase();
+  const dir = document.getElementById('jv2-filter-dir')?.value||'';
+  const res = document.getElementById('jv2-filter-result')?.value||'';
+  let list = jTrades.filter(t=>t.status==='CLOSED');
+  if (q)   list = list.filter(t=>(t.asset||t.symbol||'').toLowerCase().includes(q));
+  if (dir) list = list.filter(t=>t.direction===dir);
+  if (res==='win')  list = list.filter(t=>(t.pnl||0)>0);
+  if (res==='loss') list = list.filter(t=>(t.pnl||0)<0);
+  jv2RenderTrades(list);
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+function jv2SetEquityMode(mode) {
+  jv2EquityMode = mode;
+  document.getElementById('jv2-eq-abs')?.classList.toggle('active', mode==='abs');
+  document.getElementById('jv2-eq-pct')?.classList.toggle('active', mode==='pct');
+  jv2RenderCharts();
+}
+
+function jv2RenderCharts() {
+  if (typeof Chart === 'undefined') return;
+  const closed = jTrades.filter(t=>t.status==='CLOSED').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if (!closed.length) return;
+
+  // Equity curve
+  const base = 10000;
+  let running = base;
+  const eqLabels = [], eqData = [], balData = [];
+  closed.forEach((t,i) => {
+    running += t.pnl||0;
+    eqLabels.push(t.date?.slice(5)||i);
+    eqData.push(jv2EquityMode==='abs' ? parseFloat(running.toFixed(2)) : parseFloat(((running/base-1)*100).toFixed(2)));
+    balData.push(jv2EquityMode==='abs' ? parseFloat(running.toFixed(2)) : parseFloat(((running/base-1)*100).toFixed(2)));
+  });
+
+  const eqCanvas = document.getElementById('jv2-equity-chart');
+  if (eqCanvas) {
+    if (jv2Charts.equity) jv2Charts.equity.destroy();
+    jv2Charts.equity = new Chart(eqCanvas, {
+      type:'line',
+      data:{
+        labels: eqLabels,
+        datasets:[{
+          label: jv2EquityMode==='abs' ? 'Balance ($)' : 'Return (%)',
+          data: eqData,
+          borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.08)',
+          borderWidth:2, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:4
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'rgba(7,13,7,0.95)', borderColor:'rgba(34,197,94,0.3)', borderWidth:1,
+            titleColor:'#a7f3d0', bodyColor:'#a7f3d0', padding:10,
+            callbacks:{label: ctx => `Balance: ${jv2EquityMode==='abs'?'$':''}${ctx.raw}${jv2EquityMode==='pct'?'%':''}`}
+          }
+        },
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},maxTicksLimit:12}},
+          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},callback:v=>jv2EquityMode==='abs'?'$'+v:v+'%'}}
+        }
+      }
+    });
+  }
+
+  // Win/Loss distribution
+  const wlCanvas = document.getElementById('jv2-wl-chart');
+  if (wlCanvas) {
+    const wins = closed.filter(t=>(t.pnl||0)>0).length;
+    const losses = closed.length - wins;
+    if (jv2Charts.wl) jv2Charts.wl.destroy();
+    jv2Charts.wl = new Chart(wlCanvas, {
+      type:'doughnut',
+      data:{
+        labels:['Wins','Losses'],
+        datasets:[{data:[wins,losses], backgroundColor:['rgba(34,197,94,0.7)','rgba(239,68,68,0.7)'], borderColor:['#22c55e','#ef4444'], borderWidth:1}]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{legend:{labels:{color:'rgba(167,243,208,0.5)',font:{size:10},boxWidth:10}}}
+      }
+    });
+  }
+
+  // P&L by asset
+  const assetCanvas = document.getElementById('jv2-asset-chart');
+  if (assetCanvas) {
+    const byAsset = {};
+    closed.forEach(t => {
+      const a = t.asset||t.symbol||'Other';
+      byAsset[a] = (byAsset[a]||0) + (t.pnl||0);
+    });
+    const sorted = Object.entries(byAsset).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,8);
+    if (jv2Charts.asset) jv2Charts.asset.destroy();
+    jv2Charts.asset = new Chart(assetCanvas, {
+      type:'bar',
+      data:{
+        labels: sorted.map(([a])=>a),
+        datasets:[{
+          data: sorted.map(([,v])=>parseFloat(v.toFixed(2))),
+          backgroundColor: sorted.map(([,v])=>v>=0?'rgba(34,197,94,0.6)':'rgba(239,68,68,0.6)'),
+          borderColor: sorted.map(([,v])=>v>=0?'#22c55e':'#ef4444'),
+          borderWidth:1
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9}}},
+          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},callback:v=>'$'+v}}
+        }
+      }
+    });
+  }
+}
+
+// ── Economic Calendar ─────────────────────────────────────────────────────────
+const COUNTRY_FLAGS = {
+  USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',AUD:'🇦🇺',CAD:'🇨🇦',
+  CHF:'🇨🇭',NZD:'🇳🇿',CNY:'🇨🇳',CNH:'🇨🇳',RUB:'🇷🇺',TRY:'🇹🇷',
+  INR:'🇮🇳',BRL:'🇧🇷',ZAR:'🇿🇦',MXN:'🇲🇽',KRW:'🇰🇷',SGD:'🇸🇬',
+  HKD:'🇭🇰',SEK:'🇸🇪',NOK:'🇳🇴',DKK:'🇩🇰',
+};
+
+async function jv2LoadEco() {
+  const tbody = document.getElementById('jv2-eco-body');
+  const dateEl = document.getElementById('jv2-eco-date');
+  if (!tbody) return;
+
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (dateEl) dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+
+  // Try to fetch from our backend proxy
+  try {
+    const r = await fetch('/api/economic_calendar');
+    if (r.ok) {
+      const data = await r.json();
+      jv2EcoEvents = data;
+      jv2RenderEco();
+      return;
+    }
+  } catch(e) {}
+
+  // Fallback — show sample data
+  jv2EcoEvents = [
+    {time:'08:30', currency:'USD', impact:'high',   event:'CPI y/y',              actual:'3.2%', forecast:'3.1%', previous:'3.0%'},
+    {time:'08:30', currency:'USD', impact:'high',   event:'Core CPI m/m',         actual:'—',    forecast:'0.3%', previous:'0.4%'},
+    {time:'10:00', currency:'GBP', impact:'high',   event:'PPI Input m/m',        actual:'—',    forecast:'2.9%', previous:'0.8%'},
+    {time:'10:00', currency:'GBP', impact:'medium', event:'RPI y/y',              actual:'—',    forecast:'3.9%', previous:'3.6%'},
+    {time:'13:30', currency:'EUR', impact:'medium', event:'ECB Meeting Minutes',  actual:'—',    forecast:'—',    previous:'—'},
+    {time:'15:00', currency:'USD', impact:'medium', event:'Existing Home Sales',  actual:'—',    forecast:'4.16M',previous:'4.26M'},
+    {time:'15:30', currency:'CAD', impact:'low',    event:'NHPI m/m',             actual:'—',    forecast:'0.3%', previous:'0.2%'},
+    {time:'19:00', currency:'JPY', impact:'low',    event:'Trade Balance',        actual:'—',    forecast:'0.23T',previous:'-0.37T'},
+  ];
+  jv2RenderEco();
+}
+
+function jv2RenderEco() {
+  const tbody = document.getElementById('jv2-eco-body');
+  if (!tbody) return;
+  const filter = jv2EcoCurrentFilter;
+  const events = filter==='all' ? jv2EcoEvents : jv2EcoEvents.filter(e=>e.impact===filter);
+  if (!events.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px">No events for selected filter</td></tr>';
+    return;
+  }
+  tbody.innerHTML = events.map(e => {
+    const flag = COUNTRY_FLAGS[e.currency] || '🌐';
+    const impBar = `<span class="jv2-eco-imp ${e.impact}"></span>`;
+    const actualCls = e.actual && e.actual!=='—' && e.forecast && e.forecast!=='—'
+      ? (parseFloat(e.actual) >= parseFloat(e.forecast) ? 'jv2-eco-actual-pos' : 'jv2-eco-actual-neg')
+      : 'jv2-eco-val';
+    return `<tr class="jv2-eco-${e.impact}">
+      <td>${impBar} ${e.event}</td>
+      <td><span class="jv2-eco-flag">${flag}</span><span style="font-family:'DM Mono',monospace;font-size:11px">${e.currency}</span></td>
+      <td><div class="jv2-eco-time">${e.time}</div></td>
+      <td class="${actualCls}">${e.actual||'—'}</td>
+      <td class="jv2-eco-val">${e.forecast||'—'}</td>
+      <td class="jv2-eco-val">${e.previous||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function jv2EcoFilter(filter, btn) {
+  jv2EcoCurrentFilter = filter;
+  document.querySelectorAll('.jv2-eco-filter').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  jv2RenderEco();
+}
+
+// ── Init override — patch loadJournal to call jv2 render ─────────────────────
+const _origLoadJournal = loadJournal;
+window.loadJournal = async function() {
+  try {
+    const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
+    if (r.ok) jTrades = await r.json();
+  } catch(e) {
+    jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]');
+  }
+  renderJournal();
+  setTimeout(populateBrokers, 50);
+};
+
+// Init journal v2 when page becomes active
+const _origGoPage2 = window.goPage;
+window.goPage = function(page) {
+  _origGoPage2(page);
+  if (page === 'journal-page') {
+    setTimeout(() => {
+      jv2RenderMT5Block();
+      jv2RenderStats();
+      jv2RenderDailyTable();
+      jv2RenderDiscipline();
+    }, 100);
+  }
+};
 </script>
 
 </body>
