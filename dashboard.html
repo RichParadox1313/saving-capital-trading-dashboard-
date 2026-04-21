@@ -2477,10 +2477,10 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
    JOURNAL V2 — Professional Trading Journal
 ═══════════════════════════════════════════════ */
 .jv2-wrap{min-height:100vh;background:var(--bg);padding-top:56px}
-.jv2-topbar{position:sticky;top:56px;z-index:100;background:rgba(3,7,4,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;gap:16px}
+.jv2-topbar{position:sticky;top:56px;z-index:100;background:rgba(3,7,4,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:46px;gap:12px}
 .jv2-topbar-left{display:flex;align-items:center;gap:20px;flex:1;min-width:0}
 .jv2-topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.jv2-logo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:var(--t1);white-space:nowrap}
+.jv2-logo{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--t1);white-space:nowrap}
 .jv2-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .jv2-tabs::-webkit-scrollbar{display:none}
 .jv2-tab{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -2490,24 +2490,25 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-btn-primary:hover{background:#16a34a}
 .jv2-panel{display:none}
 .jv2-panel.active{display:block}
-.jv2-main{max-width:1200px;margin:0 auto;padding:24px 24px 80px}
+.jv2-main{max-width:1300px;margin:0 auto;padding:18px 20px 80px}
 .jv2-section-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px;letter-spacing:.3px}
 
 /* Stats grid */
-.jv2-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px}
-.jv2-stat{background:var(--s1);padding:16px 18px}
-.jv2-stat-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:6px;display:flex;align-items:center;gap:4px}
-.jv2-stat-val{font-size:20px;font-weight:600;color:var(--t1);font-family:'DM Mono',monospace}
+.jv2-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.jv2-stat{background:var(--s1);padding:12px 16px}
+.jv2-stat-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.jv2-stat-val{font-size:17px;font-weight:600;color:var(--t1);font-family:'DM Mono',monospace}
 .jv2-stat-val.pos{color:#4ade80}
 .jv2-stat-val.neg{color:#f87171}
 .jv2-stat-val.neu{color:var(--gold)}
 
 /* Two col layout */
-.jv2-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-@media(max-width:768px){.jv2-two-col{grid-template-columns:1fr}.jv2-stats-grid{grid-template-columns:1fr}}
+.jv2-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:900px){.jv2-stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.jv2-two-col{grid-template-columns:1fr}.jv2-stats-grid{grid-template-columns:1fr}.jv2-tabs{gap:1px}.jv2-tab{padding:4px 8px;font-size:9px}}
 
 /* Cards */
-.jv2-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:18px 20px}
+.jv2-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:14px 16px}
 .jv2-card-title{font-size:12px;font-weight:600;color:var(--t1);letter-spacing:.3px;margin-bottom:4px}
 
 /* Discipline gauge */
@@ -2597,7 +2598,7 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 /* MT5 bar */
 .jv2-mt5-connected{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);font-family:'DM Mono',monospace}
 .jv2-mt5-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);flex-shrink:0}
-.jv2-mt5-card{background:var(--s2);border:1px solid var(--br2);border-radius:12px;padding:18px 20px;margin-bottom:20px}
+.jv2-mt5-card{background:var(--s2);border:1px solid var(--br2);border-radius:12px;padding:14px 18px;margin-bottom:16px}
 
 </style>
 </head>
@@ -7287,6 +7288,10 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div class="jv2-main">
 
       <!-- MT5 Connect / Status -->
+      <div class="jv2-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>MT5 Account</span>
+        <span id="jv2-mt5-status-inline" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--t4)"></span>
+      </div>
       <div id="jv2-mt5-block"></div>
 
       <!-- Statistics -->
@@ -7304,7 +7309,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
               <span><span class="jv2-disc-dot" style="background:#f59e0b"></span>30 – 80%</span>
               <span><span class="jv2-disc-dot" style="background:#22c55e"></span>80 – 100%</span>
             </div>
-            <canvas id="jv2-disc-canvas" width="260" height="140"></canvas>
+            <canvas id="jv2-disc-canvas" width="220" height="120"></canvas>
             <div class="jv2-disc-pct" id="jv2-disc-pct">—</div>
             <div class="jv2-disc-label" id="jv2-disc-label">No data</div>
           </div>
@@ -8473,10 +8478,10 @@ function jv2RenderStats() {
   const stats = [
     {label:'Equity', val: '$' + s.equity.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}), cls:''},
     {label:'Balance', val: '$' + s.equity.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}), cls:''},
-    {label:'Win Rate', val: s.closed.length ? s.winRate.toFixed(2)+'%' : '—', cls: s.winRate>=50?'pos':'neg'},
-    {label:'Average Profit', val: s.avgWin > 0 ? '$'+s.avgWin.toFixed(2) : '—', cls:'pos'},
-    {label:'Average Loss', val: s.avgLoss > 0 ? '-$'+s.avgLoss.toFixed(2) : '—', cls:'neg'},
-    {label:'Number of Trades', val: s.closed.length, cls:''},
+    {label:'Win Rate', val: s.closed.length ? s.winRate.toFixed(2)+'%' : '0.00%', cls: s.winRate>=50?'pos':'neu'},
+    {label:'Average Profit', val: s.avgWin > 0 ? '$'+s.avgWin.toFixed(2) : '$0.00', cls:'pos'},
+    {label:'Average Loss', val: s.avgLoss > 0 ? '-$'+s.avgLoss.toFixed(2) : '$0.00', cls:'neg'},
+    {label:'Number of Trades', val: s.closed.length || 0, cls:''},
     {label:'Lots', val: s.totalLots.toFixed(2), cls:''},
     {label:'Sharpe Ratio', val: s.closed.length ? s.sharpe.toFixed(2) : '—', cls: s.sharpe>0?'pos':s.sharpe<0?'neg':''},
     {label:'Average RRR', val: s.avgRRR > 0 ? s.avgRRR.toFixed(2) : '—', cls:''},
@@ -8910,6 +8915,19 @@ window.loadJournal = async function() {
 };
 
 // jv2 goPage merged into main patch below
+// Auto-render if journal page is already visible on load
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('page-journal-page')?.style.display !== 'none') {
+    setTimeout(() => {
+      if (typeof jv2RenderMT5Block === 'function') {
+        jv2RenderMT5Block();
+        jv2RenderStats();
+        jv2RenderDailyTable();
+        jv2RenderDiscipline();
+      }
+    }, 200);
+  }
+});
 </script>
 
 </body>
