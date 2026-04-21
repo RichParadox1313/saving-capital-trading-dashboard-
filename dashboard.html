@@ -3393,114 +3393,20 @@ function jCalToday(){ jCalYear=new Date().getFullYear(); jCalMonth=new Date().ge
 function jCalSetRange(r){ jCalRange=r; jCalToday(); }
 
 function renderJournal(){
-  const con = document.getElementById('s-journal') || document.getElementById('journal-standalone');
-  if(!con) return;
-
-  // Stats
-  const closed = jTrades.filter(t=>t.status==='CLOSED');
-  const wins   = closed.filter(t=>(t.pnl||0)>0);
-  const totalPnl = closed.reduce((s,t)=>s+(t.pnl||0),0);
-  const winRate  = closed.length ? Math.round((wins.length/closed.length)*100) : 0;
-  const avgWin   = wins.length ? wins.reduce((s,t)=>s+(t.pnl||0),0)/wins.length : 0;
-  const losses   = closed.filter(t=>(t.pnl||0)<0);
-  const avgLoss  = losses.length ? Math.abs(losses.reduce((s,t)=>s+(t.pnl||0),0)/losses.length) : 0;
-  const rr       = avgLoss>0 ? (avgWin/avgLoss).toFixed(2) : '—';
-
-  const pnlCls = totalPnl>=0?'up':'dn';
-
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
-  const mt5Block = mt5Info ? `
-    <div class="mt5-connected">
-      <div class="mt5-conn-dot"></div>
-      <div class="mt5-conn-info">MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5()" style="color:var(--g);text-decoration:none">↻ Sync now</a> · <a href="/api/mt5/accounts" target="_blank" style="color:var(--t4);text-decoration:none;font-size:9px">accounts</a> · <a href="#" onclick="disconnectMT5()" style="color:var(--t4);text-decoration:none;font-size:10px">Disconnect</a></div>
-    </div>` : `
-    <div class="mt5-connect" id="mt5-connect-box">
-      <div class="mt5-connect-title">Connect MT5 Account</div>
-      <div class="mt5-connect-sub">Enter your MetaTrader 5 credentials to automatically sync your trades to the journal. Your credentials are sent securely and never stored.</div>
-      <div class="mt5-form">
-        <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number" /></div>
-        <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password" /></div>
-        <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
-        <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
-      </div>
-      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
-        <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
-      </div>
-      <div class="mt5-status" id="mt5-status"></div>
-    </div>`;
-
-  con.innerHTML = `
-  <div class="jnl">
-    ${mt5Block}
-    <div class="jnl-header">
-      <div class="jnl-title">Trading Journal</div>
-      <div class="jnl-actions">
-        <div class="qpick-wrap" id="qpick-wrap1">
-        <button class="jbtn jbtn-primary" onclick="openQuickPick('qpick-wrap1')">+ Manual Trade ▾</button>
-        <div class="qpick-menu" id="qpick-menu1">
-          <button class="qpick-item" onclick="openJModal(null,'Forex')"><div><div class="qpick-label">Forex</div><div class="qpick-sub">EUR/USD · GBP/USD · USD/JPY</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Crypto')"><div><div class="qpick-label">Crypto</div><div class="qpick-sub">BTC · ETH · SOL</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Gold')"><div><div class="qpick-label">Gold / Commodities</div><div class="qpick-sub">XAUUSD · XAGUSD · Oil</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Stocks')"><div><div class="qpick-label">Stocks</div><div class="qpick-sub">AAPL · NVDA · TSLA</div></div></button>
-          <button class="qpick-item" onclick="openJModal(null,'Indices')"><div><div class="qpick-label">Indices</div><div class="qpick-sub">SPX · DAX · NASDAQ</div></div></button>
-          <div class="qpick-divider"></div>
-          <button class="qpick-item" onclick="openJModal(null,'Other')"><div><div class="qpick-label">Other / Custom</div><div class="qpick-sub">Any other asset</div></div></button>
-        </div>
-      </div>
-      </div>
-    </div>
-    <div class="jstats">
-      <div class="jstat"><div class="jstat-n">${jTrades.length}</div><div class="jstat-l">Total Trades</div></div>
-      <div class="jstat"><div class="jstat-n ${pnlCls}">${totalPnl>=0?'+':''}$${Math.abs(totalPnl).toFixed(0)}</div><div class="jstat-l">Total P&amp;L</div></div>
-      <div class="jstat"><div class="jstat-n ${winRate>=50?'up':'dn'}">${winRate}%</div><div class="jstat-l">Win Rate</div></div>
-      <div class="jstat"><div class="jstat-n">${rr}</div><div class="jstat-l">Avg R:R</div></div>
-      <div class="jstat"><div class="jstat-n up">$${avgWin.toFixed(0)}</div><div class="jstat-l">Avg Win</div></div>
-      <div class="jstat"><div class="jstat-n dn">$${avgLoss.toFixed(0)}</div><div class="jstat-l">Avg Loss</div></div>
-    </div>
-    <div id="jcal"></div>
-    <div class="jtable-wrap">
-      ${jTrades.length===0 ? `
-        <div class="jempty"><span>NO TRADES YET</span>
-          ${mt5Info ? 'Click ↻ Sync now to import trades from MT5' : 'Connect MT5 or click "+ Manual Trade" to add your first trade'}
-          <br><a href="/api/journal/debug" target="_blank" style="color:var(--g);font-size:9px;font-family:monospace;margin-top:8px;display:inline-block">Debug journal storage →</a>
-        </div>
-      ` : `
-      <table class="jtable">
-        <thead>
-          <tr>
-            <th>Date</th><th>Asset</th><th>Direction</th>
-            <th>Entry</th><th>Exit</th><th>Lots</th>
-            <th>SL</th><th>TP</th>
-            <th>P&amp;L</th><th>Status</th><th>Notes</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${jTrades.map(t=>`
-            <tr>
-              <td class="jmono">${t.date||'—'}</td>
-              <td><strong>${t.asset||t.symbol||'—'}</strong></td>
-              <td><span class="${t.direction==='LONG'?'jdir-long':'jdir-short'}">${t.direction||'—'}</span></td>
-              <td class="jmono">${t.entry?parseFloat(t.entry).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-              <td class="jmono">${t.exit?parseFloat(t.exit).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-              <td class="jmono">${t.size!=null?parseFloat(t.size).toFixed(2)+' L':'—'}</td>
-              <td class="jmono" style="color:#f87171">${t.sl?parseFloat(t.sl).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-              <td class="jmono" style="color:#4ade80">${t.tp?parseFloat(t.tp).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-              <td class="${t.pnl===null||t.pnl===undefined?'':t.pnl>=0?'jpnl-pos':'jpnl-neg'}">${t.pnl!==null&&t.pnl!==undefined?(t.pnl>=0?'+':'')+' $'+Math.abs(t.pnl).toFixed(2):'—'}</td>
-              <td><span class="${t.status==='OPEN'?'jstatus-open':'jstatus-closed'}">${t.status||'—'}</span></td>
-              <td class="jnotes" title="${t.notes||''}">${(t.notes||'—').slice(0,30)}</td>
-              <td style="white-space:nowrap;display:flex;gap:5px">
-                <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
-                <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade('${t.id}')">AI</button>
-                <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      `}
-    </div>
-  </div>`;
+  // Delegate to jv2 if journal v2 is active
+  if (typeof jv2RenderStats === 'function' && document.getElementById('jv2-stats')) {
+    jv2RenderMT5Block();
+    jv2RenderStats();
+    jv2RenderDailyTable();
+    jv2RenderDiscipline();
+    if (jv2Tab === 'calendar') jv2RenderCal();
+    if (jv2Tab === 'trades')   jv2RenderTrades();
+    if (jv2Tab === 'charts')   setTimeout(jv2RenderCharts, 150);
+    return;
+  }
+  // Fallback for old journal (should not be reached)
+  const con = document.getElementById('journal-standalone');
+  if (con) con.innerHTML = '';
 }
 
 // ── Quick-pick popup ─────────────────────────────────────────────────────────
@@ -7288,11 +7194,50 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div class="jv2-main">
 
       <!-- MT5 Connect / Status -->
-      <div class="jv2-section-title" style="display:flex;align-items:center;justify-content:space-between">
-        <span>MT5 Account</span>
-        <span id="jv2-mt5-status-inline" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--t4)"></span>
+      <div id="jv2-mt5-block">
+        <div class="jv2-mt5-card" id="jv2-mt5-connect-form">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--t1)">Connect MT5 Account</div>
+            <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;padding:3px 10px;border:1px solid var(--br);border-radius:20px">Powered by MetaAPI · Encrypted</span>
+          </div>
+          <div style="font-size:11px;color:var(--t4);margin-bottom:14px;line-height:1.6">Enter your MetaTrader 5 credentials to automatically sync your trades. Your credentials are sent securely and never stored on our servers.</div>
+          <div class="mt5-form">
+            <div>
+              <label class="jlabel">Account Number</label>
+              <input class="jinput" id="mt5-login" placeholder="e.g. 12345678" type="number"/>
+            </div>
+            <div>
+              <label class="jlabel">Password</label>
+              <input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password"/>
+            </div>
+            <div style="grid-column:1/-1">
+              <label class="jlabel">Broker</label>
+              <select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%">
+                <option value="">— Select your broker —</option>
+              </select>
+            </div>
+            <div style="grid-column:1/-1">
+              <label class="jlabel">Server</label>
+              <select class="jselect" id="mt5-server" disabled style="width:100%">
+                <option value="">— Select broker first —</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button class="jbtn jbtn-primary" onclick="connectMT5()" style="padding:10px 22px">
+              🔗 Connect Account
+            </button>
+            <span style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace">Your credentials are never stored</span>
+          </div>
+          <div class="mt5-status" id="mt5-status"></div>
+        </div>
+        <div id="jv2-mt5-connected-bar" style="display:none;margin-bottom:16px">
+          <div class="mt5-connected">
+            <div class="mt5-conn-dot"></div>
+            <div class="mt5-conn-info" id="jv2-mt5-conn-info">MT5 Connected</div>
+          </div>
+        </div>
       </div>
-      <div id="jv2-mt5-block"></div>
 
       <!-- Statistics -->
       <div class="jv2-section-title">Statistics</div>
@@ -8088,6 +8033,12 @@ window.goPage = function(page) {
   _origGoPage(page);
   // Journal — load data and render V2
   if (page === 'journal-page') {
+    // Immediately show MT5 form and stats (no async needed)
+    if (typeof jv2RenderMT5Block === 'function') jv2RenderMT5Block();
+    if (typeof jv2RenderStats === 'function') jv2RenderStats();
+    if (typeof jv2RenderDailyTable === 'function') jv2RenderDailyTable();
+    if (typeof jv2RenderDiscipline === 'function') jv2RenderDiscipline();
+    // Then fetch trades async
     setTimeout(async () => {
       try {
         const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
@@ -8095,13 +8046,12 @@ window.goPage = function(page) {
       } catch(e) {
         jTrades = JSON.parse(localStorage.getItem('sc_journal') || '[]');
       }
-      if (typeof jv2RenderMT5Block === 'function') {
-        jv2RenderMT5Block();
+      if (typeof jv2RenderStats === 'function') {
         jv2RenderStats();
         jv2RenderDailyTable();
         jv2RenderDiscipline();
       }
-    }, 80);
+    }, 100);
   }
 };
 
@@ -8407,31 +8357,24 @@ function renderJournal() {
 
 // ── MT5 Block ─────────────────────────────────────────────────────────────────
 function jv2RenderMT5Block() {
-  const block = document.getElementById('jv2-mt5-block');
   const statusBar = document.getElementById('jv2-mt5-status-bar');
-  if (!block) return;
+  const connectForm = document.getElementById('jv2-mt5-connect-form');
+  const connectedBar = document.getElementById('jv2-mt5-connected-bar');
+  const connInfo = document.getElementById('jv2-mt5-conn-info');
   const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
+
   if (mt5Info) {
-    if (statusBar) statusBar.innerHTML = `<div class="jv2-mt5-connected"><div class="jv2-mt5-dot"></div><span>${mt5Info.broker || mt5Info.server} · #${mt5Info.login}</span><a href="#" onclick="syncMT5();return false" style="color:var(--g);margin-left:6px">↻ Sync</a><a href="#" onclick="disconnectMT5();return false" style="color:var(--t4);margin-left:8px;font-size:9px">Disconnect</a></div>`;
-    block.innerHTML = '';
+    // Show connected state
+    if (connectForm) connectForm.style.display = 'none';
+    if (connectedBar) connectedBar.style.display = 'block';
+    if (connInfo) connInfo.innerHTML = `MT5 Connected: <strong>${mt5Info.broker||mt5Info.server}</strong> · Account #${mt5Info.login} · <a href="#" onclick="syncMT5();return false" style="color:var(--g)">↻ Sync now</a> · <a href="#" onclick="disconnectMT5();return false" style="color:var(--t4);font-size:10px">Disconnect</a>`;
+    if (statusBar) statusBar.innerHTML = `<div class="jv2-mt5-connected"><div class="jv2-mt5-dot"></div><span>${mt5Info.broker||mt5Info.server} · #${mt5Info.login}</span><a href="#" onclick="syncMT5();return false" style="color:var(--g);margin-left:6px">↻ Sync</a></div>`;
   } else {
+    // Show connect form
+    if (connectForm) connectForm.style.display = 'block';
+    if (connectedBar) connectedBar.style.display = 'none';
     if (statusBar) statusBar.innerHTML = '';
-    block.innerHTML = `
-      <div class="jv2-mt5-card">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--t1);margin-bottom:4px">Connect MT5 Account</div>
-        <div style="font-size:12px;color:var(--t4);margin-bottom:16px;line-height:1.6">Enter your MetaTrader 5 credentials to automatically sync trades. Credentials are sent securely and never stored.</div>
-        <div class="mt5-form">
-          <div><label class="jlabel">Account Number</label><input class="jinput" id="mt5-login" placeholder="12345678" type="number"/></div>
-          <div><label class="jlabel">Password</label><input class="jinput" id="mt5-password" placeholder="MT5 password" type="password"/></div>
-          <div style="grid-column:1/-1"><label class="jlabel">Broker</label><select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%"><option value="">— Select Broker —</option></select></div>
-          <div style="grid-column:1/-1"><label class="jlabel">Server</label><select class="jselect" id="mt5-server" disabled style="width:100%"><option value="">— Select Broker First —</option></select></div>
-        </div>
-        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-          <button class="jbtn jbtn-primary" onclick="connectMT5()">🔗 Connect Account</button>
-          <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace">Powered by MetaAPI · Encrypted · Secure</span>
-        </div>
-        <div class="mt5-status" id="mt5-status"></div>
-      </div>`;
+    // Populate brokers
     setTimeout(populateBrokers, 50);
   }
 }
