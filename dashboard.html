@@ -2619,33 +2619,53 @@ img, video, canvas, svg { max-width: 100%; }
   /* ── HOME NAV ── */
   .hp-nav {
     padding: 0 14px;
-    height: 54px;
+    height: 52px;
+    overflow: hidden;
   }
-  .hp-logo { font-size: 0.85rem; letter-spacing: 2px; gap: 6px; }
-  .hp-logo svg { width: 16px; height: 16px; }
-  .hp-nav-pills { padding: 3px; gap: 1px; }
-  .hp-np { font-size: 8px; letter-spacing: 0.8px; padding: 5px 8px; }
-  .hp-nav-r { gap: 8px; }
+  .hp-logo { font-size: 0.82rem; letter-spacing: 1.5px; gap: 5px; flex-shrink: 0; }
+  .hp-logo svg { width: 14px; height: 14px; }
+  .hp-nav-pills { padding: 2px; gap: 0; flex-shrink: 1; min-width: 0; overflow: hidden; }
+  .hp-np {
+    font-size: 7px;
+    letter-spacing: 0.5px;
+    padding: 5px 7px;
+    white-space: nowrap;
+  }
+  /* Hide Quant Tools pill on mobile — too long */
+  #np-quant { display: none; }
+  .hp-nav-r { gap: 6px; flex-shrink: 0; }
   .hp-clk { display: none; }
-  .hp-live { gap: 3px; font-size: 8px; }
+  .hp-live { display: none; }
+  /* Make auth buttons compact */
+  .hp-nav-r .sc-nav-btn {
+    padding: 5px 10px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.5px !important;
+    margin-right: 0 !important;
+  }
+  /* Hide Sign In text, show only Get Started */
+  .hp-nav-r .sc-nav-btn:not(.subscribe) { display: none; }
 
   /* ── HERO TITLE — this is the main overflow culprit ── */
   .hp-hero {
     grid-template-columns: 1fr;
-    padding: 70px 18px 32px;
+    padding: 62px 16px 28px;
     min-height: auto;
-    gap: 20px;
+    gap: 16px;
+    overflow: hidden;
   }
   .hp-right { display: none; }
   .hp-left { width: 100%; max-width: 100%; overflow: hidden; }
+  .hp-h1 span { display: inline; }
   .hp-h1 {
-    font-size: clamp(2.2rem, 10.5vw, 3.4rem) !important;
-    line-height: 0.92;
-    letter-spacing: -1px;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    font-size: clamp(2rem, 9.5vw, 3.2rem) !important;
+    line-height: 0.95;
+    letter-spacing: -0.5px;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
   }
-  .hp-h1-g { word-break: break-word; }
+  .hp-h1-g { display: inline; }
   .hp-eyebrow { font-size: 8px; letter-spacing: 2px; margin-bottom: 14px; flex-wrap: wrap; gap: 6px; }
   .hp-body { font-size: 13px; max-width: 100%; margin-bottom: 20px; line-height: 1.6; }
 
@@ -8052,6 +8072,13 @@ function scAuthTab(tab) {
   const signupPanel = document.getElementById('sc-signup-panel');
   if (loginPanel)  loginPanel.style.display  = tab==='login'  ? 'block' : 'none';
   if (signupPanel) signupPanel.style.display = tab==='signup' ? 'block' : 'none';
+  // Sync tab button states
+  document.querySelectorAll('.sc-auth-tab').forEach(btn => {
+    const isLogin  = btn.textContent.toLowerCase().includes('sign');
+    const isSignup = btn.textContent.toLowerCase().includes('create') || btn.textContent.toLowerCase().includes('account');
+    if (tab === 'login'  && isLogin)  btn.classList.add('on'); else if (isLogin)  btn.classList.remove('on');
+    if (tab === 'signup' && isSignup) btn.classList.add('on'); else if (isSignup) btn.classList.remove('on');
+  });
 }
 
 async function scDoLogin() {
@@ -8119,8 +8146,8 @@ function scUpdateNav() {
   ];
   if (!scUser) {
     areas.forEach(a => { if(a) a.innerHTML = `
-      <button class="sc-nav-btn" onclick="scShowAuth()" style="margin-right:6px">Sign In</button>
-      <button class="sc-nav-btn subscribe" onclick="scAuthTab('signup');scShowAuth()">Get Started</button>
+      <button class="sc-nav-btn" onclick="scShowAuth();scAuthTab('login')" style="margin-right:6px">Sign In</button>
+      <button class="sc-nav-btn subscribe" onclick="scShowAuth();setTimeout(()=>scAuthTab('signup'),50)">Get Started</button>
     `; });
     return;
   }
