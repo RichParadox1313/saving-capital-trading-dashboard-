@@ -3295,6 +3295,17 @@ function goPage(page){
     else renderAll();
   }
   if(page==='journal-page'){
+    // Reset panels before loading
+    document.querySelectorAll('.jv2-panel').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+    document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
+    const op = document.getElementById('jv2-panel-overview');
+    const ot = document.getElementById('jv2-tab-overview');
+    if(op){ op.classList.add('active'); op.style.display='block'; }
+    if(ot) ot.classList.add('active');
+    jv2Tab = 'overview';
     loadJournal();
   }
   if(page==='quant'){ qtInit(); }
@@ -3457,6 +3468,10 @@ function getUserId(){
 const SC_USER_ID = getUserId();
 
 async function loadJournal(){
+  // Delegate to window.loadJournal if it's been patched (journal V2)
+  if (window.loadJournal && window.loadJournal !== loadJournal) {
+    return window.loadJournal();
+  }
   try{
     const r = await fetch('/api/journal?user_id='+encodeURIComponent(SC_USER_ID));
     if(r.ok){ jTrades = await r.json(); }
@@ -8250,13 +8265,10 @@ function scShowGate(page) {
   `;
 }
 
-// Patch goPage — auth gates + journal load
+// Patch goPage — auth gates only (journal handled in original goPage)
 const _origGoPage = goPage;
 window.goPage = function(page) {
-  if (page === 'home') {
-    _origGoPage(page);
-    return;
-  }
+  if (page === 'home') { _origGoPage(page); return; }
   if (page === 'markets') {
     if (!scUser) { scShowAuth(); return; }
     _origGoPage(page);
@@ -8269,35 +8281,6 @@ window.goPage = function(page) {
     return;
   }
   _origGoPage(page);
-  // Journal — load data and render all panels
-  if (page === 'journal-page') {
-    // Immediately show MT5 form and set overview as active
-    if (typeof jv2RenderMT5Block === 'function') jv2RenderMT5Block();
-    // Reset all panels and activate overview
-    document.querySelectorAll('.jv2-panel').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
-    document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
-    const overviewPanel = document.getElementById('jv2-panel-overview');
-    const overviewTab   = document.getElementById('jv2-tab-overview');
-    if (overviewPanel) { overviewPanel.classList.add('active'); overviewPanel.style.display='block'; }
-    if (overviewTab)   overviewTab.classList.add('active');
-    jv2Tab = 'overview';
-    // Fetch trades then render
-    setTimeout(async () => {
-      try {
-        const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
-        if (r.ok) jTrades = await r.json();
-      } catch(e) {
-        jTrades = JSON.parse(localStorage.getItem('sc_journal') || '[]');
-      }
-      if (typeof jv2RenderStats === 'function') {
-        jv2RenderStats();
-        jv2RenderDailyTable();
-        jv2RenderDiscipline();
-        jv2RenderCal();
-        jv2RenderTrades();
-      }
-    }, 80);
-  }
 };
 
 // ── Payment ──────────────────────────────────────────────────────────────────
@@ -9123,31 +9106,17 @@ window.loadJournal = async function() {
   } catch(e) {
     jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]');
   }
-  // Make sure journal page and all panels are visible
-  const journalPage = document.getElementById('page-journal-page');
-  if (journalPage && journalPage.style.display !== 'none') {
-    // Ensure overview panel is active by default if no tab selected
-    const activePanel = document.querySelector('.jv2-panel.active');
-    if (!activePanel) {
-      document.getElementById('jv2-panel-overview')?.classList.add('active');
-      document.getElementById('jv2-tab-overview')?.classList.add('active');
-    }
-    if (typeof jv2RenderStats === 'function') {
-      jv2RenderMT5Block();
-      jv2RenderStats();
-      jv2RenderDailyTable();
-      jv2RenderDiscipline();
-      // Pre-render all tabs so clicking them works instantly
-      jv2RenderCal();
-      jv2RenderTrades();
-      // Render charts after a short delay (Chart.js needs DOM)
-      setTimeout(jv2RenderCharts, 200);
-    }
-  }
+  if (typeof jv2RenderStats !== 'function') return;
+  jv2RenderMT5Block();
+  jv2RenderStats();
+  jv2RenderDailyTable();
+  jv2RenderDiscipline();
+  jv2RenderCal();
+  jv2RenderTrades();
+  setTimeout(jv2RenderCharts, 150);
   setTimeout(populateBrokers, 50);
 };
 
-// jv2 goPage merged into main patch below
 // Auto-render if journal page is already visible on load
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('page-journal-page')?.style.display !== 'none') {
