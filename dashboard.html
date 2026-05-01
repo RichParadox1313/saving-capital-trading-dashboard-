@@ -2489,8 +2489,8 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-tab.active{background:var(--gdim);color:var(--g);border:1px solid var(--br)}
 .jv2-btn-primary{padding:7px 16px;background:var(--g);border:none;border-radius:7px;color:#030704;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .jv2-btn-primary:hover{background:#16a34a}
-.jv2-panel{display:none}
-.jv2-panel.active{display:block}
+.jv2-panel{display:none !important}
+.jv2-panel.active{display:block !important}
 .jv2-main{max-width:1300px;margin:0 auto;padding:18px 20px 80px}
 .jv2-section-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px;letter-spacing:.3px}
 
@@ -3411,6 +3411,13 @@ async function syncMT5(){
       await loadJournal();
       log(`✓ Journal refreshed — ${jTrades.length} trades now showing`, '#4ade80');
       log(`✓ Trading calendar updated`, '#4ade80');
+      // Switch to overview to show updated stats
+      setTimeout(() => {
+        jv2SetTab('overview');
+        jv2RenderStats();
+        jv2RenderDailyTable();
+        jv2RenderDiscipline();
+      }, 100);
 
       if(link){ link.textContent=`↻ Synced (${data.new_trades||0} new)`; }
       setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
@@ -8264,9 +8271,17 @@ window.goPage = function(page) {
   _origGoPage(page);
   // Journal — load data and render all panels
   if (page === 'journal-page') {
-    // Show MT5 form immediately
+    // Immediately show MT5 form and set overview as active
     if (typeof jv2RenderMT5Block === 'function') jv2RenderMT5Block();
-    // Fetch trades then render everything
+    // Reset all panels and activate overview
+    document.querySelectorAll('.jv2-panel').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
+    document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
+    const overviewPanel = document.getElementById('jv2-panel-overview');
+    const overviewTab   = document.getElementById('jv2-tab-overview');
+    if (overviewPanel) { overviewPanel.classList.add('active'); overviewPanel.style.display='block'; }
+    if (overviewTab)   overviewTab.classList.add('active');
+    jv2Tab = 'overview';
+    // Fetch trades then render
     setTimeout(async () => {
       try {
         const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
@@ -8274,7 +8289,6 @@ window.goPage = function(page) {
       } catch(e) {
         jTrades = JSON.parse(localStorage.getItem('sc_journal') || '[]');
       }
-      // Render all panels so they're ready when user clicks tabs
       if (typeof jv2RenderStats === 'function') {
         jv2RenderStats();
         jv2RenderDailyTable();
@@ -8559,18 +8573,29 @@ let jv2Charts = {};
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function jv2SetTab(tab) {
   jv2Tab = tab;
+  // Remove active from all tabs and panels
   document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.jv2-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.jv2-panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
   const btn = document.getElementById('jv2-tab-' + tab);
   const panel = document.getElementById('jv2-panel-' + tab);
   if (btn) btn.classList.add('active');
-  if (panel) panel.classList.add('active');
-  // Always re-render on tab click to ensure fresh data
-  if (tab === 'overview')      { jv2RenderStats(); jv2RenderDailyTable(); jv2RenderDiscipline(); }
-  if (tab === 'calendar')      setTimeout(jv2RenderCal, 50);
-  if (tab === 'charts')        setTimeout(jv2RenderCharts, 80);
-  if (tab === 'calendar_eco')  jv2LoadEco();
-  if (tab === 'trades')        jv2RenderTrades();
+  if (panel) {
+    panel.classList.add('active');
+    panel.style.display = 'block';
+  }
+  // Re-render with latest jTrades data
+  if (tab === 'overview') {
+    jv2RenderStats();
+    jv2RenderDailyTable();
+    jv2RenderDiscipline();
+  }
+  if (tab === 'calendar')     setTimeout(jv2RenderCal, 50);
+  if (tab === 'charts')       setTimeout(jv2RenderCharts, 80);
+  if (tab === 'calendar_eco') jv2LoadEco();
+  if (tab === 'trades')       jv2RenderTrades();
 }
 
 // ── Main render — called when journal loads ───────────────────────────────────
@@ -9098,13 +9123,26 @@ window.loadJournal = async function() {
   } catch(e) {
     jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]');
   }
-  if (typeof jv2RenderStats === 'function' && document.getElementById('jv2-stats')) {
-    jv2RenderMT5Block();
-    jv2RenderStats();
-    jv2RenderDailyTable();
-    jv2RenderDiscipline();
-    jv2RenderCal();
-    jv2RenderTrades();
+  // Make sure journal page and all panels are visible
+  const journalPage = document.getElementById('page-journal-page');
+  if (journalPage && journalPage.style.display !== 'none') {
+    // Ensure overview panel is active by default if no tab selected
+    const activePanel = document.querySelector('.jv2-panel.active');
+    if (!activePanel) {
+      document.getElementById('jv2-panel-overview')?.classList.add('active');
+      document.getElementById('jv2-tab-overview')?.classList.add('active');
+    }
+    if (typeof jv2RenderStats === 'function') {
+      jv2RenderMT5Block();
+      jv2RenderStats();
+      jv2RenderDailyTable();
+      jv2RenderDiscipline();
+      // Pre-render all tabs so clicking them works instantly
+      jv2RenderCal();
+      jv2RenderTrades();
+      // Render charts after a short delay (Chart.js needs DOM)
+      setTimeout(jv2RenderCharts, 200);
+    }
   }
   setTimeout(populateBrokers, 50);
 };
