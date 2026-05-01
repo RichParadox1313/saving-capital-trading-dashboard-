@@ -3295,17 +3295,13 @@ function goPage(page){
     else renderAll();
   }
   if(page==='journal-page'){
-    // Reset panels before loading
-    document.querySelectorAll('.jv2-panel').forEach(p => {
-      p.classList.remove('active');
-      p.style.display = 'none';
-    });
-    document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
-    const op = document.getElementById('jv2-panel-overview');
-    const ot = document.getElementById('jv2-tab-overview');
-    if(op){ op.classList.add('active'); op.style.display='block'; }
-    if(ot) ot.classList.add('active');
     jv2Tab = 'overview';
+    document.querySelectorAll('.jv2-panel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
+    document.querySelectorAll('.jv2-tab').forEach(b=>b.classList.remove('active'));
+    const _op=document.getElementById('jv2-panel-overview');
+    const _ot=document.getElementById('jv2-tab-overview');
+    if(_op){_op.classList.add('active');_op.style.display='block';}
+    if(_ot) _ot.classList.add('active');
     loadJournal();
   }
   if(page==='quant'){ qtInit(); }
@@ -3422,13 +3418,6 @@ async function syncMT5(){
       await loadJournal();
       log(`✓ Journal refreshed — ${jTrades.length} trades now showing`, '#4ade80');
       log(`✓ Trading calendar updated`, '#4ade80');
-      // Switch to overview to show updated stats
-      setTimeout(() => {
-        jv2SetTab('overview');
-        jv2RenderStats();
-        jv2RenderDailyTable();
-        jv2RenderDiscipline();
-      }, 100);
 
       if(link){ link.textContent=`↻ Synced (${data.new_trades||0} new)`; }
       setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
@@ -3468,17 +3457,12 @@ function getUserId(){
 const SC_USER_ID = getUserId();
 
 async function loadJournal(){
-  // Delegate to window.loadJournal if it's been patched (journal V2)
-  if (window.loadJournal && window.loadJournal !== loadJournal) {
-    return window.loadJournal();
-  }
   try{
     const r = await fetch('/api/journal?user_id='+encodeURIComponent(SC_USER_ID));
     if(r.ok){ jTrades = await r.json(); }
   }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
   renderJournal();
   setTimeout(populateBrokers, 50);
-  setTimeout(jCalRender, 80); // after renderJournal creates #jcal
 }
 
 // ── Trading Calendar ─────────────────────────────────────────────────────────
@@ -3637,20 +3621,15 @@ function jCalToday(){ jCalYear=new Date().getFullYear(); jCalMonth=new Date().ge
 function jCalSetRange(r){ jCalRange=r; jCalToday(); }
 
 function renderJournal(){
-  // Delegate to jv2 if journal v2 is active
-  if (typeof jv2RenderStats === 'function' && document.getElementById('jv2-stats')) {
-    jv2RenderMT5Block();
-    jv2RenderStats();
-    jv2RenderDailyTable();
-    jv2RenderDiscipline();
-    if (jv2Tab === 'calendar') jv2RenderCal();
-    if (jv2Tab === 'trades')   jv2RenderTrades();
-    if (jv2Tab === 'charts')   setTimeout(jv2RenderCharts, 150);
-    return;
-  }
-  // Fallback for old journal (should not be reached)
-  const con = document.getElementById('journal-standalone');
-  if (con) con.innerHTML = '';
+  // Render all V2 panels
+  if (typeof jv2RenderStats !== 'function') return;
+  jv2RenderMT5Block();
+  jv2RenderStats();
+  jv2RenderDailyTable();
+  jv2RenderDiscipline();
+  jv2RenderCal();
+  jv2RenderTrades();
+  setTimeout(jv2RenderCharts, 150);
 }
 
 // ── Quick-pick popup ─────────────────────────────────────────────────────────
@@ -8582,18 +8561,7 @@ function jv2SetTab(tab) {
 }
 
 // ── Main render — called when journal loads ───────────────────────────────────
-function renderJournal() {
-  // V2 journal — render all panels
-  if (typeof jv2RenderStats === 'function' && document.getElementById('jv2-stats')) {
-    jv2RenderMT5Block();
-    jv2RenderStats();
-    jv2RenderDailyTable();
-    jv2RenderDiscipline();
-    if (jv2Tab === 'calendar')   jv2RenderCal();
-    if (jv2Tab === 'trades')     jv2RenderTrades();
-    if (jv2Tab === 'charts')     setTimeout(jv2RenderCharts, 150);
-  }
-}
+// renderJournal defined earlier — no duplicate needed
 
 // ── MT5 Block ─────────────────────────────────────────────────────────────────
 function jv2RenderMT5Block() {
@@ -9099,23 +9067,7 @@ function jv2EcoFilter(filter, btn) {
 }
 
 // ── loadJournal — fetches trades and renders all jv2 panels ─────────────────
-window.loadJournal = async function() {
-  try {
-    const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
-    if (r.ok) jTrades = await r.json();
-  } catch(e) {
-    jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]');
-  }
-  if (typeof jv2RenderStats !== 'function') return;
-  jv2RenderMT5Block();
-  jv2RenderStats();
-  jv2RenderDailyTable();
-  jv2RenderDiscipline();
-  jv2RenderCal();
-  jv2RenderTrades();
-  setTimeout(jv2RenderCharts, 150);
-  setTimeout(populateBrokers, 50);
-};
+// loadJournal is defined above — no override needed
 
 // Auto-render if journal page is already visible on load
 document.addEventListener('DOMContentLoaded', function() {
