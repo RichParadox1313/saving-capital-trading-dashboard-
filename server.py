@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp, anthropic
-from auth_payments import register_auth_routes, get_db, close_db
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -22,33 +21,34 @@ DASHBOARD_PATH    = Path(__file__).parent / "dashboard.html"
 from fastapi.middleware.gzip import GZipMiddleware
 
 app = FastAPI()
+
+# Auth & payments system
+try:
+    from auth_payments import register_auth_routes, get_db, close_db
+    _auth_enabled = True
+except ImportError:
+    print("[STARTUP] auth_payments.py not found — auth routes disabled")
+    _auth_enabled = False
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-register_auth_routes(app)
 
 @app.on_event("startup")
 async def startup_event():
-    # Step 1: Connect database (auth/payments system)
-    try:
-        await get_db()
-        print("[STARTUP] Database connected")
-    except Exception as e:
-        print(f"[STARTUP] WARNING: Database not available: {e}")
-    # Step 2: Load dashboard HTML
-    global _DASHBOARD_HTML
-    try:
-        _DASHBOARD_HTML = DASHBOARD_PATH.read_text(encoding="utf-8")
-        print(f"[STARTUP] Dashboard loaded: {len(_DASHBOARD_HTML):,} bytes")
-    except Exception as e:
-        print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
-        _DASHBOARD_HTML = ""
-    # Step 3: Pre-load market prices
+    print(f"[STARTUP] Dashboard path: {DASHBOARD_PATH}, exists: {DASHBOARD_PATH.exists()}")
+    # Connect database
+    if _auth_enabled:
+        try:
+            await get_db()
+            register_auth_routes(app)
+            print("[STARTUP] Auth routes registered, database connected")
+        except Exception as e:
+            print(f"[STARTUP] Auth/DB init failed: {e}")
     print("[STARTUP] Pre-loading all prices...")
     try:
         data = await load_all_prices()
         price_cache.update({"data": data, "ts": time.time()})
         loaded = sum(1 for v in data.values() if v.get("price"))
-        print(f"[STARTUP] Done — {loaded} assets loaded")
+        print(f"[STARTUP] Done — {loaded}/43 assets loaded")
     except Exception as e:
         print(f"[STARTUP] Price pre-load failed: {e}")
 
@@ -2551,14 +2551,17 @@ async def serve_img(filename: str):
         raise HTTPException(404, "Image not found")
     return FileResponse(p, headers={"Cache-Control": "public, max-age=86400"})
 
-# Dashboard HTML is loaded in startup_event above
+# Load dashboard HTML at startup into memory so it survives if file gets wiped
 _DASHBOARD_HTML: str = ""
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await close_db()
-    print("[SHUTDOWN] Database pool closed")
-
+@app.on_event("startup")
+async def load_dashboard():
+    global _DASHBOARD_HTML
+    try:
+        _DASHBOARD_HTML = DASHBOARD_PATH.read_text(encoding="utf-8")
+        print(f"[STARTUP] Dashboard loaded: {len(_DASHBOARD_HTML):,} bytes")
+    except Exception as e:
+        print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
+        _DASHBOARD_HTML = ""
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     if _DASHBOARD_HTML:
