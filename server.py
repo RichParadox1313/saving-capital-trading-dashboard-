@@ -1852,6 +1852,10 @@ from pathlib import Path as _Path
 # Without a volume, falls back to /tmp (survives restarts but not redeploys)
 _DATA_DIR = _Path("/data") if _Path("/data").exists() else _Path("/tmp")
 JOURNAL_FILE = _DATA_DIR / "sc_journal.json"
+# Warn if using /tmp (data will be lost on redeploy)
+if not _Path("/data").exists():
+    print("[WARN] /data volume not mounted — journal data stored in /tmp and will reset on redeploy!")
+    print("[WARN] Add a Railway volume mounted at /data to persist journal data.")
 print(f"  Journal storage: {JOURNAL_FILE}")
 
 JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
@@ -1937,12 +1941,12 @@ async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
     return JSONResponse({"ok": True})
 
 @app.put("/api/journal/{trade_id}")
-async def update_trade(trade_id: str, trade: TradeEntry):
-    trades = load_journal()
+async def update_trade(trade_id: str, trade: TradeEntry, user_id: str = ""):
+    trades = load_user_journal(user_id)
     for i, t in enumerate(trades):
         if t["id"] == trade_id:
             trades[i] = trade.dict()
-            save_journal(trades)
+            save_user_journal(trades, user_id)
             return JSONResponse({"ok": True})
     raise HTTPException(404, "Trade not found")
 
@@ -2060,7 +2064,7 @@ Return ONLY valid JSON (no markdown, no backticks):
 async def delete_trade(trade_id: str, user_id: str = ""):
     trades = load_user_journal(user_id)
     trades = [t for t in trades if t["id"] != trade_id]
-    save_journal(trades)
+    save_user_journal(trades, user_id)
     return JSONResponse({"ok": True})
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
