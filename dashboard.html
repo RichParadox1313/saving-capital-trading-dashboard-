@@ -9088,251 +9088,246 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
 <script>
-(function() {
+(function(){
+function initJournalBG(){
+  const cv = document.getElementById('jv2-bg-canvas');
+  if(!cv||!window.THREE) return;
 
-function initJournalBG() {
-  const canvas = document.getElementById('jv2-bg-canvas');
-  if (!canvas || !window.THREE) return;
+  const R = new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+  R.setPixelRatio(Math.min(devicePixelRatio,2));
+  R.setClearColor(0x030704,1);
+  R.setSize(innerWidth,innerHeight,false);
 
-  const W = () => window.innerWidth;
-  const H = () => window.innerHeight;
+  const S = new THREE.Scene();
+  S.fog = new THREE.Fog(0x030704,30,80);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x020904, 1);
-  renderer.setSize(W(), H(), false);
+  const CAM = new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,200);
+  CAM.position.set(0,4,28);
+  CAM.lookAt(0,0,0);
 
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(55, W()/H(), 0.1, 500);
-  camera.position.set(0, 2, 22);
+  // ── mouse/touch parallax ──────────────────────────────────────
+  let mx=0,my=0,tmx=0,tmy=0;
+  document.addEventListener('mousemove',e=>{tmx=(e.clientX/innerWidth-.5)*2;tmy=(e.clientY/innerHeight-.5)*2;});
+  document.addEventListener('touchmove',e=>{tmx=(e.touches[0].clientX/innerWidth-.5)*2;tmy=(e.touches[0].clientY/innerHeight-.5)*2;},{passive:true});
 
-  // ── Fog for depth ───────────────────────────────────────────────────
-  scene.fog = new THREE.FogExp2(0x020904, 0.018);
+  // ════════════════════════════════════════════════════════════════
+  //  LAYER 1 — FLOATING DNA HELIX of trade data
+  //  Two helical strands, nodes connected by rungs — represents
+  //  the structure and sequence of every trade decision made
+  // ════════════════════════════════════════════════════════════════
+  const helixGroup = new THREE.Group();
+  S.add(helixGroup);
+  helixGroup.position.set(-7,0,0);
 
-  // ── Mouse tracking ──────────────────────────────────────────────────
-  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-  window.addEventListener('mousemove', e => {
-    mouse.tx = (e.clientX / W() - 0.5) * 2;
-    mouse.ty = (e.clientY / H() - 0.5) * 2;
-  });
-  window.addEventListener('touchmove', e => {
-    mouse.tx = (e.touches[0].clientX / W() - 0.5) * 2;
-    mouse.ty = (e.touches[0].clientY / H() - 0.5) * 2;
-  }, { passive: true });
+  const HELIX_PTS = 48;
+  const HELIX_RADIUS = 2.2;
+  const HELIX_HEIGHT = 18;
+  const strand1Pts = [], strand2Pts = [];
 
-  // ── RISING TRADE COLUMNS ────────────────────────────────────────────
-  // Represent individual trades as glowing pillars growing from the floor
-  const colGroup = new THREE.Group();
-  scene.add(colGroup);
-
-  const COLS = 40;
-  const colData = [];
-
-  for (let i = 0; i < COLS; i++) {
-    const isWin   = Math.random() > 0.38;
-    const height  = (Math.random() * 3.5 + 0.3) * (isWin ? 1 : -0.6);
-    const x       = (Math.random() - 0.5) * 32;
-    const z       = (Math.random() - 0.5) * 18 - 4;
-    const w       = Math.random() * 0.35 + 0.15;
-
-    const color  = isWin ? 0x22c55e : 0xef4444;
-    const opacity = isWin ? 0.22 : 0.14;
-
-    const geo  = new THREE.BoxGeometry(w, Math.abs(height), w);
-    const mat  = new THREE.MeshBasicMaterial({ color, transparent: true, opacity });
-    const mesh = new THREE.Mesh(geo, mat);
-
-    // Bars grow from y=0
-    mesh.position.set(x, height / 2, z);
-    colGroup.add(mesh);
-
-    // Edge lines for each bar (wireframe effect on edges only)
-    const edgesGeo = new THREE.EdgesGeometry(geo);
-    const edgesMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: opacity * 0.7 });
-    const edges    = new THREE.LineSegments(edgesGeo, edgesMat);
-    edges.position.copy(mesh.position);
-    colGroup.add(edges);
-
-    colData.push({ mesh, edges, targetH: Math.abs(height), currentH: 0, isWin, speed: Math.random() * 0.02 + 0.005 });
+  for(let i=0;i<HELIX_PTS;i++){
+    const t  = (i/HELIX_PTS)*Math.PI*6;
+    const y  = (i/HELIX_PTS)*HELIX_HEIGHT - HELIX_HEIGHT/2;
+    strand1Pts.push(new THREE.Vector3(Math.cos(t)*HELIX_RADIUS, y, Math.sin(t)*HELIX_RADIUS));
+    strand2Pts.push(new THREE.Vector3(Math.cos(t+Math.PI)*HELIX_RADIUS, y, Math.sin(t+Math.PI)*HELIX_RADIUS));
   }
 
-  // ── FLOOR GRID ──────────────────────────────────────────────────────
-  const floorMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.04 });
-  for (let x = -20; x <= 20; x += 2) {
-    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 0, -12), new THREE.Vector3(x, 0, 8)]);
-    scene.add(new THREE.Line(g, floorMat));
-  }
-  for (let z = -12; z <= 8; z += 2) {
-    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-20, 0, z), new THREE.Vector3(20, 0, z)]);
-    scene.add(new THREE.Line(g, floorMat));
-  }
+  // Strand lines
+  const s1Geo = new THREE.BufferGeometry().setFromPoints(strand1Pts);
+  const s2Geo = new THREE.BufferGeometry().setFromPoints(strand2Pts);
+  const strandMat1 = new THREE.LineBasicMaterial({color:0x22c55e,transparent:true,opacity:0.35});
+  const strandMat2 = new THREE.LineBasicMaterial({color:0x4ade80,transparent:true,opacity:0.2});
+  helixGroup.add(new THREE.Line(s1Geo,strandMat1));
+  helixGroup.add(new THREE.Line(s2Geo,strandMat2));
 
-  // ── EQUITY CURVE — main rising line ────────────────────────────────
-  const curvePoints = [];
-  let equity = 0;
-  const CURVE_PTS = 60;
-  for (let i = 0; i < CURVE_PTS; i++) {
-    const x = -18 + (36 / CURVE_PTS) * i;
-    equity += (Math.random() - 0.38) * 1.2;
-    equity = Math.max(-3, equity);
-    curvePoints.push(new THREE.Vector3(x, equity, -2));
-  }
-  const curveGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
-  const curveMat = new THREE.LineBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.5 });
-  scene.add(new THREE.Line(curveGeo, curveMat));
-
-  // Glow line (wider, more transparent version)
-  const glowMat = new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.12 });
-  const glowGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
-  scene.add(new THREE.Line(glowGeo, glowMat));
-
-  // ── FLOATING TRADE NODES — spheres along the equity curve ──────────
-  const nodeMat  = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.55 });
-  const nodeGeoS = new THREE.SphereGeometry(0.08, 6, 6);
-  curvePoints.filter((_, i) => i % 5 === 0).forEach(pt => {
-    const node = new THREE.Mesh(nodeGeoS, nodeMat);
-    node.position.copy(pt);
-    scene.add(node);
+  // Nodes and rungs
+  const nodeGeo = new THREE.SphereGeometry(0.09,6,6);
+  const rungMat = new THREE.LineBasicMaterial({color:0x22c55e,transparent:true,opacity:0.12});
+  strand1Pts.forEach((p1,i)=>{
+    if(i%3!==0) return;
+    const p2 = strand2Pts[i];
+    const isWin = Math.random()>.4;
+    const nMat = new THREE.MeshBasicMaterial({color:isWin?0x22c55e:0xf87171,transparent:true,opacity:isWin?.55:.35});
+    const n1=new THREE.Mesh(nodeGeo,nMat); n1.position.copy(p1); helixGroup.add(n1);
+    const n2=new THREE.Mesh(nodeGeo,nMat); n2.position.copy(p2); helixGroup.add(n2);
+    const rungGeo=new THREE.BufferGeometry().setFromPoints([p1,p2]);
+    helixGroup.add(new THREE.Line(rungGeo,rungMat));
   });
 
-  // ── ORBITING RING — represents portfolio growth ─────────────────────
-  const ringGeo = new THREE.TorusGeometry(3.5, 0.02, 8, 64);
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.1 });
-  const ring    = new THREE.Mesh(ringGeo, ringMat);
-  ring.position.set(8, 3, -3);
-  ring.rotation.x = Math.PI / 3;
-  scene.add(ring);
+  // ════════════════════════════════════════════════════════════════
+  //  LAYER 2 — GROWING EQUITY MOUNTAIN
+  //  A 3D surface that rises from flat to a mountain shape,
+  //  lit from within — represents portfolio growth over time
+  // ════════════════════════════════════════════════════════════════
+  const GRID_W = 32, GRID_D = 20;
+  const mountainGroup = new THREE.Group();
+  mountainGroup.position.set(5,-3,0);
+  S.add(mountainGroup);
 
-  const ring2Geo = new THREE.TorusGeometry(2.2, 0.015, 8, 48);
-  const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.07 });
-  const ring2    = new THREE.Mesh(ring2Geo, ring2Mat);
-  ring2.position.set(8, 3, -3);
-  ring2.rotation.x = Math.PI / 5;
-  ring2.rotation.z = Math.PI / 4;
-  scene.add(ring2);
-
-  // ── PARTICLES — data points floating in space ───────────────────────
-  const pCount = 120;
-  const pPos   = new Float32Array(pCount * 3);
-  const pSpd   = [];
-  for (let i = 0; i < pCount; i++) {
-    pPos[i*3]   = (Math.random() - 0.5) * 40;
-    pPos[i*3+1] = (Math.random() - 0.5) * 16;
-    pPos[i*3+2] = (Math.random() - 0.5) * 16 - 4;
-    pSpd.push({ x: (Math.random()-0.5)*0.006, y: Math.random()*0.003+0.001, z: (Math.random()-0.5)*0.003 });
+  // Generate height field
+  const heights = [];
+  for(let iz=0;iz<=GRID_D;iz++){
+    heights[iz]=[];
+    for(let ix=0;ix<=GRID_W;ix++){
+      const nx = ix/GRID_W, nz = iz/GRID_D;
+      // Growth ramp: starts low, rises toward right
+      const base = nx*4.5;
+      const noise = Math.sin(nx*8)*0.3 + Math.cos(nz*6+nx*4)*0.4 + Math.sin(nz*3)*0.2;
+      heights[iz][ix] = Math.max(0, base + noise);
+    }
   }
-  const pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-  const pMat = new THREE.PointsMaterial({ color: 0x22c55e, size: 0.04, transparent: true, opacity: 0.3 });
-  scene.add(new THREE.Points(pGeo, pMat));
 
-  // ── UPWARD ARROWS — represent growth ────────────────────────────────
-  // Simple cone shapes pointing up scattered around
-  const arrowMat = new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.08 });
-  [-12, -5, 3, 10, 15].forEach((x, i) => {
-    const geo  = new THREE.ConeGeometry(0.15, 0.6, 4);
-    const mesh = new THREE.Mesh(geo, arrowMat);
-    mesh.position.set(x, -0.5 + i * 0.3, -6 + Math.random() * 4);
-    scene.add(mesh);
+  // Wire mesh
+  const wireMat = new THREE.LineBasicMaterial({color:0x22c55e,transparent:true,opacity:0.06});
+  // X lines
+  for(let iz=0;iz<=GRID_D;iz++){
+    const pts=[];
+    for(let ix=0;ix<=GRID_W;ix++){
+      pts.push(new THREE.Vector3((ix/GRID_W)*22-11, heights[iz][ix], (iz/GRID_D)*12-6));
+    }
+    mountainGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),wireMat));
+  }
+  // Z lines
+  for(let ix=0;ix<=GRID_W;ix+=2){
+    const pts=[];
+    for(let iz=0;iz<=GRID_D;iz++){
+      pts.push(new THREE.Vector3((ix/GRID_W)*22-11, heights[iz][ix], (iz/GRID_D)*12-6));
+    }
+    mountainGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),wireMat));
+  }
+
+  // Highlight ridge line (peak of the mountain)
+  const ridgePts=[];
+  for(let ix=0;ix<=GRID_W;ix++){
+    let maxH=0,bestZ=0;
+    for(let iz=0;iz<=GRID_D;iz++){
+      if(heights[iz][ix]>maxH){maxH=heights[iz][ix];bestZ=iz;}
+    }
+    ridgePts.push(new THREE.Vector3((ix/GRID_W)*22-11,maxH,(bestZ/GRID_D)*12-6));
+  }
+  const ridgeMat=new THREE.LineBasicMaterial({color:0x4ade80,transparent:true,opacity:0.4});
+  mountainGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ridgePts),ridgeMat));
+
+  // ════════════════════════════════════════════════════════════════
+  //  LAYER 3 — ORBITAL RINGS (portfolio dimensions)
+  //  Three rings at different tilts orbiting a central point
+  //  representing risk, reward, and discipline axes
+  // ════════════════════════════════════════════════════════════════
+  const orbitGroup = new THREE.Group();
+  orbitGroup.position.set(10,2,-4);
+  S.add(orbitGroup);
+
+  [[4.5,0.4,0,0x22c55e,.13],[3,0.4,Math.PI/3,0x4ade80,.09],[2,0.4,-Math.PI/4,0x86efac,.07]].forEach(([r,t,rx,c,op])=>{
+    const geo=new THREE.TorusGeometry(r,0.018,6,80);
+    const mat=new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.rotation.x=Math.PI/2+rx;
+    mesh.rotation.z=t;
+    orbitGroup.add(mesh);
   });
 
-  // ── Resize ──────────────────────────────────────────────────────────
-  function resize() {
-    renderer.setSize(W(), H(), false);
-    camera.aspect = W() / H();
-    camera.updateProjectionMatrix();
+  // Central glow node
+  const glowGeo=new THREE.SphereGeometry(0.18,12,12);
+  const glowMat=new THREE.MeshBasicMaterial({color:0x4ade80,transparent:true,opacity:0.6});
+  orbitGroup.add(new THREE.Mesh(glowGeo,glowMat));
+
+  // ════════════════════════════════════════════════════════════════
+  //  LAYER 4 — PARTICLE FIELD (market data points)
+  // ════════════════════════════════════════════════════════════════
+  const PC=200;
+  const pPos=new Float32Array(PC*3);
+  const pSpd=[];
+  for(let i=0;i<PC;i++){
+    pPos[i*3]=(Math.random()-.5)*50;
+    pPos[i*3+1]=(Math.random()-.5)*24;
+    pPos[i*3+2]=(Math.random()-.5)*20-5;
+    pSpd.push({x:(Math.random()-.5)*.005,y:(Math.random()-.5)*.003,z:0});
   }
-  window.addEventListener('resize', resize);
+  const pGeo=new THREE.BufferGeometry();
+  pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+  const pMat=new THREE.PointsMaterial({color:0x22c55e,size:.035,transparent:true,opacity:.2});
+  S.add(new THREE.Points(pGeo,pMat));
 
-  // ── Animation ────────────────────────────────────────────────────────
-  let frame = 0, animId = null, isRunning = false;
+  // ════════════════════════════════════════════════════════════════
+  //  LAYER 5 — HORIZONTAL CHART BANDS
+  //  Faint horizontal planes at different y levels
+  //  like price levels on a chart
+  // ════════════════════════════════════════════════════════════════
+  [-3,-1,1,3,5].forEach((y,i)=>{
+    const geo=new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-25,y,-10),new THREE.Vector3(25,y,-10)
+    ]);
+    const mat=new THREE.LineBasicMaterial({color:0x22c55e,transparent:true,opacity:.02+i*.005});
+    S.add(new THREE.Line(geo,mat));
+  });
 
-  function animate() {
-    if (!isRunning) return;
-    animId = requestAnimationFrame(animate);
+  // ── resize ──────────────────────────────────────────────────────
+  function resize(){
+    R.setSize(innerWidth,innerHeight,false);
+    CAM.aspect=innerWidth/innerHeight;
+    CAM.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize);
+
+  // ── animation ───────────────────────────────────────────────────
+  let frame=0,raf=null,running=false;
+
+  function tick(){
+    if(!running) return;
+    raf=requestAnimationFrame(tick);
     frame++;
 
-    // Smooth mouse follow
-    mouse.x += (mouse.tx - mouse.x) * 0.04;
-    mouse.y += (mouse.ty - mouse.y) * 0.04;
+    // Mouse parallax
+    mx+=(tmx-mx)*.035; my+=(tmy-my)*.035;
+    CAM.position.x=mx*2.5;
+    CAM.position.y=4-my*1.5;
+    CAM.lookAt(0,1,0);
 
-    // Camera parallax from mouse
-    camera.position.x  = mouse.x * 1.5;
-    camera.position.y  = 2 - mouse.y * 1.0;
-    camera.lookAt(0, 1.5, 0);
+    // Helix slow rotation
+    helixGroup.rotation.y+=0.004;
+    helixGroup.position.y=Math.sin(frame*.0012)*.8;
 
-    // Animate bars growing from floor
-    colData.forEach(d => {
-      if (d.currentH < d.targetH) {
-        d.currentH = Math.min(d.currentH + d.speed, d.targetH);
-        d.mesh.scale.y = d.currentH / d.targetH;
-        d.edges.scale.y = d.mesh.scale.y;
-      }
-      // Subtle pulse
-      const pulse = 1 + Math.sin(frame * 0.03 + d.mesh.position.x) * 0.02;
-      d.mesh.scale.x = pulse;
-      d.edges.scale.x = pulse;
-    });
+    // Mountain breathes
+    mountainGroup.rotation.y=Math.sin(frame*.0008)*.06+mx*.04;
 
-    // Slowly drift column group
-    colGroup.rotation.y = Math.sin(frame * 0.001) * 0.08 + mouse.x * 0.05;
-    colGroup.position.y = Math.sin(frame * 0.0008) * 0.3;
+    // Orbit rings
+    orbitGroup.rotation.y+=.006;
+    orbitGroup.rotation.z+=.002;
+    orbitGroup.children[0].rotation.z+=.004;
+    orbitGroup.children[1].rotation.z-=.003;
+    orbitGroup.children[2].rotation.x+=.005;
 
-    // Rotate rings
-    ring.rotation.z  += 0.003;
-    ring.rotation.y  += 0.001;
-    ring2.rotation.z -= 0.004;
-    ring2.rotation.x += 0.002;
-
-    // Animate equity curve — subtle wave
-    const positions = curveGeo.attributes.position.array;
-    for (let i = 0; i < CURVE_PTS; i++) {
-      positions[i*3+1] = curvePoints[i].y + Math.sin(frame * 0.02 + i * 0.3) * 0.08;
+    // Drift particles
+    const pos=pGeo.attributes.position.array;
+    for(let i=0;i<PC;i++){
+      pos[i*3]+=pSpd[i].x;
+      pos[i*3+1]+=pSpd[i].y;
+      if(Math.abs(pos[i*3])>25) pSpd[i].x*=-1;
+      if(Math.abs(pos[i*3+1])>12) pSpd[i].y*=-1;
     }
-    curveGeo.attributes.position.needsUpdate = true;
+    pGeo.attributes.position.needsUpdate=true;
 
-    // Drift particles upward (like ascending profits)
-    const pos = pGeo.attributes.position.array;
-    for (let i = 0; i < pCount; i++) {
-      pos[i*3]   += pSpd[i].x;
-      pos[i*3+1] += pSpd[i].y;
-      pos[i*3+2] += pSpd[i].z;
-      if (pos[i*3+1] > 8)  pos[i*3+1] = -8;
-      if (Math.abs(pos[i*3]) > 20)  pSpd[i].x *= -1;
-    }
-    pGeo.attributes.position.needsUpdate = true;
+    // Breathe opacities
+    strandMat1.opacity=.22+Math.sin(frame*.018)*.12;
+    ridgeMat.opacity=.25+Math.sin(frame*.022)*.15;
+    pMat.opacity=.12+Math.sin(frame*.016)*.07;
 
-    // Breathe
-    pMat.opacity  = 0.2 + Math.sin(frame * 0.02) * 0.1;
-    curveMat.opacity = 0.3 + Math.sin(frame * 0.015) * 0.2;
-
-    renderer.render(scene, camera);
+    R.render(S,CAM);
   }
 
-  function startBG() {
-    if (isRunning) return;
-    isRunning = true;
-    animate();
-  }
-  function stopBG() {
-    isRunning = false;
-    if (animId) { cancelAnimationFrame(animId); animId = null; }
-  }
+  function start(){if(running)return;running=true;tick();}
+  function stop(){running=false;if(raf){cancelAnimationFrame(raf);raf=null;}}
 
-  // Watch journal page
-  const page = document.getElementById('page-journal-page');
-  if (page) {
-    new MutationObserver(() => {
-      page.style.display === 'none' ? stopBG() : startBG();
-    }).observe(page, { attributes: true, attributeFilter: ['style'] });
-    if (page.style.display !== 'none') startBG();
+  const pg=document.getElementById('page-journal-page');
+  if(pg){
+    new MutationObserver(()=>pg.style.display==='none'?stop():start())
+      .observe(pg,{attributes:true,attributeFilter:['style']});
+    if(pg.style.display!=='none') start();
   }
 }
-
-if (document.readyState === 'complete') setTimeout(initJournalBG, 300);
-else window.addEventListener('load', () => setTimeout(initJournalBG, 300));
-
+if(document.readyState==='complete') setTimeout(initJournalBG,300);
+else window.addEventListener('load',()=>setTimeout(initJournalBG,300));
 })();
 </script>
 </body>
