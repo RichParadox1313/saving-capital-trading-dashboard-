@@ -7398,6 +7398,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
     </div>
     <div class="jv2-topbar-right">
       <div id="jv2-mt5-status-bar"></div>
+      <button onclick="jv2ShowDebug()" style="background:transparent;border:1px solid rgba(245,158,11,0.4);color:#f59e0b;padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">DEBUG</button>
       <div class="qpick-wrap" id="jv2-qpick" style="position:relative">
         <button class="jv2-btn-primary" onclick="openQuickPick('jv2-qpick')">+ Add Trade ▾</button>
         <div class="qpick-menu" style="right:0;left:auto">
@@ -7416,6 +7417,15 @@ setLang(localStorage.getItem('sc_lang')||'en');
   <!-- ── OVERVIEW TAB ── -->
   <div class="jv2-panel active" id="jv2-panel-overview">
     <div class="jv2-main">
+
+      <!-- DEBUG PANEL — remove after fixing -->
+      <div id="jv2-debug" style="display:none;margin-bottom:12px;padding:10px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;color:#fbbf24;line-height:1.8">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <strong style="color:#f59e0b">DEBUG INFO</strong>
+          <button onclick="document.getElementById('jv2-debug').style.display='none'" style="background:transparent;border:none;color:#f59e0b;cursor:pointer;font-size:12px">✕</button>
+        </div>
+        <div id="jv2-debug-content"></div>
+      </div>
 
       <!-- MT5 Connect / Status -->
       <div id="jv2-mt5-block">
@@ -9068,6 +9078,49 @@ function jv2EcoFilter(filter, btn) {
 }
 
 // ── loadJournal — fetches trades and renders all jv2 panels ─────────────────
+// ── Debug function ──────────────────────────────────────────────────────────
+async function jv2ShowDebug() {
+  const panel = document.getElementById('jv2-debug');
+  const content = document.getElementById('jv2-debug-content');
+  if (!panel || !content) return;
+  panel.style.display = 'block';
+
+  // 1. Check jTrades
+  const total = jTrades.length;
+  const closed = jTrades.filter(t => t.status === 'CLOSED').length;
+  const open   = jTrades.filter(t => t.status === 'OPEN').length;
+  const noStatus = jTrades.filter(t => !t.status).length;
+
+  // 2. Fetch from server directly
+  let serverData = [], serverErr = '';
+  try {
+    const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
+    serverData = await r.json();
+  } catch(e) { serverErr = e.message; }
+
+  // 3. Check panels
+  const panels = {};
+  ['overview','calendar','trades','charts','calendar_eco'].forEach(t => {
+    const p = document.getElementById('jv2-panel-' + t);
+    panels[t] = p ? p.style.display + ' / ' + (p.classList.contains('active') ? 'active' : 'inactive') : 'MISSING';
+  });
+
+  // 4. Sample trade structure
+  const sample = jTrades[0] ? JSON.stringify(jTrades[0], null, 0).slice(0, 200) : 'none';
+
+  content.innerHTML = `
+    <div>SC_USER_ID: <span style="color:#fcd34d">${SC_USER_ID}</span></div>
+    <div>jTrades total: <span style="color:#fcd34d">${total}</span> | CLOSED: <span style="color:#4ade80">${closed}</span> | OPEN: <span style="color:#60a5fa">${open}</span> | no-status: <span style="color:#f87171">${noStatus}</span></div>
+    <div>Server returned: <span style="color:#fcd34d">${serverData.length}</span> trades ${serverErr ? '⚠ ' + serverErr : ''}</div>
+    <div>localStorage: <span style="color:#fcd34d">${JSON.parse(localStorage.getItem('sc_journal')||'[]').length}</span> trades</div>
+    <div>Current tab: <span style="color:#fcd34d">${jv2Tab}</span></div>
+    <div>Panels: ${Object.entries(panels).map(([k,v])=>`${k}=${v}`).join(' | ')}</div>
+    <div>Sample trade: <span style="color:#a7f3d0">${sample}</span></div>
+    ${jTrades.length > 0 ? `<div>Trade statuses: ${[...new Set(jTrades.map(t=>t.status||'undefined'))].join(', ')}</div>` : ''}
+  `;
+}
+
+
 // loadJournal is defined above — no override needed
 
 // Auto-render if journal page is already visible on load
