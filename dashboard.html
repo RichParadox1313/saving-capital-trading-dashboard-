@@ -8741,7 +8741,8 @@ function jv2RenderDailyTable() {
     byDate[d].pnl  += t.pnl||0;
   });
   const sorted = Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).slice(0,8);
-  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--t4);font-size:11px">No closed trades yet</td></tr>'; return; }
+  if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--t4);font-size:11px">No closed trades yet</td></tr>'; return;
+  }
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   tbody.innerHTML = sorted.map(([d, v]) => {
     const dt = new Date(d+'T00:00:00');
@@ -8836,7 +8837,7 @@ function jv2RenderTrades(trades) {
   if (!tbody) return;
   const list = trades || jTrades.filter(t=>t.status==='CLOSED');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:'DM Mono',monospace">No closed trades yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px">No closed trades yet</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(t => {
