@@ -1829,7 +1829,7 @@ async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: 
                         t["exit"] = pos.get("currentPrice")
                         t["pnl"]  = pnl
 
-        save_user_journal(trades, user_id)
+        await save_user_journal_async(trades, user_id)
         print(f"  MT5 sync: {new_count} new trades, {len(positions)} open positions")
         return JSONResponse({
             "ok": True,
@@ -1852,10 +1852,50 @@ from pathlib import Path as _Path
 # Without a volume, falls back to /tmp (survives restarts but not redeploys)
 _DATA_DIR = _Path("/data") if _Path("/data").exists() else _Path("/tmp")
 JOURNAL_FILE = _DATA_DIR / "sc_journal.json"
-# Warn if using /tmp (data will be lost on redeploy)
 if not _Path("/data").exists():
-    print("[WARN] /data volume not mounted — journal data stored in /tmp and will reset on redeploy!")
-    print("[WARN] Add a Railway volume mounted at /data to persist journal data.")
+    print("[WARN] /data not mounted — using /tmp (data resets on redeploy). Mount a Railway volume at /data to persist.")
+
+# ── PostgreSQL journal helpers (uses the same asyncpg pool from auth_payments) ──
+async def _db_load_journal(user_id: str) -> list:
+    """Load journal trades from PostgreSQL."""
+    try:
+        import auth_payments as _ap
+        db = await _ap.get_db()
+        rows = await db.fetch(
+            "SELECT trade_data FROM journal_trades WHERE user_id=$1 ORDER BY created_at DESC",
+            user_id
+        )
+        return [_json.loads(r['trade_data']) for r in rows]
+    except Exception as e:
+        print(f"  [DB] Journal load error: {e}")
+        return None  # None means fall back to file
+
+async def _db_save_journal(user_id: str, trades: list):
+    """Save journal trades to PostgreSQL (upsert per trade id)."""
+    try:
+        import auth_payments as _ap
+        db = await _ap.get_db()
+        # Ensure table exists
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS journal_trades (
+                id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                trade_data JSONB NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                PRIMARY KEY (id, user_id)
+            )
+        """)
+        # Delete all for user then re-insert (simple approach)
+        await db.execute("DELETE FROM journal_trades WHERE user_id=$1", user_id)
+        if trades:
+            await db.executemany(
+                "INSERT INTO journal_trades (id, user_id, trade_data) VALUES ($1, $2, $3)",
+                [(t.get('id', str(i)), user_id, _json.dumps(t)) for i, t in enumerate(trades)]
+            )
+        return True
+    except Exception as e:
+        print(f"  [DB] Journal save error: {e}")
+        return False
 print(f"  Journal storage: {JOURNAL_FILE}")
 
 JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
@@ -1896,8 +1936,24 @@ class TradeEntry(BaseModel):
 
 @app.get("/api/journal")
 async def get_journal(user_id: str = ""):
-    """Load journal for a specific user. Falls back to shared journal if no user_id."""
+    """Load journal — tries PostgreSQL first, falls back to file."""
     if user_id and len(user_id) >= 8:
+        # Try DB first
+        db_trades = await _db_load_journal(user_id)
+        if db_trades is not None:
+            # Also check file for any trades not in DB yet
+            user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
+            if user_file.exists() and not db_trades:
+                try:
+                    file_trades = _json.loads(user_file.read_text())
+                    if file_trades:
+                        # Migrate file trades to DB
+                        await _db_save_journal(user_id, file_trades)
+                        return JSONResponse(file_trades)
+                except Exception:
+                    pass
+            return JSONResponse(db_trades)
+        # DB failed — fall back to file
         user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
         try:
             if user_file.exists():
@@ -1908,6 +1964,7 @@ async def get_journal(user_id: str = ""):
     return JSONResponse(load_journal())
 
 def load_user_journal(user_id: str) -> list:
+    """Load from file (sync fallback). DB loading done via async endpoint."""
     if user_id and len(user_id) >= 8:
         user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
         try:
@@ -1918,6 +1975,7 @@ def load_user_journal(user_id: str) -> list:
     return load_journal()
 
 def save_user_journal(trades: list, user_id: str):
+    """Save to file synchronously. DB save is done async in the endpoints."""
     if user_id and len(user_id) >= 8:
         user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
         try:
@@ -1926,6 +1984,14 @@ def save_user_journal(trades: list, user_id: str):
         except Exception as e:
             print(f"  User journal save error: {e}")
     save_journal(trades)
+
+async def save_user_journal_async(trades: list, user_id: str):
+    """Save to both PostgreSQL and file for maximum persistence."""
+    # Save to file
+    save_user_journal(trades, user_id)
+    # Save to DB
+    if user_id and len(user_id) >= 8:
+        await _db_save_journal(user_id, trades)
 
 @app.post("/api/journal")
 async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
@@ -1937,7 +2003,7 @@ async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
         trades[existing] = trade.dict()
     else:
         trades.insert(0, trade.dict())
-    save_user_journal(trades, user_id)
+    await save_user_journal_async(trades, user_id)
     return JSONResponse({"ok": True})
 
 @app.put("/api/journal/{trade_id}")
@@ -1946,7 +2012,7 @@ async def update_trade(trade_id: str, trade: TradeEntry, user_id: str = ""):
     for i, t in enumerate(trades):
         if t["id"] == trade_id:
             trades[i] = trade.dict()
-            save_user_journal(trades, user_id)
+            await save_user_journal_async(trades, user_id)
             return JSONResponse({"ok": True})
     raise HTTPException(404, "Trade not found")
 
@@ -2064,7 +2130,7 @@ Return ONLY valid JSON (no markdown, no backticks):
 async def delete_trade(trade_id: str, user_id: str = ""):
     trades = load_user_journal(user_id)
     trades = [t for t in trades if t["id"] != trade_id]
-    save_user_journal(trades, user_id)
+    await save_user_journal_async(trades, user_id)
     return JSONResponse({"ok": True})
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
