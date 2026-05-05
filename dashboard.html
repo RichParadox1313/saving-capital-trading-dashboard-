@@ -9043,59 +9043,91 @@ async function jv2LoadEco() {
   const dateEl = document.getElementById('jv2-eco-date');
   if (!tbody) return;
 
-  const now = new Date();
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if (dateEl) dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+  // Show loading state
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t4);font-family:monospace;font-size:11px">Loading economic events...</td></tr>';
 
-  // Try to fetch from our backend proxy
+  // Set today's date
+  if (dateEl) {
+    const now = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  }
+
   try {
     const r = await fetch('/api/economic_calendar');
-    if (r.ok) {
-      const data = await r.json();
-      jv2EcoEvents = data;
-      jv2RenderEco();
+    if (!r.ok) throw new Error('Server returned ' + r.status);
+    const data = await r.json();
+
+    if (data.error) throw new Error(data.error);
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">No medium/high impact events found for this week</td></tr>';
       return;
     }
-  } catch(e) {}
 
-  // Fallback — show sample data
-  jv2EcoEvents = [
-    {time:'08:30', currency:'USD', impact:'high',   event:'CPI y/y',              actual:'3.2%', forecast:'3.1%', previous:'3.0%'},
-    {time:'08:30', currency:'USD', impact:'high',   event:'Core CPI m/m',         actual:'—',    forecast:'0.3%', previous:'0.4%'},
-    {time:'10:00', currency:'GBP', impact:'high',   event:'PPI Input m/m',        actual:'—',    forecast:'2.9%', previous:'0.8%'},
-    {time:'10:00', currency:'GBP', impact:'medium', event:'RPI y/y',              actual:'—',    forecast:'3.9%', previous:'3.6%'},
-    {time:'13:30', currency:'EUR', impact:'medium', event:'ECB Meeting Minutes',  actual:'—',    forecast:'—',    previous:'—'},
-    {time:'15:00', currency:'USD', impact:'medium', event:'Existing Home Sales',  actual:'—',    forecast:'4.16M',previous:'4.26M'},
-    {time:'15:30', currency:'CAD', impact:'low',    event:'NHPI m/m',             actual:'—',    forecast:'0.3%', previous:'0.2%'},
-    {time:'19:00', currency:'JPY', impact:'low',    event:'Trade Balance',        actual:'—',    forecast:'0.23T',previous:'-0.37T'},
-  ];
-  jv2RenderEco();
+    jv2EcoEvents = data;
+    jv2RenderEco();
+
+  } catch(e) {
+    console.error('[SC] Economic calendar error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#f87171;font-size:11px;font-family:monospace">Failed to load calendar: ' + e.message + '</td></tr>';
+  }
 }
 
 function jv2RenderEco() {
   const tbody = document.getElementById('jv2-eco-body');
   if (!tbody) return;
+
   const filter = jv2EcoCurrentFilter;
-  const events = filter==='all' ? jv2EcoEvents : jv2EcoEvents.filter(e=>e.impact===filter);
+  let events = jv2EcoEvents;
+  if (filter !== 'all') events = events.filter(e => e.impact === filter);
+
   if (!events.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px">No events for selected filter</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">No events for selected filter</td></tr>';
     return;
   }
+
+  const FLAGS = {
+    USD:'🇺🇸', EUR:'🇪🇺', GBP:'🇬🇧', JPY:'🇯🇵', AUD:'🇦🇺',
+    CAD:'🇨🇦', CHF:'🇨🇭', NZD:'🇳🇿', CNY:'🇨🇳', CNH:'🇨🇳',
+    RUB:'🇷🇺', TRY:'🇹🇷', INR:'🇮🇳', BRL:'🇧🇷', ZAR:'🇿🇦',
+    MXN:'🇲🇽', KRW:'🇰🇷', SGD:'🇸🇬', HKD:'🇭🇰', SEK:'🇸🇪',
+    NOK:'🇳🇴', DKK:'🇩🇰', PLN:'🇵🇱', HUF:'🇭🇺', CZK:'🇨🇿',
+  };
+
   tbody.innerHTML = events.map(e => {
-    const flag = COUNTRY_FLAGS[e.currency] || '🌐';
-    const impBar = `<span class="jv2-eco-imp ${e.impact}"></span>`;
-    const actualCls = e.actual && e.actual!=='—' && e.forecast && e.forecast!=='—'
-      ? (parseFloat(e.actual) >= parseFloat(e.forecast) ? 'jv2-eco-actual-pos' : 'jv2-eco-actual-neg')
-      : 'jv2-eco-val';
-    return `<tr class="jv2-eco-${e.impact}">
-      <td>${impBar} ${e.event}</td>
-      <td><span class="jv2-eco-flag">${flag}</span><span style="font-family:'DM Mono',monospace;font-size:11px">${e.currency}</span></td>
-      <td><div class="jv2-eco-time">${e.time}</div></td>
-      <td class="${actualCls}">${e.actual||'—'}</td>
-      <td class="jv2-eco-val">${e.forecast||'—'}</td>
-      <td class="jv2-eco-val">${e.previous||'—'}</td>
-    </tr>`;
+    const flag = FLAGS[e.currency] || '🌐';
+    const isHigh = e.impact === 'high';
+    const impDot = '<span class="jv2-eco-imp ' + e.impact + '"></span>';
+
+    // Format time from ISO date string
+    let timeStr = e.time || '';
+    if (!timeStr && e.date) {
+      try {
+        const d = new Date(e.date);
+        timeStr = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'UTC'}) + ' UTC';
+      } catch(_) {}
+    }
+
+    // Color actual vs forecast
+    let actualStr = e.actual || '—';
+    let actualStyle = 'color:var(--t2)';
+    if (e.actual && e.actual !== '—' && e.forecast && e.forecast !== '—') {
+      const act = parseFloat(e.actual);
+      const fct = parseFloat(e.forecast);
+      if (!isNaN(act) && !isNaN(fct)) {
+        actualStyle = act >= fct ? 'color:#4ade80;font-weight:600' : 'color:#f87171;font-weight:600';
+      }
+    }
+
+    return '<tr class="jv2-eco-' + e.impact + '">' +
+      '<td>' + impDot + ' ' + (e.event || '—') + '</td>' +
+      '<td><span style="font-size:16px;margin-right:4px">' + flag + '</span><span style="font-family:monospace;font-size:11px">' + (e.currency||'') + '</span></td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--t3)">' + timeStr + '</td>' +
+      '<td style="font-family:monospace;font-size:11px;' + actualStyle + '">' + actualStr + '</td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--t2)">' + (e.forecast||'—') + '</td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--t4)">' + (e.previous||'—') + '</td>' +
+    '</tr>';
   }).join('');
 }
 
