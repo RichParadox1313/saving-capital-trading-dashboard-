@@ -2478,15 +2478,16 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
    JOURNAL V2 — Professional Trading Journal
 ═══════════════════════════════════════════════ */
 .jv2-wrap{min-height:100vh;background:transparent;padding-top:56px;position:relative;z-index:1}
-.jv2-topbar{position:sticky;top:56px;z-index:100;background:rgba(3,7,4,0.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:46px;gap:12px}
-.jv2-topbar-left{display:flex;align-items:center;gap:20px;flex:1;min-width:0}
-.jv2-topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.jv2-topbar{position:sticky;top:56px;z-index:100;background:rgba(3,7,4,0.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid var(--br);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 24px;height:58px;gap:16px}
+.jv2-topbar-left{display:flex;align-items:center;justify-content:flex-start}
+.jv2-topbar-center{display:flex;align-items:center;justify-content:center}
+.jv2-topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:10px}
 .jv2-logo{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--t1);white-space:nowrap}
-.jv2-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.jv2-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:4px}
 .jv2-tabs::-webkit-scrollbar{display:none}
-.jv2-tab{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.jv2-tab:hover{color:var(--t1)}
-.jv2-tab.active{background:var(--gdim);color:var(--g);border:1px solid var(--br)}
+.jv2-tab{background:transparent;border:none;color:var(--t4);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:8px 18px;border-radius:7px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.jv2-tab:hover{color:var(--t1);background:rgba(34,197,94,0.05)}
+.jv2-tab.active{background:var(--g);color:#030704;font-weight:600;border:none}
 .jv2-btn-primary{padding:7px 16px;background:var(--g);border:none;border-radius:7px;color:#030704;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .jv2-btn-primary:hover{background:#16a34a}
 .jv2-panel{display:none !important}
@@ -2743,24 +2744,26 @@ img, video, canvas, svg { max-width: 100%; }
 
   /* ── JOURNAL V2 ── */
   .jv2-topbar {
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     height: auto;
-    padding: 8px 12px;
+    padding: 10px 14px;
     gap: 8px;
     top: 50px;
   }
-  .jv2-topbar-left { width: 100%; gap: 8px; flex-wrap: wrap; }
-  .jv2-topbar-right { width: 100%; justify-content: flex-end; }
+  .jv2-topbar-left { justify-content: flex-start; }
+  .jv2-topbar-center { justify-content: flex-start; overflow-x: auto; }
+  .jv2-topbar-right { justify-content: flex-start; }
   .jv2-logo { font-size: 0.9rem; }
   .jv2-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 2px;
+    padding: 3px;
   }
   .jv2-tabs::-webkit-scrollbar { display: none; }
-  .jv2-tab { flex: none; padding: 6px 12px; font-size: 9px; white-space: nowrap; }
+  .jv2-tab { flex: none; padding: 7px 12px; font-size: 9px; white-space: nowrap; }
   .jv2-main { padding: 12px 12px 80px; }
   .jv2-stats-grid { grid-template-columns: 1fr 1fr; }
   .jv2-two-col { grid-template-columns: 1fr; gap: 10px; }
@@ -7383,8 +7386,12 @@ setLang(localStorage.getItem('sc_lang')||'en');
 
   <!-- TOP BAR -->
   <div class="jv2-topbar">
+    <!-- LEFT: logo -->
     <div class="jv2-topbar-left">
       <div class="jv2-logo">Trading Journal</div>
+    </div>
+    <!-- CENTER: tabs -->
+    <div class="jv2-topbar-center">
       <div class="jv2-tabs">
         <button class="jv2-tab active" onclick="jv2SetTab('overview')" id="jv2-tab-overview">Overview</button>
         <button class="jv2-tab" onclick="jv2SetTab('calendar')" id="jv2-tab-calendar">Daily PnL</button>
@@ -7393,9 +7400,9 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <button class="jv2-tab" onclick="jv2SetTab('calendar_eco')" id="jv2-tab-calendar_eco">Economic Calendar</button>
       </div>
     </div>
+    <!-- RIGHT: actions -->
     <div class="jv2-topbar-right">
       <div id="jv2-mt5-status-bar"></div>
-      <button onclick="jv2ShowDebug()" style="background:transparent;border:1px solid rgba(245,158,11,0.4);color:#f59e0b;padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px">DEBUG</button>
       <div class="qpick-wrap" id="jv2-qpick" style="position:relative">
         <button class="jv2-btn-primary" onclick="openQuickPick('jv2-qpick')">+ Add Trade ▾</button>
         <div class="qpick-menu" style="right:0;left:auto">
