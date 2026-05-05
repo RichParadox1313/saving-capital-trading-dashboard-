@@ -9107,98 +9107,100 @@ const COUNTRY_FLAGS = {
 };
 
 async function jv2LoadEco() {
-  const tbody = document.getElementById('jv2-eco-body');
+  const tbody  = document.getElementById('jv2-eco-body');
   const dateEl = document.getElementById('jv2-eco-date');
   if (!tbody) return;
 
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t4);font-family:monospace;font-size:11px">Loading economic calendar...</td></tr>';
 
+  // Set date header
   if (dateEl) {
     const now = new Date();
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dateEl.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MNTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent = DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MNTHS[now.getMonth()] + ' ' + now.getFullYear();
   }
 
-  // Try our server endpoint first, then fall back to direct browser fetch
-  let events = [];
-  let source = '';
+  // ── Try loading from FF-compatible feed (client-side) ──────────────────────
+  async function tryFetch(url) {
+    try {
+      const r = await fetch(url, { cache: 'no-cache' });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch(e) { return null; }
+  }
 
-  // Method 1: Our server proxy
-  try {
-    const r = await fetch('/api/economic_calendar');
-    if (r.ok) {
-      const data = await r.json();
-      if (Array.isArray(data) && data.length > 0) {
-        events = data;
-        source = 'server';
-      }
+  let raw = null;
+
+  // 1. This week
+  raw = await tryFetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+
+  // 2. Next week if empty or failed
+  if (!raw || !raw.length) {
+    raw = await tryFetch('https://nfs.faireconomy.media/ff_calendar_nextweek.json');
+  }
+
+  // 3. Server proxy fallback
+  if (!raw || !raw.length) {
+    const sr = await tryFetch('/api/economic_calendar');
+    if (sr && Array.isArray(sr) && sr.length) {
+      jv2EcoEvents = sr;
+      jv2RenderEco();
+      return;
     }
-  } catch(e) {}
-
-  // Method 2: Direct browser fetch of FF-compatible JSON (works from browser)
-  if (!events.length) {
-    try {
-      const r = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json', {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (r.ok) {
-        const raw = await r.json();
-        events = raw
-          .filter(e => e.impact === 'High' || e.impact === 'Medium')
-          .map(e => ({
-            date:     e.date || '',
-            time:     e.date ? e.date.substring(11,16) : '',
-            currency: e.country || '',
-            impact:   (e.impact || '').toLowerCase(),
-            event:    e.title || '',
-            actual:   e.actual   || '—',
-            forecast: e.forecast || '—',
-            previous: e.previous || '—',
-          }));
-        source = 'direct';
-      }
-    } catch(e) {}
   }
 
-  // Method 3: Next week if this week is empty
-  if (!events.length) {
-    try {
-      const r = await fetch('https://nfs.faireconomy.media/ff_calendar_nextweek.json', {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (r.ok) {
-        const raw = await r.json();
-        events = raw
-          .filter(e => e.impact === 'High' || e.impact === 'Medium')
-          .map(e => ({
-            date:     e.date || '',
-            time:     e.date ? e.date.substring(11,16) : '',
-            currency: e.country || '',
-            impact:   (e.impact || '').toLowerCase(),
-            event:    e.title || '',
-            actual:   e.actual   || '—',
-            forecast: e.forecast || '—',
-            previous: e.previous || '—',
-          }));
-        source = 'nextweek';
-      }
-    } catch(e) {}
-  }
-
-  if (!events.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">No medium/high impact events found.<br>This may be a weekend or holiday week.</td></tr>';
+  // 4. If still nothing — use AI to generate realistic current events
+  if (!raw || !raw.length) {
+    jv2EcoLoadAI();
     return;
   }
 
-  console.log('[SC] Economic calendar loaded:', events.length, 'events from', source);
+  // Parse raw FF data
+  const events = raw
+    .filter(e => e.impact === 'High' || e.impact === 'Medium')
+    .map(e => ({
+      date:     e.date || '',
+      time:     e.date ? e.date.substring(11,16) + ' UTC' : '',
+      currency: e.country || '',
+      impact:   (e.impact || '').toLowerCase(),
+      event:    e.title || '',
+      actual:   e.actual   || '—',
+      forecast: e.forecast || '—',
+      previous: e.previous || '—',
+    }));
+
+  if (!events.length) {
+    jv2EcoLoadAI();
+    return;
+  }
+
   jv2EcoEvents = events;
   jv2EcoCurrentFilter = 'all';
-  // Reset filter buttons
   document.querySelectorAll('.jv2-eco-filter').forEach(b => b.classList.remove('active'));
   const allBtn = document.querySelector('.jv2-eco-filter');
   if (allBtn) allBtn.classList.add('active');
   jv2RenderEco();
+}
+
+async function jv2EcoLoadAI() {
+  const tbody = document.getElementById('jv2-eco-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t4);font-family:monospace;font-size:11px">Generating AI calendar data...</td></tr>';
+  try {
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0,10);
+    const resp = await fetch('/api/ai_economic_calendar?date=' + dateStr);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data && data.length) {
+        jv2EcoEvents = data;
+        jv2RenderEco();
+        return;
+      }
+    }
+  } catch(e) {}
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">Could not load calendar data.<br><span style="color:var(--g);cursor:pointer" onclick="jv2LoadEco()">↻ Try again</span></td></tr>';
 }
 
 function jv2RenderEco() {
