@@ -8785,7 +8785,7 @@ function jv2ChangeAccount() {
 
 // ── Statistics ────────────────────────────────────────────────────────────────
 function jv2CalcStats() {
-  const closed = jTrades.filter(t => t.status === 'CLOSED');
+  const closed = jTrades.filter(t => { const st=(t.status||'').toUpperCase(); return st==='CLOSED'||st==='CLOSE'||st==='FILLED'||st==='DONE'||jTrades.every(x=>(x.status||'').toUpperCase()!=='CLOSED'); });
   const wins   = closed.filter(t => (t.pnl || 0) > 0);
   const losses = closed.filter(t => (t.pnl || 0) < 0);
   const totalPnl  = closed.reduce((s, t) => s + (t.pnl || 0), 0);
@@ -9020,45 +9020,81 @@ function jv2CalToday(){ jv2CalYear=new Date().getFullYear(); jv2CalMonth=new Dat
 function jv2RenderTrades(trades) {
   const tbody = document.getElementById('jv2-trades-body');
   if (!tbody) return;
-  const list = trades || jTrades.filter(t=>t.status==='CLOSED');
+
+  // Use passed trades or filter from jTrades
+  // Accept CLOSED, closed, or any completed trade
+  let list;
+  if (trades) {
+    list = trades;
+  } else {
+    list = jTrades.filter(t => {
+      const st = (t.status || '').toUpperCase();
+      return st === 'CLOSED' || st === 'CLOSE' || st === 'FILLED' || st === 'DONE';
+    });
+    // If still empty but we have trades, show all of them
+    if (!list.length && jTrades.length > 0) {
+      list = jTrades;
+    }
+  }
+
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px">No closed trades yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">No trades yet — connect MT5 and sync to load your trades</td></tr>';
     return;
   }
+
+  // Sort by date descending (newest first)
+  list = [...list].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
   tbody.innerHTML = list.map(t => {
-    const pnlCls = t.pnl!=null ? (t.pnl>=0?'jv2-td-pos':'jv2-td-neg') : '';
-    const pnlStr = t.pnl!=null ? (t.pnl>=0?'+$':'-$')+Math.abs(t.pnl).toFixed(2) : '—';
-    const dirCls = t.direction==='LONG' ? 'jv2-dir-long' : 'jv2-dir-short';
-    return `<tr>
-      <td>${t.date||'—'}</td>
-      <td style="color:var(--t1);font-weight:600">${t.asset||t.symbol||'—'}</td>
-      <td><span class="${dirCls}">${t.direction||'—'}</span></td>
-      <td>${t.entry?parseFloat(t.entry).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-      <td>${t.exit?parseFloat(t.exit).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-      <td>${t.size!=null?parseFloat(t.size).toFixed(2):'—'}</td>
-      <td style="color:#f87171">${t.sl?parseFloat(t.sl).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-      <td style="color:#4ade80">${t.tp?parseFloat(t.tp).toLocaleString('en',{maximumFractionDigits:5}):'—'}</td>
-      <td>${t.rr?'1:'+t.rr:'—'}</td>
-      <td class="${pnlCls}">${pnlStr}</td>
-      <td><span class="jstatus-closed">CLOSED</span></td>
-      <td style="display:flex;gap:5px">
-        <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade('${t.id}')">Edit</button>
-        <button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade('${t.id}')">AI</button>
-        <button class="jbtn jbtn-danger" onclick="deleteJTrade('${t.id}')">✕</button>
-      </td>
-    </tr>`;
+    const pnl    = parseFloat(t.pnl) || 0;
+    const pnlCls = pnl > 0 ? 'jv2-td-pos' : pnl < 0 ? 'jv2-td-neg' : '';
+    const pnlStr = t.pnl != null
+      ? (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2)
+      : '—';
+    const dirCls = (t.direction || '').toUpperCase() === 'LONG'
+      ? 'jv2-dir-long' : 'jv2-dir-short';
+    const asset  = t.asset || t.symbol || '—';
+    const dir    = t.direction || '—';
+    const status = t.status || 'CLOSED';
+    const statusCls = status.toUpperCase() === 'OPEN'
+      ? 'color:#60a5fa' : 'color:var(--g)';
+    const safeId = String(t.id || '').replace(/'/g, "\\'");
+    return '<tr>' +
+      '<td style="color:var(--t3)">' + (t.date || '—') + '</td>' +
+      '<td style="color:var(--t1);font-weight:600">' + asset + '</td>' +
+      '<td><span class="' + dirCls + '">' + dir + '</span></td>' +
+      '<td>' + (t.entry ? parseFloat(t.entry).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
+      '<td>' + (t.exit  ? parseFloat(t.exit).toLocaleString('en',{maximumFractionDigits:5})  : '—') + '</td>' +
+      '<td>' + (t.size  != null ? parseFloat(t.size).toFixed(2) : '—') + '</td>' +
+      '<td style="color:#f87171">' + (t.sl ? parseFloat(t.sl).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
+      '<td style="color:#4ade80">' + (t.tp ? parseFloat(t.tp).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
+      '<td>' + (t.rr ? '1:' + t.rr : '—') + '</td>' +
+      '<td class="' + pnlCls + '">' + pnlStr + '</td>' +
+      '<td style="' + statusCls + ';font-family:monospace;font-size:10px">' + status + '</td>' +
+      '<td style="display:flex;gap:5px">' +
+        '<button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade(\'' + safeId + '\')">Edit</button>' +
+        '<button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade(\'' + safeId + '\')">AI</button>' +
+        '<button class="jbtn jbtn-danger" onclick="deleteJTrade(\'' + safeId + '\')">✕</button>' +
+      '</td>' +
+    '</tr>';
   }).join('');
 }
 
 function jv2FilterTrades() {
-  const q   = (document.getElementById('jv2-search')?.value||'').toLowerCase();
-  const dir = document.getElementById('jv2-filter-dir')?.value||'';
-  const res = document.getElementById('jv2-filter-result')?.value||'';
-  let list = jTrades.filter(t=>t.status==='CLOSED');
-  if (q)   list = list.filter(t=>(t.asset||t.symbol||'').toLowerCase().includes(q));
-  if (dir) list = list.filter(t=>t.direction===dir);
-  if (res==='win')  list = list.filter(t=>(t.pnl||0)>0);
-  if (res==='loss') list = list.filter(t=>(t.pnl||0)<0);
+  const q   = (document.getElementById('jv2-search')?.value || '').toLowerCase();
+  const dir = document.getElementById('jv2-filter-dir')?.value || '';
+  const res = document.getElementById('jv2-filter-result')?.value || '';
+
+  let list = jTrades.filter(t => {
+    const st = (t.status || '').toUpperCase();
+    return st === 'CLOSED' || st === 'CLOSE' || st === 'FILLED' || st === 'DONE';
+  });
+  if (!list.length) list = [...jTrades];
+
+  if (q)   list = list.filter(t => (t.asset || t.symbol || '').toLowerCase().includes(q));
+  if (dir) list = list.filter(t => (t.direction || '').toUpperCase() === dir.toUpperCase());
+  if (res === 'win')  list = list.filter(t => (parseFloat(t.pnl) || 0) > 0);
+  if (res === 'loss') list = list.filter(t => (parseFloat(t.pnl) || 0) < 0);
   jv2RenderTrades(list);
 }
 
@@ -9200,8 +9236,6 @@ async function jv2LoadEco() {
   const dateEl = document.getElementById('jv2-eco-date');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t4);font-family:monospace;font-size:11px">Loading economic calendar...</td></tr>';
-
   // Set date header
   if (dateEl) {
     const now = new Date();
@@ -9210,87 +9244,32 @@ async function jv2LoadEco() {
     dateEl.textContent = DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MNTHS[now.getMonth()] + ' ' + now.getFullYear();
   }
 
-  // ── Try loading from FF-compatible feed (client-side) ──────────────────────
-  async function tryFetch(url) {
-    try {
-      const r = await fetch(url, { cache: 'no-cache' });
-      if (!r.ok) return null;
-      return await r.json();
-    } catch(e) { return null; }
-  }
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t4);font-family:monospace;font-size:11px">⏳ Loading economic calendar...</td></tr>';
 
-  let raw = null;
+  try {
+    const r = await fetch('/api/economic_calendar');
+    if (!r.ok) throw new Error('Server error ' + r.status);
+    const data = await r.json();
 
-  // 1. This week
-  raw = await tryFetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
-
-  // 2. Next week if empty or failed
-  if (!raw || !raw.length) {
-    raw = await tryFetch('https://nfs.faireconomy.media/ff_calendar_nextweek.json');
-  }
-
-  // 3. Server proxy fallback
-  if (!raw || !raw.length) {
-    const sr = await tryFetch('/api/economic_calendar');
-    if (sr && Array.isArray(sr) && sr.length) {
-      jv2EcoEvents = sr;
-      jv2RenderEco();
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t4);font-family:monospace;font-size:11px">No events found. <span style="color:var(--g);cursor:pointer" onclick="jv2LoadEco()">↻ Retry</span></td></tr>';
       return;
     }
+
+    jv2EcoEvents = data;
+    jv2EcoCurrentFilter = 'all';
+    document.querySelectorAll('.jv2-eco-filter').forEach(b => b.classList.remove('active'));
+    const allBtn = document.querySelector('.jv2-eco-filter');
+    if (allBtn) allBtn.classList.add('active');
+    jv2RenderEco();
+
+  } catch(e) {
+    console.error('[SC] Economic calendar error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#f87171;font-family:monospace;font-size:11px">Failed to load: ' + e.message + ' <span style="color:var(--g);cursor:pointer;margin-left:8px" onclick="jv2LoadEco()">↻ Retry</span></td></tr>';
   }
-
-  // 4. If still nothing — use AI to generate realistic current events
-  if (!raw || !raw.length) {
-    jv2EcoLoadAI();
-    return;
-  }
-
-  // Parse raw FF data
-  const events = raw
-    .filter(e => e.impact === 'High' || e.impact === 'Medium')
-    .map(e => ({
-      date:     e.date || '',
-      time:     e.date ? e.date.substring(11,16) + ' UTC' : '',
-      currency: e.country || '',
-      impact:   (e.impact || '').toLowerCase(),
-      event:    e.title || '',
-      actual:   e.actual   || '—',
-      forecast: e.forecast || '—',
-      previous: e.previous || '—',
-    }));
-
-  if (!events.length) {
-    jv2EcoLoadAI();
-    return;
-  }
-
-  jv2EcoEvents = events;
-  jv2EcoCurrentFilter = 'all';
-  document.querySelectorAll('.jv2-eco-filter').forEach(b => b.classList.remove('active'));
-  const allBtn = document.querySelector('.jv2-eco-filter');
-  if (allBtn) allBtn.classList.add('active');
-  jv2RenderEco();
 }
 
-async function jv2EcoLoadAI() {
-  const tbody = document.getElementById('jv2-eco-body');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--t4);font-family:monospace;font-size:11px">Generating AI calendar data...</td></tr>';
-  try {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0,10);
-    const resp = await fetch('/api/ai_economic_calendar?date=' + dateStr);
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data && data.length) {
-        jv2EcoEvents = data;
-        jv2RenderEco();
-        return;
-      }
-    }
-  } catch(e) {}
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">Could not load calendar data.<br><span style="color:var(--g);cursor:pointer" onclick="jv2LoadEco()">↻ Try again</span></td></tr>';
-}
+
 
 function jv2RenderEco() {
   const tbody = document.getElementById('jv2-eco-body');
