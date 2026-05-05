@@ -2492,38 +2492,38 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-btn-primary:hover{background:#16a34a}
 .jv2-panel{display:none !important}
 .jv2-panel.active{display:block !important}
-.jv2-main{max-width:1300px;margin:0 auto;padding:18px 20px 80px}
-.jv2-section-title{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:12px;letter-spacing:.3px}
+.jv2-main{max-width:1400px;margin:0 auto;padding:28px 32px 80px}
+.jv2-section-title{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:14px;letter-spacing:.3px}
 
 /* Stats grid */
-.jv2-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px}
-.jv2-stat{background:rgba(7,13,7,0.85);padding:12px 16px}
-.jv2-stat-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:4px;display:flex;align-items:center;gap:4px}
-.jv2-stat-val{font-size:17px;font-weight:600;color:var(--t1);font-family:'DM Mono',monospace}
+.jv2-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:24px}
+.jv2-stat{background:rgba(7,13,7,0.85);padding:18px 22px}
+.jv2-stat-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.jv2-stat-val{font-size:20px;font-weight:600;color:var(--t1);font-family:'DM Mono',monospace}
 .jv2-stat-val.pos{color:#4ade80}
 .jv2-stat-val.neg{color:#f87171}
 .jv2-stat-val.neu{color:var(--gold)}
 
 /* Two col layout */
-.jv2-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.jv2-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 @media(max-width:900px){.jv2-stats-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.jv2-two-col{grid-template-columns:1fr}.jv2-stats-grid{grid-template-columns:1fr}.jv2-tabs{gap:1px}.jv2-tab{padding:4px 8px;font-size:9px}}
 
 /* Cards */
-.jv2-card{background:rgba(7,13,7,0.85);border:1px solid var(--br);border-radius:12px;padding:14px 16px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.jv2-card-title{font-size:12px;font-weight:600;color:var(--t1);letter-spacing:.3px;margin-bottom:4px}
+.jv2-card{background:rgba(7,13,7,0.85);border:1px solid var(--br);border-radius:14px;padding:22px 24px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.jv2-card-title{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.3px;margin-bottom:10px}
 
 /* Discipline gauge */
 .jv2-discipline-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0}
 .jv2-disc-legend{display:flex;gap:12px;font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:12px}
 .jv2-disc-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
-.jv2-disc-pct{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--t1);margin-top:-20px}
+.jv2-disc-pct{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;letter-spacing:2px;color:var(--t1);margin-top:-28px}
 .jv2-disc-label{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:1px}
 
 /* Daily summary table */
 .jv2-daily-table{width:100%;border-collapse:collapse;font-size:12px}
-.jv2-daily-table th{text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;padding:6px 8px;border-bottom:1px solid var(--br)}
-.jv2-daily-table td{padding:8px 8px;border-bottom:1px solid rgba(34,197,94,0.06);font-family:'DM Mono',monospace;font-size:12px;color:var(--t2)}
+.jv2-daily-table th{text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;padding:8px 10px;border-bottom:1px solid var(--br)}
+.jv2-daily-table td{padding:10px 10px;border-bottom:1px solid rgba(34,197,94,0.06);font-family:'DM Mono',monospace;font-size:13px;color:var(--t2)}
 .jv2-daily-table tr:last-child td{border-bottom:none}
 .jv2-daily-table td:first-child{color:var(--g);font-weight:600}
 .jv2-daily-pnl-pos{color:#4ade80;font-weight:600}
@@ -7507,7 +7507,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
               <span><span class="jv2-disc-dot" style="background:#f59e0b"></span>30 – 80%</span>
               <span><span class="jv2-disc-dot" style="background:#22c55e"></span>80 – 100%</span>
             </div>
-            <canvas id="jv2-disc-canvas" width="220" height="120"></canvas>
+            <canvas id="jv2-disc-canvas" width="280" height="150"></canvas>
             <div class="jv2-disc-pct" id="jv2-disc-pct">—</div>
             <div class="jv2-disc-label" id="jv2-disc-label">No data</div>
           </div>
