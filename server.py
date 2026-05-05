@@ -2632,6 +2632,49 @@ async def load_dashboard():
     except Exception as e:
         print(f"[STARTUP] WARNING: dashboard.html not found: {e}")
         _DASHBOARD_HTML = ""
+
+@app.get("/api/economic_calendar")
+async def api_economic_calendar():
+    """Return Medium + High impact events for this week as JSON for the trading journal."""
+    import ssl as _ssl
+    try:
+        ctx = _ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = _ssl.CERT_NONE
+        conn = aiohttp.TCPConnector(ssl=ctx)
+        async with aiohttp.ClientSession(connector=conn) as session:
+            async with session.get(
+                "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as r:
+                if r.status != 200:
+                    return JSONResponse({"error": f"Calendar API returned {r.status}"}, status_code=502)
+                raw = await r.json(content_type=None)
+
+        events = []
+        for ev in (raw if isinstance(raw, list) else []):
+            impact = ev.get("impact", "").lower()
+            if impact not in ("high", "medium"):
+                continue
+            events.append({
+                "date":     ev.get("date", ""),
+                "time":     ev.get("date", "")[-8:-3] if ev.get("date","") else "",
+                "currency": ev.get("country", ""),
+                "impact":   impact,
+                "event":    ev.get("title", ""),
+                "actual":   ev.get("actual", "") or "—",
+                "forecast": ev.get("forecast", "") or "—",
+                "previous": ev.get("previous", "") or "—",
+            })
+
+        return JSONResponse(events)
+
+    except Exception as e:
+        print(f"  [ECO] Calendar fetch error: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     if _DASHBOARD_HTML:
