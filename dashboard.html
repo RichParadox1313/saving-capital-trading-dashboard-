@@ -3368,9 +3368,9 @@ async function connectMT5(){
   }
 }
 
-async function syncMT5(){
+async function syncMT5(silentMode = false){
   const info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
-  if(!info?.accountId){ alert('No MT5 account connected.'); return; }
+  if(!info?.accountId){ if(!silentMode) alert('No MT5 account connected.'); return; }
 
   const link = document.querySelector('[onclick="syncMT5()"]');
   if(link){ link.textContent='↻ Syncing...'; link.style.opacity='0.5'; link.style.pointerEvents='none'; }
@@ -3442,6 +3442,91 @@ async function syncMT5(){
     setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
   }
 }
+
+// ── AUTO-SYNC ────────────────────────────────────────────────────────────────
+// Syncs MT5 trades automatically every 5 minutes when connected
+// and whenever the user navigates back to the journal page
+
+let _autoSyncInterval = null;
+let _lastSyncTime = 0;
+const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+async function jv2AutoSync(silent = true) {
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
+  if (!mt5Info) return; // Not connected
+  
+  const now = Date.now();
+  if (now - _lastSyncTime < 30000) return; // Don't sync more than once per 30s
+  _lastSyncTime = now;
+
+  if (!silent) {
+    // Show subtle syncing indicator in topbar
+    const statusBar = document.getElementById('jv2-mt5-status-bar');
+    if (statusBar) {
+      const dot = statusBar.querySelector('.jv2-mt5-dot');
+      if (dot) dot.style.background = '#f59e0b';
+    }
+  }
+
+  try {
+    await syncMT5(true); // true = silent mode
+  } catch(e) {
+    console.warn('[SC] Auto-sync failed:', e.message);
+  }
+
+  if (!silent) {
+    const statusBar = document.getElementById('jv2-mt5-status-bar');
+    if (statusBar) {
+      const dot = statusBar.querySelector('.jv2-mt5-dot');
+      if (dot) dot.style.background = '';
+    }
+  }
+}
+
+function jv2StartAutoSync() {
+  jv2StopAutoSync();
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
+  if (!mt5Info) return;
+
+  // Sync immediately on start
+  setTimeout(() => jv2AutoSync(true), 1000);
+
+  // Then every 5 minutes
+  _autoSyncInterval = setInterval(() => {
+    const page = document.getElementById('page-journal-page');
+    if (page && page.style.display !== 'none') {
+      jv2AutoSync(true);
+    }
+  }, AUTO_SYNC_INTERVAL);
+
+  console.log('[SC] Auto-sync started — every 5 minutes');
+}
+
+function jv2StopAutoSync() {
+  if (_autoSyncInterval) {
+    clearInterval(_autoSyncInterval);
+    _autoSyncInterval = null;
+  }
+}
+
+// Update status bar to show last sync time
+function jv2UpdateSyncTime() {
+  const statusBar = document.getElementById('jv2-mt5-status-bar');
+  if (!statusBar) return;
+  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
+  if (!mt5Info) return;
+  const ago = _lastSyncTime ? Math.round((Date.now() - _lastSyncTime) / 1000) : null;
+  const agoStr = ago === null ? 'never' : ago < 60 ? 'just now' : Math.round(ago/60) + 'm ago';
+  statusBar.innerHTML = `
+    <div class="jv2-mt5-connected">
+      <div class="jv2-mt5-dot"></div>
+      <span>${mt5Info.broker || mt5Info.server} · #${mt5Info.login}</span>
+      <span style="color:var(--t4);margin-left:8px;font-size:9px">synced ${agoStr}</span>
+    </div>`;
+}
+
+// Update the sync time display every 30 seconds
+setInterval(jv2UpdateSyncTime, 30000);
 
 function disconnectMT5(){
   if(!confirm('Disconnect MT5 account? Your existing trades will remain in the journal.')) return;
@@ -8318,6 +8403,8 @@ window.goPage = function(page) {
     if (ot) ot.classList.add('active');
     loadJournal();
     setTimeout(populateBrokers, 100);
+    // Start auto-sync when journal opens
+    if (typeof jv2StartAutoSync === 'function') jv2StartAutoSync();
   }
 };
 
@@ -8630,6 +8717,8 @@ function jv2RenderMT5Block() {
   const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
 
   if (mt5Info) {
+    // Start auto-sync when account is connected
+    if (typeof jv2StartAutoSync === 'function') jv2StartAutoSync();
     // ── Show connected account card ──────────────────────────────
     if (connectForm)   connectForm.style.display   = 'none';
     if (connectedBar) {
@@ -8644,9 +8733,9 @@ function jv2RenderMT5Block() {
             </div>
           </div>
           <div class="jv2-mt5-account-actions">
-            <button class="jv2-mt5-btn sync" onclick="syncMT5()">
+            <button class="jv2-mt5-btn sync" onclick="syncMT5(false)">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 2.5A5.5 5.5 0 1 0 12 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Sync Trades
+              Sync Now
             </button>
             <button class="jv2-mt5-btn change" onclick="jv2ChangeAccount()">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M8 3l3 3.5-3 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
