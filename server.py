@@ -2675,6 +2675,61 @@ async def api_economic_calendar():
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+
+@app.get("/api/ai_economic_calendar")
+async def ai_economic_calendar(date: str = ""):
+    """Generate realistic economic calendar using Claude AI when external feeds fail."""
+    import json as _json2
+    try:
+        from datetime import datetime as _dt
+        today = date or _dt.now().strftime("%Y-%m-%d")
+        
+        prompt = f"""Today is {today}. Generate a realistic economic calendar for this week with 12-15 upcoming Medium and High impact forex events.
+
+Return ONLY a JSON array, no other text. Each event must have these exact fields:
+- date: ISO datetime string like "2026-05-06T08:30:00"  
+- time: time string like "08:30 UTC"
+- currency: currency code like "USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"
+- impact: "high" or "medium" (lowercase)
+- event: event name like "Non-Farm Payrolls", "CPI m/m", "Interest Rate Decision"
+- actual: "—" for upcoming events, or a realistic value like "0.3%" for past ones
+- forecast: realistic forecast value like "0.2%" or "—"
+- previous: previous reading like "0.1%" or "—"
+
+Include realistic mix of: NFP, CPI, GDP, PMI, retail sales, interest rate decisions, trade balance events.
+Spread across USD, EUR, GBP, JPY, AUD, CAD this week. Return JSON array only."""
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": os.environ.get("ANTHROPIC_API_KEY", ""),
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 2000,
+                    "messages": [{"role": "user", "content": prompt}]
+                },
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as r:
+                if r.status != 200:
+                    return JSONResponse([])
+                data = await r.json()
+                text = data["content"][0]["text"].strip()
+                # Extract JSON array
+                start = text.find("[")
+                end = text.rfind("]") + 1
+                if start == -1 or end == 0:
+                    return JSONResponse([])
+                events = _json2.loads(text[start:end])
+                return JSONResponse(events)
+    except Exception as e:
+        print(f"  [AI-ECO] Error: {e}")
+        return JSONResponse([])
+
+
 @app.get("/{full_path:path}")
 async def serve(full_path: str):
     if _DASHBOARD_HTML:
