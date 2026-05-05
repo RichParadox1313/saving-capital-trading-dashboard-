@@ -3295,14 +3295,7 @@ function goPage(page){
     else renderAll();
   }
   if(page==='journal-page'){
-    jv2Tab = 'overview';
-    document.querySelectorAll('.jv2-panel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
-    document.querySelectorAll('.jv2-tab').forEach(b=>b.classList.remove('active'));
-    const _op=document.getElementById('jv2-panel-overview');
-    const _ot=document.getElementById('jv2-tab-overview');
-    if(_op){_op.classList.add('active');_op.style.display='block';}
-    if(_ot) _ot.classList.add('active');
-    loadJournal();
+    // Handled by window.goPage patch
   }
   if(page==='quant'){ qtInit(); }
   window.scrollTo(0,0);
@@ -3621,15 +3614,18 @@ function jCalToday(){ jCalYear=new Date().getFullYear(); jCalMonth=new Date().ge
 function jCalSetRange(r){ jCalRange=r; jCalToday(); }
 
 function renderJournal(){
-  // Render all V2 panels
-  if (typeof jv2RenderStats !== 'function') return;
-  jv2RenderMT5Block();
-  jv2RenderStats();
-  jv2RenderDailyTable();
-  jv2RenderDiscipline();
-  jv2RenderCal();
-  jv2RenderTrades();
-  setTimeout(jv2RenderCharts, 150);
+  // Render all V2 panels - functions defined in script block 4
+  try {
+    jv2RenderMT5Block();
+    jv2RenderStats();
+    jv2RenderDailyTable();
+    jv2RenderDiscipline();
+    jv2RenderCal();
+    jv2RenderTrades();
+    setTimeout(jv2RenderCharts, 150);
+  } catch(e) {
+    console.error('[SC] renderJournal error:', e);
+  }
 }
 
 // ── Quick-pick popup ─────────────────────────────────────────────────────────
@@ -4089,6 +4085,7 @@ const BROKERS = [
 function populateBrokers(){
   const sel = document.getElementById('mt5-broker');
   if(!sel) return;
+  if(typeof BROKERS === 'undefined' || !BROKERS.length) return;
   const cfdBrokers = BROKERS.filter(b=>b.type==='cfd').sort((a,b)=>a.name.localeCompare(b.name));
   const propFirms  = BROKERS.filter(b=>b.type==='prop').sort((a,b)=>a.name.localeCompare(b.name));
   sel.innerHTML = '<option value="">— Select Broker —</option>' +
@@ -7446,7 +7443,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
             </div>
             <div style="grid-column:1/-1">
               <label class="jlabel">Broker</label>
-              <select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%">
+              <select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%" onclick="if(!this.options.length||this.options.length<3)populateBrokers()">
                 <option value="">— Select your broker —</option>
               </select>
             </div>
@@ -7470,6 +7467,21 @@ setLang(localStorage.getItem('sc_lang')||'en');
             <div class="mt5-conn-dot"></div>
             <div class="mt5-conn-info" id="jv2-mt5-conn-info">MT5 Connected</div>
           </div>
+        </div>
+      </div>
+
+      <!-- RAW TEST PANEL -->
+      <div id="jv2-test-panel" style="margin-bottom:16px;padding:14px 16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.4);border-radius:10px;font-family:monospace;font-size:11px;color:#fbbf24;line-height:2">
+        <div style="font-weight:700;margin-bottom:6px;font-size:12px">⚡ LIVE DIAGNOSTICS</div>
+        <div>jTrades count: <span id="diag-count" style="color:#4ade80">loading...</span></div>
+        <div>CLOSED trades: <span id="diag-closed" style="color:#4ade80">loading...</span></div>
+        <div>Server response: <span id="diag-server" style="color:#4ade80">loading...</span></div>
+        <div>SC_USER_ID: <span id="diag-uid" style="color:#60a5fa">loading...</span></div>
+        <div>Last error: <span id="diag-err" style="color:#f87171">none</span></div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="diagRun()" style="background:#f59e0b;border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">Run Test</button>
+          <button onclick="diagSync()" style="background:#22c55e;border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">Force Sync</button>
+          <button onclick="document.getElementById('jv2-test-panel').style.display='none'" style="background:transparent;border:1px solid #f59e0b;color:#f59e0b;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px">Hide</button>
         </div>
       </div>
 
@@ -8255,7 +8267,7 @@ function scShowGate(page) {
   `;
 }
 
-// Patch goPage — auth gates only (journal handled in original goPage)
+// Patch goPage — auth gates + journal loading
 const _origGoPage = goPage;
 window.goPage = function(page) {
   if (page === 'home') { _origGoPage(page); return; }
@@ -8271,6 +8283,21 @@ window.goPage = function(page) {
     return;
   }
   _origGoPage(page);
+  // Journal — reset panels and load data
+  if (page === 'journal-page') {
+    jv2Tab = 'overview';
+    document.querySelectorAll('.jv2-panel').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
+    document.querySelectorAll('.jv2-tab').forEach(b => b.classList.remove('active'));
+    const op = document.getElementById('jv2-panel-overview');
+    const ot = document.getElementById('jv2-tab-overview');
+    if (op) { op.classList.add('active'); op.style.display = 'block'; }
+    if (ot) ot.classList.add('active');
+    loadJournal();
+    setTimeout(populateBrokers, 100);
+  }
 };
 
 // ── Payment ──────────────────────────────────────────────────────────────────
@@ -8593,8 +8620,9 @@ function jv2RenderMT5Block() {
     if (connectForm) connectForm.style.display = 'block';
     if (connectedBar) connectedBar.style.display = 'none';
     if (statusBar) statusBar.innerHTML = '';
-    // Populate brokers
-    setTimeout(populateBrokers, 50);
+    // Populate brokers immediately and as fallback
+    populateBrokers();
+    setTimeout(populateBrokers, 200);
   }
 }
 
@@ -9383,6 +9411,56 @@ function initJournalBG(){
 if(document.readyState==='complete') setTimeout(initJournalBG,300);
 else window.addEventListener('load',()=>setTimeout(initJournalBG,300));
 })();
+</script>
+
+<script>
+async function diagRun() {
+  try {
+    document.getElementById('diag-uid').textContent = SC_USER_ID;
+    document.getElementById('diag-count').textContent = jTrades.length;
+    document.getElementById('diag-closed').textContent = jTrades.filter(t=>t.status==='CLOSED').length;
+    
+    // Fetch directly from server
+    const r = await fetch('/api/journal?user_id=' + encodeURIComponent(SC_USER_ID));
+    const data = await r.json();
+    document.getElementById('diag-server').textContent = 
+      r.status + ' — ' + data.length + ' trades' + 
+      (data[0] ? ' — sample: ' + JSON.stringify(data[0]).slice(0,80) : '');
+    
+    // Force into jTrades and render
+    jTrades = data;
+    document.getElementById('diag-count').textContent = jTrades.length;
+    document.getElementById('diag-closed').textContent = jTrades.filter(t=>t.status==='CLOSED').length;
+    renderJournal();
+    document.getElementById('diag-err').textContent = 'none — renderJournal called';
+    document.getElementById('diag-err').style.color = '#4ade80';
+  } catch(e) {
+    document.getElementById('diag-err').textContent = e.message;
+    document.getElementById('diag-err').style.color = '#f87171';
+  }
+}
+
+async function diagSync() {
+  try {
+    document.getElementById('diag-err').textContent = 'syncing...';
+    await syncMT5();
+    await diagRun();
+  } catch(e) {
+    document.getElementById('diag-err').textContent = 'sync error: ' + e.message;
+  }
+}
+
+// Auto-run when journal page opens
+document.addEventListener('DOMContentLoaded', function() {
+  const page = document.getElementById('page-journal-page');
+  if (page) {
+    new MutationObserver(function() {
+      if (page.style.display !== 'none') {
+        setTimeout(diagRun, 500);
+      }
+    }).observe(page, {attributes: true, attributeFilter: ['style']});
+  }
+});
 </script>
 </body>
 </html>
