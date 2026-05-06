@@ -2567,8 +2567,9 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-dir-short{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);padding:2px 8px;border-radius:4px;font-size:9px;letter-spacing:1px}
 
 /* Chart buttons */
-.jv2-chart-btn{background:transparent;border:1px solid var(--br);color:var(--t4);padding:5px 14px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s}
-.jv2-chart-btn.active{background:var(--g);color:#030704;border-color:var(--g)}
+.jv2-chart-btn{background:transparent;border:1px solid rgba(34,197,94,0.25);color:rgba(167,243,208,0.5);padding:6px 16px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;transition:all .2s}
+.jv2-chart-btn:hover{border-color:rgba(34,197,94,0.5);color:rgba(167,243,208,0.8)}
+.jv2-chart-btn.active{background:#22c55e;color:#030704;border-color:#22c55e;font-weight:700}
 
 /* Economic Calendar */
 .jv2-eco-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -3424,7 +3425,15 @@ async function syncMT5(silentMode = false){
         log('✓ Trades saved to journal!', '#4ade80');
       }
 
-      await loadJournal();
+      // Use trades from server response directly (most reliable)
+      if (data.trades && Array.isArray(data.trades) && data.trades.length > 0) {
+        jTrades = data.trades;
+        localStorage.setItem('sc_journal', JSON.stringify(jTrades));
+        log(`✓ ${jTrades.length} trades loaded directly from sync`, '#4ade80');
+        renderJournal();
+      } else {
+        await loadJournal();
+      }
       log(`✓ Journal refreshed — ${jTrades.length} trades now showing`, '#4ade80');
       log(`✓ Trading calendar updated`, '#4ade80');
 
@@ -3554,8 +3563,22 @@ const SC_USER_ID = getUserId();
 async function loadJournal(){
   try{
     const r = await fetch('/api/journal?user_id='+encodeURIComponent(SC_USER_ID));
-    if(r.ok){ jTrades = await r.json(); }
-  }catch(e){ jTrades = JSON.parse(localStorage.getItem('sc_journal')||'[]'); }
+    if(r.ok){
+      const data = await r.json();
+      jTrades = Array.isArray(data) ? data : [];
+    } else {
+      throw new Error('HTTP ' + r.status);
+    }
+  }catch(e){
+    console.warn('[SC] loadJournal server error:', e.message);
+    // Fall back to localStorage
+    const cached = localStorage.getItem('sc_journal');
+    if (cached) {
+      try { jTrades = JSON.parse(cached) || []; }
+      catch(_) { jTrades = []; }
+    }
+  }
+  console.log('[SC] jTrades loaded:', jTrades.length, 'trades');
   renderJournal();
   setTimeout(populateBrokers, 50);
 }
@@ -9021,62 +9044,44 @@ function jv2RenderTrades(trades) {
   const tbody = document.getElementById('jv2-trades-body');
   if (!tbody) return;
 
-  // Use passed trades or filter from jTrades
-  // Accept CLOSED, closed, or any completed trade
-  let list;
-  if (trades) {
-    list = trades;
-  } else {
-    list = jTrades.filter(t => {
-      const st = (t.status || '').toUpperCase();
-      return st === 'CLOSED' || st === 'CLOSE' || st === 'FILLED' || st === 'DONE';
-    });
-    // If still empty but we have trades, show all of them
-    if (!list.length && jTrades.length > 0) {
-      list = jTrades;
-    }
-  }
+  const list = (trades || jTrades).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
 
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--t4);font-size:11px;font-family:monospace">No trades yet — connect MT5 and sync to load your trades</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:rgba(167,243,208,0.3);font-family:monospace;font-size:11px;letter-spacing:1px">NO TRADES YET — CONNECT MT5 AND SYNC</td></tr>';
     return;
   }
-
-  // Sort by date descending (newest first)
-  list = [...list].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   tbody.innerHTML = list.map(t => {
     const pnl    = parseFloat(t.pnl) || 0;
     const pnlCls = pnl > 0 ? 'jv2-td-pos' : pnl < 0 ? 'jv2-td-neg' : '';
-    const pnlStr = t.pnl != null
-      ? (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2)
-      : '—';
-    const dirCls = (t.direction || '').toUpperCase() === 'LONG'
-      ? 'jv2-dir-long' : 'jv2-dir-short';
+    const pnlStr = t.pnl != null ? (pnl>=0?'+$':'-$') + Math.abs(pnl).toFixed(2) : '—';
+    const isLong = (t.direction||'').toUpperCase() === 'LONG';
+    const dirCls = isLong ? 'jv2-dir-long' : 'jv2-dir-short';
     const asset  = t.asset || t.symbol || '—';
-    const dir    = t.direction || '—';
-    const status = t.status || 'CLOSED';
-    const statusCls = status.toUpperCase() === 'OPEN'
-      ? 'color:#60a5fa' : 'color:var(--g)';
-    const safeId = String(t.id || '').replace(/'/g, "\\'");
-    return '<tr>' +
-      '<td style="color:var(--t3)">' + (t.date || '—') + '</td>' +
-      '<td style="color:var(--t1);font-weight:600">' + asset + '</td>' +
-      '<td><span class="' + dirCls + '">' + dir + '</span></td>' +
-      '<td>' + (t.entry ? parseFloat(t.entry).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
-      '<td>' + (t.exit  ? parseFloat(t.exit).toLocaleString('en',{maximumFractionDigits:5})  : '—') + '</td>' +
-      '<td>' + (t.size  != null ? parseFloat(t.size).toFixed(2) : '—') + '</td>' +
-      '<td style="color:#f87171">' + (t.sl ? parseFloat(t.sl).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
-      '<td style="color:#4ade80">' + (t.tp ? parseFloat(t.tp).toLocaleString('en',{maximumFractionDigits:5}) : '—') + '</td>' +
-      '<td>' + (t.rr ? '1:' + t.rr : '—') + '</td>' +
-      '<td class="' + pnlCls + '">' + pnlStr + '</td>' +
-      '<td style="' + statusCls + ';font-family:monospace;font-size:10px">' + status + '</td>' +
-      '<td style="display:flex;gap:5px">' +
-        '<button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px" onclick="editJTrade(\'' + safeId + '\')">Edit</button>' +
-        '<button class="jbtn jbtn-outline" style="padding:4px 10px;font-size:8px;border-color:rgba(34,197,94,0.3);color:var(--g)" onclick="analyseJTrade(\'' + safeId + '\')">AI</button>' +
-        '<button class="jbtn jbtn-danger" onclick="deleteJTrade(\'' + safeId + '\')">✕</button>' +
-      '</td>' +
-    '</tr>';
+    const safeId = String(t.id||'').replace(/\'/g, "\\'");
+    const fmt    = v => v ? parseFloat(v).toLocaleString('en',{maximumFractionDigits:5}) : '—';
+    const isOpen = (t.status||'').toUpperCase() === 'OPEN';
+    const statusEl = isOpen
+      ? '<span style="color:#60a5fa;font-size:9px;letter-spacing:1px">OPEN</span>'
+      : '<span style="color:#22c55e;font-size:9px;letter-spacing:1px">CLOSED</span>';
+    return '<tr>'
+      + '<td style="color:rgba(167,243,208,0.5)">' + (t.date||'—') + '</td>'
+      + '<td style="color:#e2e8f0;font-weight:600;letter-spacing:.5px">' + asset + '</td>'
+      + '<td><span class="' + dirCls + '">' + (t.direction||'—') + '</span></td>'
+      + '<td>' + fmt(t.entry) + '</td>'
+      + '<td>' + fmt(t.exit) + '</td>'
+      + '<td>' + (t.size!=null?parseFloat(t.size).toFixed(2):'—') + '</td>'
+      + '<td style="color:#f87171">' + fmt(t.sl) + '</td>'
+      + '<td style="color:#4ade80">' + fmt(t.tp) + '</td>'
+      + '<td>' + (t.rr?'1:'+parseFloat(t.rr).toFixed(2):'—') + '</td>'
+      + '<td class="' + pnlCls + '" style="font-weight:700">' + pnlStr + '</td>'
+      + '<td>' + statusEl + '</td>'
+      + '<td><div style="display:flex;gap:4px">'
+        + '<button class="jbtn jbtn-outline" style="padding:3px 8px;font-size:8px;letter-spacing:.5px" onclick="editJTrade(\'' + safeId + '\')">EDIT</button>'
+        + '<button class="jbtn jbtn-outline" style="padding:3px 8px;font-size:8px;letter-spacing:.5px;border-color:rgba(34,197,94,0.3);color:#4ade80" onclick="analyseJTrade(\'' + safeId + '\')">AI</button>'
+        + '<button class="jbtn jbtn-danger" style="padding:3px 8px;font-size:8px" onclick="deleteJTrade(\'' + safeId + '\')">✕</button>'
+      + '</div></td>'
+      + '</tr>';
   }).join('');
 }
 
@@ -9084,17 +9089,11 @@ function jv2FilterTrades() {
   const q   = (document.getElementById('jv2-search')?.value || '').toLowerCase();
   const dir = document.getElementById('jv2-filter-dir')?.value || '';
   const res = document.getElementById('jv2-filter-result')?.value || '';
-
-  let list = jTrades.filter(t => {
-    const st = (t.status || '').toUpperCase();
-    return st === 'CLOSED' || st === 'CLOSE' || st === 'FILLED' || st === 'DONE';
-  });
-  if (!list.length) list = [...jTrades];
-
-  if (q)   list = list.filter(t => (t.asset || t.symbol || '').toLowerCase().includes(q));
-  if (dir) list = list.filter(t => (t.direction || '').toUpperCase() === dir.toUpperCase());
-  if (res === 'win')  list = list.filter(t => (parseFloat(t.pnl) || 0) > 0);
-  if (res === 'loss') list = list.filter(t => (parseFloat(t.pnl) || 0) < 0);
+  let list  = [...jTrades];
+  if (q)   list = list.filter(t => (t.asset||t.symbol||'').toLowerCase().includes(q));
+  if (dir) list = list.filter(t => (t.direction||'').toUpperCase() === dir.toUpperCase());
+  if (res === 'win')  list = list.filter(t => (parseFloat(t.pnl)||0) > 0);
+  if (res === 'loss') list = list.filter(t => (parseFloat(t.pnl)||0) < 0);
   jv2RenderTrades(list);
 }
 
@@ -9107,116 +9106,229 @@ function jv2SetEquityMode(mode) {
 }
 
 function jv2RenderCharts() {
-  if (typeof Chart === 'undefined') {
-    console.warn('[SC] Chart.js not loaded');
-    return;
-  }
-  const closed = jTrades.filter(t=>t.status==='CLOSED').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  if (!closed.length) {
-    // Show empty state in all chart canvases
-    ['jv2-equity-chart','jv2-wl-chart','jv2-asset-chart'].forEach(id => {
-      const canvas = document.getElementById(id);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = 'rgba(167,243,208,0.2)';
-      ctx.font = '12px DM Mono, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('No trade data yet — connect MT5 or add trades manually', canvas.width/2, canvas.height/2);
-    });
-    return;
-  }
+  if (typeof Chart === 'undefined') return;
 
-  // Equity curve
+  const closed = jTrades.filter(t => {
+    const st = (t.status||'').toUpperCase();
+    return st==='CLOSED'||st==='CLOSE'||st==='FILLED'||st==='DONE'||jTrades.length>0;
+  }).sort((a,b) => (a.date||'').localeCompare(b.date||''));
+
   const base = 10000;
   let running = base;
-  const eqLabels = [], eqData = [], balData = [];
-  closed.forEach((t,i) => {
-    running += t.pnl||0;
-    eqLabels.push(t.date?.slice(5)||i);
-    eqData.push(jv2EquityMode==='abs' ? parseFloat(running.toFixed(2)) : parseFloat(((running/base-1)*100).toFixed(2)));
-    balData.push(jv2EquityMode==='abs' ? parseFloat(running.toFixed(2)) : parseFloat(((running/base-1)*100).toFixed(2)));
+  const eqLabels = [], eqData = [];
+  closed.forEach(t => {
+    running += parseFloat(t.pnl) || 0;
+    eqLabels.push(t.date ? t.date.slice(5) : '');
+    eqData.push(parseFloat(running.toFixed(2)));
   });
 
+  const CHART_DEFAULTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 600, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(3,7,4,0.96)',
+        borderColor: 'rgba(34,197,94,0.3)',
+        borderWidth: 1,
+        titleColor: '#a7f3d0',
+        bodyColor: '#d1fae5',
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: { family: 'DM Mono, monospace', size: 11 },
+        bodyFont: { family: 'DM Mono, monospace', size: 12, weight: '600' },
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(34,197,94,0.04)', drawBorder: false },
+        ticks: { color: 'rgba(167,243,208,0.35)', font: { family: 'DM Mono, monospace', size: 10 }, maxTicksLimit: 8 },
+        border: { display: false }
+      },
+      y: {
+        grid: { color: 'rgba(34,197,94,0.06)', drawBorder: false },
+        ticks: { color: 'rgba(167,243,208,0.35)', font: { family: 'DM Mono, monospace', size: 10 } },
+        border: { display: false }
+      }
+    }
+  };
+
+  // ── Equity Curve ────────────────────────────────────────────────────────────
   const eqCanvas = document.getElementById('jv2-equity-chart');
   if (eqCanvas) {
     if (jv2Charts.equity) jv2Charts.equity.destroy();
+
+    const isEmpty = !closed.length;
+    const displayData = isEmpty ? [10000, 10050, 9980, 10120, 10200, 10180, 10300] : eqData;
+    const displayLabels = isEmpty ? ['Mon','Tue','Wed','Thu','Fri','Mon','Tue'] : eqLabels;
+    const isProfit = displayData.length < 2 || displayData[displayData.length-1] >= displayData[0];
+
+    const color = isProfit ? '#22c55e' : '#ef4444';
+    const fillColor = isProfit ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)';
+
+    const mode = jv2EquityMode === 'pct'
+      ? displayData.map(v => parseFloat(((v/base-1)*100).toFixed(2)))
+      : displayData;
+
     jv2Charts.equity = new Chart(eqCanvas, {
-      type:'line',
-      data:{
-        labels: eqLabels,
-        datasets:[{
-          label: jv2EquityMode==='abs' ? 'Balance ($)' : 'Return (%)',
-          data: eqData,
-          borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.08)',
-          borderWidth:2, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:4
+      type: 'line',
+      data: {
+        labels: displayLabels,
+        datasets: [{
+          data: mode,
+          borderColor: color,
+          backgroundColor: fillColor,
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.45,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: color,
+          pointHoverBorderColor: '#030704',
+          pointHoverBorderWidth: 2,
         }]
       },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        interaction:{mode:'index',intersect:false},
-        plugins:{
-          legend:{display:false},
-          tooltip:{
-            backgroundColor:'rgba(7,13,7,0.95)', borderColor:'rgba(34,197,94,0.3)', borderWidth:1,
-            titleColor:'#a7f3d0', bodyColor:'#a7f3d0', padding:10,
-            callbacks:{label: ctx => `Balance: ${jv2EquityMode==='abs'?'$':''}${ctx.raw}${jv2EquityMode==='pct'?'%':''}`}
+      options: {
+        ...CHART_DEFAULTS,
+        plugins: {
+          ...CHART_DEFAULTS.plugins,
+          tooltip: {
+            ...CHART_DEFAULTS.plugins.tooltip,
+            callbacks: {
+              label: ctx => jv2EquityMode === 'pct'
+                ? (ctx.raw >= 0 ? '+' : '') + ctx.raw + '%'
+                : '$' + ctx.raw.toLocaleString()
+            }
           }
         },
-        scales:{
-          x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},maxTicksLimit:12}},
-          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},callback:v=>jv2EquityMode==='abs'?'$'+v:v+'%'}}
+        scales: {
+          x: { ...CHART_DEFAULTS.scales.x },
+          y: {
+            ...CHART_DEFAULTS.scales.y,
+            ticks: {
+              ...CHART_DEFAULTS.scales.y.ticks,
+              callback: v => jv2EquityMode === 'pct' ? v + '%' : '$' + v.toLocaleString()
+            }
+          }
         }
       }
     });
   }
 
-  // Win/Loss distribution
+  // ── Win / Loss Donut ────────────────────────────────────────────────────────
   const wlCanvas = document.getElementById('jv2-wl-chart');
   if (wlCanvas) {
-    const wins = closed.filter(t=>(t.pnl||0)>0).length;
-    const losses = closed.length - wins;
     if (jv2Charts.wl) jv2Charts.wl.destroy();
+    const wins = closed.filter(t => (parseFloat(t.pnl)||0) > 0).length;
+    const losses = closed.filter(t => (parseFloat(t.pnl)||0) < 0).length;
+    const neutral = closed.length - wins - losses;
+    const winRate = closed.length ? ((wins/closed.length)*100).toFixed(1) : '0';
+
     jv2Charts.wl = new Chart(wlCanvas, {
-      type:'doughnut',
-      data:{
-        labels:['Wins','Losses'],
-        datasets:[{data:[wins,losses], backgroundColor:['rgba(34,197,94,0.7)','rgba(239,68,68,0.7)'], borderColor:['#22c55e','#ef4444'], borderWidth:1}]
+      type: 'doughnut',
+      data: {
+        labels: ['Wins', 'Losses', 'Breakeven'],
+        datasets: [{
+          data: [wins || 1, losses || 0, neutral || 0],
+          backgroundColor: ['rgba(34,197,94,0.85)','rgba(239,68,68,0.8)','rgba(100,116,139,0.6)'],
+          borderColor: ['#22c55e','#ef4444','#475569'],
+          borderWidth: 2,
+          hoverOffset: 6,
+        }]
       },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        plugins:{legend:{labels:{color:'rgba(167,243,208,0.5)',font:{size:10},boxWidth:10}}}
-      }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 800 },
+        cutout: '72%',
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              color: 'rgba(167,243,208,0.5)',
+              font: { family: 'DM Mono, monospace', size: 10 },
+              boxWidth: 10,
+              padding: 14,
+            }
+          },
+          tooltip: {
+            ...CHART_DEFAULTS.plugins.tooltip,
+            callbacks: {
+              label: ctx => ' ' + ctx.label + ': ' + ctx.raw + ' (' + (closed.length ? ((ctx.raw/closed.length)*100).toFixed(1) : 0) + '%)'
+            }
+          }
+        }
+      },
+      plugins: [{
+        id: 'centerText',
+        afterDraw(chart) {
+          const {ctx, chartArea: {top, bottom, left, right}} = chart;
+          const cx = (left+right)/2, cy = (top+bottom)/2;
+          ctx.save();
+          ctx.fillStyle = '#4ade80';
+          ctx.font = '700 22px DM Mono, monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(winRate + '%', cx, cy - 8);
+          ctx.fillStyle = 'rgba(167,243,208,0.4)';
+          ctx.font = '11px DM Mono, monospace';
+          ctx.fillText('WIN RATE', cx, cy + 12);
+          ctx.restore();
+        }
+      }]
     });
   }
 
-  // P&L by asset
+  // ── P&L by Asset Bar ────────────────────────────────────────────────────────
   const assetCanvas = document.getElementById('jv2-asset-chart');
   if (assetCanvas) {
+    if (jv2Charts.asset) jv2Charts.asset.destroy();
     const byAsset = {};
     closed.forEach(t => {
-      const a = t.asset||t.symbol||'Other';
-      byAsset[a] = (byAsset[a]||0) + (t.pnl||0);
+      const a = t.asset || t.symbol || 'Other';
+      byAsset[a] = (byAsset[a]||0) + (parseFloat(t.pnl)||0);
     });
     const sorted = Object.entries(byAsset).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,8);
-    if (jv2Charts.asset) jv2Charts.asset.destroy();
+    const labels = sorted.map(([a])=>a);
+    const values = sorted.map(([,v])=>parseFloat(v.toFixed(2)));
+    const colors = values.map(v=>v>=0?'rgba(34,197,94,0.8)':'rgba(239,68,68,0.8)');
+    const borders = values.map(v=>v>=0?'#22c55e':'#ef4444');
+
     jv2Charts.asset = new Chart(assetCanvas, {
-      type:'bar',
-      data:{
-        labels: sorted.map(([a])=>a),
-        datasets:[{
-          data: sorted.map(([,v])=>parseFloat(v.toFixed(2))),
-          backgroundColor: sorted.map(([,v])=>v>=0?'rgba(34,197,94,0.6)':'rgba(239,68,68,0.6)'),
-          borderColor: sorted.map(([,v])=>v>=0?'#22c55e':'#ef4444'),
-          borderWidth:1
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderColor: borders,
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: false,
         }]
       },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9}}},
-          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(167,243,208,0.3)',font:{size:9},callback:v=>'$'+v}}
+      options: {
+        ...CHART_DEFAULTS,
+        plugins: {
+          ...CHART_DEFAULTS.plugins,
+          tooltip: {
+            ...CHART_DEFAULTS.plugins.tooltip,
+            callbacks: {
+              label: ctx => ' P&L: ' + (ctx.raw>=0?'+$':'-$') + Math.abs(ctx.raw).toFixed(2)
+            }
+          }
+        },
+        scales: {
+          x: { ...CHART_DEFAULTS.scales.x },
+          y: {
+            ...CHART_DEFAULTS.scales.y,
+            ticks: {
+              ...CHART_DEFAULTS.scales.y.ticks,
+              callback: v => (v>=0?'$':'-$') + Math.abs(v).toLocaleString()
+            }
+          }
         }
       }
     });
@@ -9236,37 +9348,65 @@ async function jv2LoadEco() {
   const dateEl = document.getElementById('jv2-eco-date');
   if (!tbody) return;
 
-  // Set date header
   if (dateEl) {
     const now = new Date();
-    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const MNTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    dateEl.textContent = DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MNTHS[now.getMonth()] + ' ' + now.getFullYear();
+    const D = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    dateEl.textContent = D[now.getDay()] + ' ' + now.getDate() + ' ' + M[now.getMonth()] + ' ' + now.getFullYear();
   }
 
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t4);font-family:monospace;font-size:11px">⏳ Loading economic calendar...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:rgba(167,243,208,0.35);font-family:monospace;font-size:11px;letter-spacing:1px">LOADING ECONOMIC CALENDAR...</td></tr>';
 
+  // Parse raw ForexFactory-format event
+  function parseRaw(raw) {
+    return raw
+      .filter(e => e.impact === 'High' || e.impact === 'Medium')
+      .map(e => ({
+        date:     e.date || '',
+        time:     e.date ? e.date.substring(11,16) + ' UTC' : '',
+        currency: e.country || '',
+        impact:   (e.impact||'').toLowerCase(),
+        event:    e.title || '',
+        actual:   e.actual   || '—',
+        forecast: e.forecast || '—',
+        previous: e.previous || '—',
+      }))
+      .sort((a,b) => a.date.localeCompare(b.date));
+  }
+
+  // Try 1: This week direct browser fetch
+  try {
+    const r = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    if (r.ok) {
+      const raw = await r.json();
+      const events = parseRaw(raw);
+      if (events.length) { jv2EcoEvents = events; jv2RenderEco(); return; }
+    }
+  } catch(e) {}
+
+  // Try 2: Next week
+  try {
+    const r = await fetch('https://nfs.faireconomy.media/ff_calendar_nextweek.json');
+    if (r.ok) {
+      const raw = await r.json();
+      const events = parseRaw(raw);
+      if (events.length) { jv2EcoEvents = events; jv2RenderEco(); return; }
+    }
+  } catch(e) {}
+
+  // Try 3: Server endpoint (Claude AI generated)
   try {
     const r = await fetch('/api/economic_calendar');
-    if (!r.ok) throw new Error('Server error ' + r.status);
-    const data = await r.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--t4);font-family:monospace;font-size:11px">No events found. <span style="color:var(--g);cursor:pointer" onclick="jv2LoadEco()">↻ Retry</span></td></tr>';
-      return;
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data) && data.length) {
+        jv2EcoEvents = data; jv2RenderEco(); return;
+      }
     }
+  } catch(e) {}
 
-    jv2EcoEvents = data;
-    jv2EcoCurrentFilter = 'all';
-    document.querySelectorAll('.jv2-eco-filter').forEach(b => b.classList.remove('active'));
-    const allBtn = document.querySelector('.jv2-eco-filter');
-    if (allBtn) allBtn.classList.add('active');
-    jv2RenderEco();
-
-  } catch(e) {
-    console.error('[SC] Economic calendar error:', e);
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#f87171;font-family:monospace;font-size:11px">Failed to load: ' + e.message + ' <span style="color:var(--g);cursor:pointer;margin-left:8px" onclick="jv2LoadEco()">↻ Retry</span></td></tr>';
-  }
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:rgba(167,243,208,0.3);font-family:monospace;font-size:11px">'
+    + 'CALENDAR UNAVAILABLE &nbsp;·&nbsp; <span style="color:#22c55e;cursor:pointer" onclick="jv2LoadEco()">↻ RETRY</span></td></tr>';
 }
 
 
