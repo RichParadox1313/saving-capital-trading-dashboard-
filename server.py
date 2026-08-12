@@ -1428,6 +1428,14 @@ async def api_analysis(req: AnalysisRequest, request: Request):
     ph   = detect_phase(prices)
     aph  = asset_phase(a.get("change"), a.get("change5d"))
     ps,cs,c5s = fmt_p(a.get("price")), fmt_c(a.get("change")), fmt_c(a.get("change5d"))
+    # Real, deterministic multi-factor score (0-100) — computed here, not
+    # asked from the model, so the confidence gauge is reproducible instead
+    # of depending on the AI correctly restating a number in its prose.
+    try:
+        real_quant_score = _q_score_asset(a.get("name", req.asset_id), a, prices)
+    except Exception as e:
+        print(f"  Quant score calc failed: {e}")
+        real_quant_score = None
     lang_instruction = ""
     if lang == "bg":
         lang_instruction = "IMPORTANT: Write ALL text fields in Bulgarian (Български). Only keep financial symbols, numbers, and technical indicators in English."
@@ -1501,6 +1509,8 @@ Return ONLY valid JSON no markdown:
                                              messages=[{"role":"user","content":prompt}])
             raw_text = msg.content[0].text.strip()
             parsed = json.loads(raw_text)
+            if real_quant_score is not None:
+                parsed["quantScore"] = real_quant_score
             analysis_cache[cache_key] = {"data":parsed,"ts":time.time()}
             return JSONResponse(parsed)
         except anthropic.APIStatusError as e:

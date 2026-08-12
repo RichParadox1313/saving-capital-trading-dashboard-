@@ -3484,32 +3484,70 @@ function qScoreClass(sig){
 }
 
 function buildQuantPanel(d){
-  const q=d.quant||{};
-  const raw=parseInt(q.score)||0;
+  const qs = d.quantScore; // real server-computed 5-factor score, when available
 
-  // Convert -10..+10 to confidence 1..100
-  // Confidence = how strong the signal is regardless of direction
-  // Score ±10 = 100 confidence, score 0 = 1 confidence
-  const absScore = Math.abs(raw);
-  const confidence = Math.max(1, Math.round(absScore / 10 * 100));
+  let confidence, sig, sigCls, sigColor, factorPills;
 
-  // Direction
-  const bullish = raw > 0;
-  const bearish  = raw < 0;
-  const neutral  = raw === 0;
+  if(qs){
+    // ── Real calculation: deterministic 0-100 score, 5 factors × 0-20 each ──
+    confidence = Math.max(0, Math.min(100, qs.total||0));
+    const bullish = confidence >= 65;
+    const bearish = confidence < 50;
 
-  // Signal label based on confidence + direction
-  let sig, sigCls, sigColor;
-  if(neutral || confidence < 20){
-    sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8';
-  } else if(bullish){
-    if(confidence>=75){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; }
-    else if(confidence>=45){ sig='BUY'; sigCls='b'; sigColor='#86efac'; }
-    else { sig='MILD BUY'; sigCls='b'; sigColor='#86efac'; }
+    if(confidence>=80){ sig='STRONG BUY'; sigCls='sb'; sigColor='#4ade80'; }
+    else if(confidence>=65){ sig='BUY'; sigCls='b'; sigColor='#86efac'; }
+    else if(confidence>=50){ sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8'; }
+    else if(confidence>=35){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; }
+    else { sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
+
+    const factorMap=[
+      ['momentum',    '⚡','Momentum'],
+      ['trend',       '↩','Trend'],
+      ['volatility',  '📊','Volatility'],
+      ['rel_strength','🌍','Rel. Strength'],
+      ['d5_momentum', '📈','5-Day Mom.'],
+    ];
+    factorPills=factorMap.map(([key,icon,label])=>{
+      const v=qs[key]??0; // 0-20
+      const fc=v>=14?'green':v<8?'red':'';
+      return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+        <span style="font-size:13px">${icon}</span>
+        <div>
+          <div class="qs-factor-name">${label}</div>
+          <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${v}/20</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    var direction = bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL';
+    var scoreLine = `${confidence}/100`;
   } else {
-    if(confidence>=75){ sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
-    else if(confidence>=45){ sig='SELL'; sigCls='s'; sigColor='#fca5a5'; }
-    else { sig='MILD SELL'; sigCls='s'; sigColor='#fca5a5'; }
+    // ── Fallback: older cached entries without a real score ──
+    const q=d.quant||{};
+    const raw=parseInt(q.score)||0;
+    confidence = Math.max(1, Math.round(Math.abs(raw) / 10 * 100));
+    const bullish = raw > 0, bearish = raw < 0, neutral = raw === 0;
+    if(neutral || confidence < 20){ sig='NEUTRAL'; sigCls='n'; sigColor='#94a3b8'; }
+    else if(bullish){ sig=confidence>=75?'STRONG BUY':'BUY'; sigCls=confidence>=75?'sb':'b'; sigColor='#86efac'; }
+    else { sig=confidence>=75?'STRONG SELL':'SELL'; sigCls=confidence>=75?'ss':'s'; sigColor='#fca5a5'; }
+    const factorMap={
+      momentum:    {icon:'⚡',label:'Momentum'},
+      meanReversion:{icon:'↩',label:'Mean Rev.'},
+      macroRegime: {icon:'🌍',label:'Macro'},
+      volRegime:   {icon:'📊',label:'Volatility'},
+    };
+    factorPills=Object.entries(factorMap).map(([key,{icon,label}])=>{
+      const val=(q[key]||'').split('—')[0].split('–')[0].split('.')[0].trim().slice(0,18)||'—';
+      return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+        <span style="font-size:13px">${icon}</span>
+        <div>
+          <div class="qs-factor-name">${label}</div>
+          <div class="qs-factor-val" style="font-size:10px;color:var(--t3)">${val}</div>
+        </div>
+      </div>`;
+    }).join('');
+    var direction = bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL';
+    var scoreLine = `${raw>0?'+':''}${raw}/10`;
   }
 
   // Confidence arc — SVG circular gauge
@@ -3518,8 +3556,7 @@ function buildQuantPanel(d){
   const filled=arcLen*(confidence/100);
   const dash=`${filled} ${arcLen-filled}`;
   const rotation=-90; // start from top
-
-  const gaugeColor=confidence>=75?sigColor:confidence>=45?sigColor:'#94a3b8';
+  const gaugeColor=sigColor;
   const trackColor='rgba(255,255,255,0.06)';
 
   const gaugeSvg=`<svg viewBox="0 0 100 100" width="100" height="100" style="transform:rotate(${rotation}deg)">
@@ -3528,26 +3565,6 @@ function buildQuantPanel(d){
       stroke-dasharray="${dash}" stroke-linecap="round"
       style="transition:stroke-dasharray .8s ease,stroke .4s ease"/>
   </svg>`;
-
-  // Factor pills
-  const factorMap={
-    momentum:    {icon:'⚡',label:'Momentum'},
-    meanReversion:{icon:'↩',label:'Mean Rev.'},
-    macroRegime: {icon:'🌍',label:'Macro'},
-    volRegime:   {icon:'📊',label:'Volatility'},
-  };
-  const factorPills=Object.entries(factorMap).map(([key,{icon,label}])=>{
-    const val=(q[key]||'').split('—')[0].split('–')[0].split('.')[0].trim().slice(0,18)||'—';
-    const fc=val.toLowerCase().includes('bull')||val.toLowerCase().includes('long')||val.toLowerCase().includes('buy')?'green':
-              val.toLowerCase().includes('bear')||val.toLowerCase().includes('short')||val.toLowerCase().includes('sell')?'red':'';
-    return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
-      <span style="font-size:13px">${icon}</span>
-      <div>
-        <div class="qs-factor-name">${label}</div>
-        <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${val}</div>
-      </div>
-    </div>`;
-  }).join('');
 
   return `<div class="qs-panel">
     <div class="qs-header">
@@ -3565,8 +3582,8 @@ function buildQuantPanel(d){
       <div style="flex:1">
         <div class="qs-signal ${sigCls}" style="margin-bottom:8px">${sig}</div>
         <div style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;line-height:1.6">
-          Direction: <span style="color:${sigColor};font-weight:700">${bullish?'BULLISH':bearish?'BEARISH':'NEUTRAL'}</span><br>
-          Quant score: <span style="color:var(--t2)">${raw>0?'+':''}${raw}/10</span>
+          Direction: <span style="color:${sigColor};font-weight:700">${direction}</span><br>
+          Quant score: <span style="color:var(--t2)">${scoreLine}</span>
         </div>
         <div style="margin-top:8px;height:4px;border-radius:2px;background:var(--br);overflow:hidden">
           <div style="height:100%;width:${confidence}%;background:linear-gradient(90deg,${gaugeColor}88,${gaugeColor});border-radius:2px;transition:width .8s ease"></div>
@@ -6718,7 +6735,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
       <div>
         <div class="qs-modal-title">Confidence Score</div>
-        <div class="qs-modal-sub">How strong is the current analysis signal? (1–100)</div>
+        <div class="qs-modal-sub">How strong is the current quant signal? (0–100)</div>
       </div>
       <button onclick="document.getElementById('qs-info-modal').classList.remove('open')" style="background:none;border:1px solid var(--br);color:var(--t4);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
     </div>
@@ -6726,37 +6743,40 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div class="qs-modal-section">
       <div class="qs-modal-section-title">What is the Score?</div>
       <div style="font-size:12px;color:var(--t3);line-height:1.7">
-        The Quant Intelligence Score combines 5 institutional factors into a single reading from <strong style="color:var(--t1)">−10 to +10</strong>. 
-        This is the same multi-factor approach used by quantitative hedge funds to score assets across momentum, trend, volatility, and relative strength dimensions simultaneously — rather than relying on a single indicator.
+        The Confidence Score is a deterministic calculation — not an AI estimate. It sums 5 price-action factors, each worth up to 20 points, into a single <strong style="color:var(--t1)">0–100</strong> reading computed fresh from live market data every time. The written analysis alongside it adds further context (institutional positioning, funding rates, sentiment, macro regime) but does not change this number.
       </div>
     </div>
 
     <div class="qs-modal-section">
       <div class="qs-modal-section-title">Signal Levels</div>
-      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#4ade80">+7 to +10</span><span class="qs-modal-range-desc">STRONG BUY — All factors aligned bullish, high conviction</span></div>
-      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#86efac">+3 to +6</span><span class="qs-modal-range-desc">BUY — Majority of factors confirm upside bias</span></div>
-      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:var(--t3)">−2 to +2</span><span class="qs-modal-range-desc">NEUTRAL — Mixed signals, no clear directional edge</span></div>
-      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#fca5a5">−3 to −6</span><span class="qs-modal-range-desc">SELL — Majority of factors confirm downside bias</span></div>
-      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#f87171">−7 to −10</span><span class="qs-modal-range-desc">STRONG SELL — All factors aligned bearish, high conviction</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#4ade80">80–100</span><span class="qs-modal-range-desc">STRONG BUY — All factors aligned bullish, high conviction</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#86efac">65–79</span><span class="qs-modal-range-desc">BUY — Majority of factors confirm upside bias</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:var(--t3)">50–64</span><span class="qs-modal-range-desc">NEUTRAL — Mixed signals, no clear directional edge</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#fca5a5">35–49</span><span class="qs-modal-range-desc">SELL — Majority of factors confirm downside bias</span></div>
+      <div class="qs-modal-signal-row"><span class="qs-modal-range" style="color:#f87171">0–34</span><span class="qs-modal-range-desc">STRONG SELL — All factors aligned bearish, high conviction</span></div>
     </div>
 
     <div class="qs-modal-section">
-      <div class="qs-modal-section-title">The 4 Analysis Factors</div>
+      <div class="qs-modal-section-title">The 5 Analysis Factors (0–20 each)</div>
       <div class="qs-modal-factor">
         <div class="qs-modal-factor-name">⚡ Momentum</div>
-        <div class="qs-modal-factor-desc">Measures directional velocity across multiple timeframes (1h and 24h). Detects whether short-term and medium-term momentum are aligned or diverging — a divergence often signals a reversal.</div>
+        <div class="qs-modal-factor-desc">Scores the size of the 24-hour price move — bigger moves in either direction score higher, reflecting stronger directional velocity right now.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">↩ Mean Reversion</div>
-        <div class="qs-modal-factor-desc">Identifies overbought or oversold conditions using Fear & Greed index and funding rate extremes. When positioning is crowded, the model flags squeeze risk in the opposite direction.</div>
+        <div class="qs-modal-factor-name">↩ Trend</div>
+        <div class="qs-modal-factor-desc">Checks whether the 24-hour move and the 5-day move point the same direction. Confirmed trends score higher than moves that contradict the recent trajectory.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">🌍 Macro Regime</div>
-        <div class="qs-modal-factor-desc">Classifies the current market environment as Risk-On, Risk-Off, or Neutral using cross-asset behaviour (DXY, Gold, Crypto, Bonds). Each asset class has a different expected behaviour per regime.</div>
+        <div class="qs-modal-factor-name">📊 Volatility</div>
+        <div class="qs-modal-factor-desc">Rewards a healthy, tradeable volatility range. Both dead-quiet and extreme/chaotic volatility score lower than a moderate, trending range.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">📊 Vol Regime</div>
-        <div class="qs-modal-factor-desc">Assesses whether current volatility is low (accumulation phase), medium (trending phase), high (momentum phase), or extreme (risk phase). High volatility does not always mean bearish — context matters.</div>
+        <div class="qs-modal-factor-name">🌍 Relative Strength</div>
+        <div class="qs-modal-factor-desc">Compares this asset's 24-hour move against the average of its peers in the same market category — outperforming the peer group scores higher.</div>
+      </div>
+      <div class="qs-modal-factor">
+        <div class="qs-modal-factor-name">📈 5-Day Momentum</div>
+        <div class="qs-modal-factor-desc">Same idea as Momentum but over a 5-day window, to weigh in the medium-term trajectory alongside the 24-hour reading.</div>
       </div>
     </div>
 
