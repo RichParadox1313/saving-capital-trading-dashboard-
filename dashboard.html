@@ -8275,7 +8275,7 @@ async function scDoLogin() {
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail || 'Login failed');
     localStorage.setItem('sc_token', d.token);
-    scUser = {authenticated:true, email:d.email, plan:d.plan, status:d.status};
+    scUser = {authenticated:true, email:d.email, plan:d.plan, status:d.status, is_owner:!!d.is_owner};
     scHideAuth();
     scUpdateNav();
   } catch(e) {

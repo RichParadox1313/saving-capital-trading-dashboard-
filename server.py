@@ -35,12 +35,15 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.on_event("startup")
 async def startup_event():
     print(f"[STARTUP] Dashboard path: {DASHBOARD_PATH}, exists: {DASHBOARD_PATH.exists()}")
-    # Connect database
+    # Register auth routes unconditionally — DB connects lazily per-request
+    # inside auth_payments.get_db(), so a boot-time DB hiccup must not
+    # permanently disable /auth/* for the life of the process.
     if _auth_enabled:
+        register_auth_routes(app)
+        print("[STARTUP] Auth routes registered")
         try:
             await get_db()
-            register_auth_routes(app)
-            print("[STARTUP] Auth routes registered, database connected")
+            print("[STARTUP] Database connected")
             # Ensure journal table exists
             try:
                 import auth_payments as _ap2
@@ -58,7 +61,7 @@ async def startup_event():
             except Exception as e2:
                 print(f"[STARTUP] journal_trades table: {e2}")
         except Exception as e:
-            print(f"[STARTUP] Auth/DB init failed: {e}")
+            print(f"[STARTUP] DB not reachable at startup (will retry lazily per-request): {e}")
     print("[STARTUP] Pre-loading all prices...")
     try:
         data = await load_all_prices()

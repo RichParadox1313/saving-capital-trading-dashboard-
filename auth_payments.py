@@ -197,7 +197,14 @@ async def get_current_user(request: Request) -> Optional[dict]:
     if not token:
         return None
     payload = verify_jwt(token)
-    if not payload or "user_id" not in payload:
+    if not payload:
+        return None
+    if payload.get("is_owner"):
+        return {
+            "id": 0, "email": payload.get("email", ADMIN_EMAIL), "banned": False,
+            "plan": "pro", "status": "active", "expires_at": None, "is_owner": True,
+        }
+    if "user_id" not in payload:
         return None
     try:
         pool = await get_db()
@@ -288,6 +295,14 @@ async def login(body: LoginBody, request: Request):
         raise HTTPException(429, "Too many login attempts. Try again in 15 minutes.")
 
     email = body.email.lower().strip()
+
+    # Owner login — same credentials as the admin panel, grants full Pro access
+    # to the dashboard itself without needing a DB user row.
+    if ADMIN_EMAIL and email == ADMIN_EMAIL and body.password == ADMIN_PASSWORD:
+        token = create_jwt({"is_owner": True, "email": email})
+        log.info(f"[OWNER] Login from {ip}")
+        return JSONResponse({"token": token, "email": email, "plan": "pro", "status": "active", "is_owner": True})
+
     pool  = await get_db()
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
@@ -343,6 +358,7 @@ async def me(request: Request):
         "plan":   user["plan"] or "basic",
         "status": "active" if active else (user["status"] or "pending"),
         "banned": user["banned"],
+        "is_owner": user.get("is_owner", False),
     })
 
 # ─── Payment endpoints ─────────────────────────────────────────────────────────
