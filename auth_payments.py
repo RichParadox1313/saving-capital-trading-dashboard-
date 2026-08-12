@@ -424,19 +424,25 @@ async def create_payment(body: CreatePaymentBody, request: Request):
 async def payment_webhook(request: Request):
     body_bytes = await request.body()
 
-    if NOWPAYMENTS_IPN:
-        sig = request.headers.get("x-nowpayments-sig", "")
-        try:
-            parsed      = json.loads(body_bytes)
-            sorted_body = json.dumps(parsed, sort_keys=True, separators=(",",":"))
-            expected    = _hmac_mod.new(NOWPAYMENTS_IPN.encode(), sorted_body.encode(), hashlib.sha512).hexdigest()
-            if not secrets.compare_digest(sig.lower(), expected.lower()):
-                log.warning("[WEBHOOK] Invalid signature")
-                raise HTTPException(400, "Invalid signature")
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(400, "Malformed payload")
+    # Fail closed: an unsigned webhook must never be trusted to grant a paid
+    # subscription. Any user who knows their own order_id (they always do —
+    # /payments/create returns it) could otherwise forge "finished" for free.
+    if not NOWPAYMENTS_IPN:
+        log.error("[WEBHOOK] NOWPAYMENTS_IPN_SECRET not configured — rejecting webhook")
+        raise HTTPException(503, "Webhook verification not configured")
+
+    sig = request.headers.get("x-nowpayments-sig", "")
+    try:
+        parsed      = json.loads(body_bytes)
+        sorted_body = json.dumps(parsed, sort_keys=True, separators=(",",":"))
+        expected    = _hmac_mod.new(NOWPAYMENTS_IPN.encode(), sorted_body.encode(), hashlib.sha512).hexdigest()
+        if not secrets.compare_digest(sig.lower(), expected.lower()):
+            log.warning("[WEBHOOK] Invalid signature")
+            raise HTTPException(400, "Invalid signature")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(400, "Malformed payload")
 
     try:
         data = json.loads(body_bytes)
