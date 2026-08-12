@@ -65,7 +65,7 @@ def _b64url_enc(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 
 def _b64url_dec(s: str) -> bytes:
-    return base64.urlsafe_b64decode(s + "=" * (4 - len(s) % 4) % 4)
+    return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
 
 def create_jwt(payload: dict, expires_hours: int = 24 * 30) -> str:
     header = _b64url_enc(json.dumps({"alg":"HS256","typ":"JWT"}, separators=(",",":")).encode())
