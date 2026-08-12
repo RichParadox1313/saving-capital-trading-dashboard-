@@ -1353,6 +1353,37 @@ class AnalysisRequest(BaseModel):
     asset_id: str
     lang: str = "en"  # en, bg, he
 
+ANALYSIS_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "quant": {
+            "type": "object",
+            "properties": {
+                "momentum":      {"type": "string"},
+                "meanReversion": {"type": "string"},
+                "macroRegime":   {"type": "string"},
+                "volRegime":     {"type": "string"},
+                "conviction":    {"type": "string"},
+                "score":         {"type": "string"},
+            },
+            "required": ["momentum","meanReversion","macroRegime","volRegime","conviction","score"],
+            "additionalProperties": False,
+        },
+        "exec":         {"type": "string"},
+        "shortTerm":    {"type": "string"},
+        "longTerm":     {"type": "string"},
+        "narrative":    {"type": "string"},
+        "drivers":      {"type": "array", "items": {"type": "string"}},
+        "positioning":  {"type": "string"},
+        "assetPhase":   {"type": "string"},
+        "globalPhase":  {"type": "string"},
+        "generatedAt":  {"type": "string"},
+    },
+    "required": ["quant","exec","shortTerm","longTerm","narrative","drivers",
+                 "positioning","assetPhase","globalPhase","generatedAt"],
+    "additionalProperties": False,
+}
+
 @app.post("/api/analysis")
 async def api_analysis(req: AnalysisRequest, request: Request):
     if not ANTHROPIC_API_KEY:
@@ -1466,60 +1497,10 @@ Return ONLY valid JSON no markdown:
                 print(f"  Anthropic retry {attempt}/3 after {wait}s...")
                 await asyncio.sleep(wait)
             msg    = client.messages.create(model="claude-sonnet-5", max_tokens=2400,
+                                             output_config={"format": {"type": "json_schema", "schema": ANALYSIS_JSON_SCHEMA}},
                                              messages=[{"role":"user","content":prompt}])
             raw_text = msg.content[0].text.strip()
-            # Clean markdown fences
-            raw_text = raw_text.replace("```json","").replace("```","").strip()
-            # Try direct parse first
-            try:
-                parsed = json.loads(raw_text)
-            except json.JSONDecodeError:
-                # Attempt to repair truncated JSON — find last complete key-value pair
-                print(f"  JSON parse failed, attempting repair. Raw length: {len(raw_text)}")
-                # Try to close open JSON by finding the last complete field
-                repaired = raw_text
-                # Count braces to find truncation point
-                depth = 0
-                last_good = 0
-                in_string = False
-                escape_next = False
-                for i, ch in enumerate(repaired):
-                    if escape_next:
-                        escape_next = False
-                        continue
-                    if ch == '\\' and in_string:
-                        escape_next = True
-                        continue
-                    if ch == '"' and not escape_next:
-                        in_string = not in_string
-                    if not in_string:
-                        if ch == '{': depth += 1
-                        elif ch == '}':
-                            depth -= 1
-                            if depth == 0:
-                                last_good = i + 1
-                # If we found a complete object, use it
-                if last_good > 0:
-                    try:
-                        parsed = json.loads(repaired[:last_good])
-                        print(f"  JSON repaired at char {last_good}")
-                    except:
-                        # Last resort: close all open structures
-                        fixed = repaired.rstrip().rstrip(',')
-                        # Count unclosed braces
-                        opens = fixed.count('{') - fixed.count('}')
-                        arrays = fixed.count('[') - fixed.count(']')
-                        if arrays > 0:
-                            fixed += '"...' + ']' * arrays
-                        if opens > 0:
-                            fixed += '}' * opens
-                        try:
-                            parsed = json.loads(fixed)
-                            print("  JSON force-closed")
-                        except:
-                            raise HTTPException(500, "Analysis error: JSON could not be parsed even after repair")
-                else:
-                    raise HTTPException(500, "Analysis error: Response was truncated — please try again")
+            parsed = json.loads(raw_text)
             analysis_cache[cache_key] = {"data":parsed,"ts":time.time()}
             return JSONResponse(parsed)
         except anthropic.APIStatusError as e:
@@ -1991,10 +1972,31 @@ async def update_trade(trade_id: str, trade: TradeEntry, request: Request):
 class TradeAnalysisRequest(BaseModel):
     trade: dict
 
+TRADE_ANALYSIS_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "verdict":          {"type": "string"},
+        "verdict_positive": {"type": "boolean"},
+        "strengths":        {"type": "string"},
+        "weaknesses":       {"type": "string"},
+        "market_context":   {"type": "string"},
+        "risk_management":  {"type": "string"},
+        "psychology":       {"type": "string"},
+        "lesson":           {"type": "string"},
+        "generated_at":     {"type": "string"},
+    },
+    "required": ["verdict","verdict_positive","strengths","weaknesses","market_context",
+                 "risk_management","psychology","lesson","generated_at"],
+    "additionalProperties": False,
+}
+
 @app.post("/api/journal/analyse")
 async def analyse_trade(req: TradeAnalysisRequest, request: Request):
     """Analyse a single trade using the same quant frameworks as market intelligence."""
     await require_auth(request)
+    client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
+    if not check_rate_limit(client_ip):
+        raise HTTPException(429, "Rate limit exceeded — max 5 analyses per hour. Please try again later.")
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
 
@@ -2082,18 +2084,16 @@ Return ONLY valid JSON (no markdown, no backticks):
             msg = client.messages.create(
                 model="claude-sonnet-5",
                 max_tokens=1200,
+                output_config={"format": {"type": "json_schema", "schema": TRADE_ANALYSIS_JSON_SCHEMA}},
                 messages=[{"role": "user", "content": prompt}]
             )
             text = msg.content[0].text.strip()
-            text = text.replace("```json", "").replace("```", "").strip()
             result = json.loads(text)
             return JSONResponse(result)
         except anthropic.APIStatusError as e:
             if e.status_code == 529 and attempt < 2:
                 continue
             raise HTTPException(500, f"AI error: {e}")
-        except json.JSONDecodeError as e:
-            raise HTTPException(500, f"JSON parse error: {e}")
         except Exception as e:
             raise HTTPException(500, f"Analysis error: {e}")
     raise HTTPException(503, "Service overloaded, try again")
