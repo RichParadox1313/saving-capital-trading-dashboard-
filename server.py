@@ -1465,7 +1465,7 @@ Return ONLY valid JSON no markdown:
                 wait = [0, 10, 20, 40][attempt]
                 print(f"  Anthropic retry {attempt}/3 after {wait}s...")
                 await asyncio.sleep(wait)
-            msg    = client.messages.create(model="claude-sonnet-4-20250514", max_tokens=2400,
+            msg    = client.messages.create(model="claude-sonnet-5", max_tokens=2400,
                                              messages=[{"role":"user","content":prompt}])
             raw_text = msg.content[0].text.strip()
             # Clean markdown fences
@@ -2136,7 +2136,7 @@ Return ONLY valid JSON (no markdown, no backticks):
             if attempt > 0:
                 await asyncio.sleep(10 * attempt)
             msg = client.messages.create(
-                model="claude-sonnet-4-20250514",
+                model="claude-sonnet-5",
                 max_tokens=1200,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -2630,7 +2630,7 @@ async def tools_analyse(req: ToolRequest, request: Request):
     try:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-5",
             max_tokens=600,
             messages=[{"role": "user", "content": prompt}]
         )
