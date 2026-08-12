@@ -24,7 +24,7 @@ app = FastAPI()
 
 # Auth & payments system
 try:
-    from auth_payments import register_auth_routes, get_db, close_db
+    from auth_payments import register_auth_routes, get_db, close_db, require_auth, require_admin
     _auth_enabled = True
 except ImportError:
     print("[STARTUP] auth_payments.py not found — auth routes disabled")
@@ -1555,6 +1555,7 @@ class MT5ConnectRequest(BaseModel):
 @app.post("/api/mt5/connect")
 async def mt5_connect(req: MT5ConnectRequest, request: Request):
     """Provision a MetaAPI MT5 account — non-blocking, syncs in background."""
+    await require_auth(request)
     if not META_API_TOKEN:
         raise HTTPException(500, "META_API_TOKEN not set — add it to Railway environment variables")
     print(f"  MT5 connect: login={req.login} server={req.server} broker={req.broker}")
@@ -1667,8 +1668,10 @@ async def mt5_connect(req: MT5ConnectRequest, request: Request):
 
 
 @app.get("/api/mt5/sync/{account_id}")
-async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: str = ""):
+async def mt5_sync(account_id: str, request: Request, login: str = "", server: str = ""):
     """Re-sync trades for an already connected MetaAPI account."""
+    user = await require_auth(request)
+    uid = str(user["id"])
     if not META_API_TOKEN:
         raise HTTPException(500, "META_API_TOKEN not configured")
     headers = {"auth-token": META_API_TOKEN, "Content-Type": "application/json"}
@@ -1736,7 +1739,10 @@ async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: 
             ) as r:
                 positions = await r.json() if r.status == 200 else []
 
-        trades = load_user_journal(user_id)
+        try:
+            trades = await _db_load_journal(uid)
+        except Exception as e:
+            raise HTTPException(503, f"Journal database unavailable: {e}")
         existing_ids = {t.get("id") for t in trades}
         new_count = 0
 
@@ -1848,7 +1854,10 @@ async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: 
                         t["exit"] = pos.get("currentPrice")
                         t["pnl"]  = pnl
 
-        await save_user_journal_async(trades, user_id)
+        try:
+            await _db_save_journal(uid, trades)
+        except Exception as e:
+            raise HTTPException(503, f"Journal database unavailable: {e}")
         print(f"  MT5 sync: {new_count} new trades, {len(positions)} open positions")
         # Return full trades list so frontend can cache it
         all_trades_response = trades[:200]  # limit to 200 for response size
@@ -1861,6 +1870,8 @@ async def mt5_sync(account_id: str, login: str = "", server: str = "", user_id: 
             "total": len(trades),
             "resolved_id": account_id,
         })
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"  MT5 sync error: {e}")
         raise HTTPException(500, f"Sync error: {e}")
@@ -1878,55 +1889,32 @@ if not _Path("/data").exists():
     print("[WARN] /data not mounted — using /tmp (data resets on redeploy). Mount a Railway volume at /data to persist.")
 
 # ── PostgreSQL journal helpers (uses the same asyncpg pool from auth_payments) ──
+# These raise on failure rather than silently falling back to the ephemeral
+# container filesystem — a boot-time or transient DB error must surface as a
+# clear 503 to the client, not quietly lose the user's journal data.
 async def _db_load_journal(user_id: str) -> list:
     """Load journal trades from PostgreSQL."""
-    try:
-        import auth_payments as _ap
-        db = await _ap.get_db()
-        rows = await db.fetch(
-            "SELECT trade_data FROM journal_trades WHERE user_id=$1 ORDER BY created_at DESC",
-            user_id
-        )
-        return [_json.loads(r['trade_data']) for r in rows]
-    except Exception as e:
-        print(f"  [DB] Journal load error: {e}")
-        return None  # None means fall back to file
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    rows = await db.fetch(
+        "SELECT trade_data FROM journal_trades WHERE user_id=$1 ORDER BY created_at DESC",
+        user_id
+    )
+    return [_json.loads(r['trade_data']) for r in rows]
 
 async def _db_save_journal(user_id: str, trades: list):
-    """Save journal trades to PostgreSQL (upsert per trade id)."""
-    try:
-        import auth_payments as _ap
-        db = await _ap.get_db()
-        # Ensure table exists
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS journal_trades (
-                id TEXT NOT NULL,
-                user_id TEXT NOT NULL,
-                trade_data JSONB NOT NULL,
-                created_at TIMESTAMPTZ DEFAULT NOW(),
-                PRIMARY KEY (id, user_id)
-            )
-        """)
-        # Delete all for user then re-insert (simple approach)
-        await db.execute("DELETE FROM journal_trades WHERE user_id=$1", user_id)
-        if trades:
-            await db.executemany(
-                "INSERT INTO journal_trades (id, user_id, trade_data) VALUES ($1, $2, $3)",
-                [(t.get('id', str(i)), user_id, _json.dumps(t)) for i, t in enumerate(trades)]
-            )
-        return True
-    except Exception as e:
-        print(f"  [DB] Journal save error: {e}")
-        return False
+    """Save journal trades to PostgreSQL (delete + re-insert per user)."""
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    await db.execute("DELETE FROM journal_trades WHERE user_id=$1", user_id)
+    if trades:
+        await db.executemany(
+            "INSERT INTO journal_trades (id, user_id, trade_data) VALUES ($1, $2, $3)",
+            [(t.get('id', str(i)), user_id, _json.dumps(t)) for i, t in enumerate(trades)]
+        )
 print(f"  Journal storage: {JOURNAL_FILE}")
 
 JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
-
-def check_journal_key(request: Request) -> bool:
-    """Validate X-Journal-Key header from MT5 EA or return True if no key set."""
-    if not JOURNAL_KEY:
-        return True  # no key configured — open access
-    return request.headers.get("X-Journal-Key","") == JOURNAL_KEY
 
 def load_journal() -> list:
     try:
@@ -1935,12 +1923,6 @@ def load_journal() -> list:
     except Exception as e:
         print(f"Journal load error: {e}")
     return []
-
-def save_journal(trades: list):
-    try:
-        JOURNAL_FILE.write_text(_json.dumps(trades, indent=2))
-    except Exception as e:
-        print(f"Journal save error: {e}")
 
 class TradeEntry(BaseModel):
     id: str
@@ -1957,100 +1939,62 @@ class TradeEntry(BaseModel):
     createdAt: str
 
 @app.get("/api/journal")
-async def get_journal(user_id: str = ""):
-    """Load journal — tries DB, then file, returns all available trades."""
-    if not user_id or len(user_id) < 4:
-        return JSONResponse(load_journal())
-    
-    all_trades = []
-    
-    # Try PostgreSQL
+async def get_journal(request: Request):
+    """Load the authenticated user's journal — Postgres-backed, no anonymous access."""
+    user = await require_auth(request)
     try:
-        db_trades = await _db_load_journal(user_id)
-        if db_trades:
-            all_trades = db_trades
-            print(f"  [JOURNAL] Loaded {len(all_trades)} trades from DB for {user_id[:8]}")
+        trades = await _db_load_journal(str(user["id"]))
     except Exception as e:
-        print(f"  [JOURNAL] DB load error: {e}")
-    
-    # Try file (merge with DB results)
-    try:
-        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
-        if user_file.exists():
-            file_trades = _json.loads(user_file.read_text())
-            if file_trades and not all_trades:
-                all_trades = file_trades
-                print(f"  [JOURNAL] Loaded {len(all_trades)} trades from file for {user_id[:8]}")
-                # Migrate to DB
-                try:
-                    await _db_save_journal(user_id, file_trades)
-                except Exception:
-                    pass
-    except Exception as e:
-        print(f"  [JOURNAL] File load error: {e}")
-    
-    print(f"  [JOURNAL] Returning {len(all_trades)} trades for {user_id[:8]}")
-    return JSONResponse(all_trades)
-
-def load_user_journal(user_id: str) -> list:
-    """Load from file (sync fallback). DB loading done via async endpoint."""
-    if user_id and len(user_id) >= 8:
-        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
-        try:
-            if user_file.exists():
-                return _json.loads(user_file.read_text())
-        except Exception:
-            pass
-    return load_journal()
-
-def save_user_journal(trades: list, user_id: str):
-    """Save to file synchronously. DB save is done async in the endpoints."""
-    if user_id and len(user_id) >= 8:
-        user_file = _DATA_DIR / f"journal_{user_id[:32]}.json"
-        try:
-            user_file.write_text(_json.dumps(trades, indent=2))
-            return
-        except Exception as e:
-            print(f"  User journal save error: {e}")
-    save_journal(trades)
-
-async def save_user_journal_async(trades: list, user_id: str):
-    """Save to both PostgreSQL and file for maximum persistence."""
-    # Save to file
-    save_user_journal(trades, user_id)
-    # Save to DB
-    if user_id and len(user_id) >= 8:
-        await _db_save_journal(user_id, trades)
+        raise HTTPException(503, f"Journal database unavailable: {e}")
+    return JSONResponse(trades)
 
 @app.post("/api/journal")
 async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
-    if not check_journal_key(request):
-        raise HTTPException(401, "Invalid journal API key")
-    trades = load_user_journal(user_id)
-    existing = next((i for i,t in enumerate(trades) if t.get("id")==trade.id), None)
-    if existing is not None:
-        trades[existing] = trade.dict()
+    # MT5 EA automation authenticates with a shared secret and supplies the
+    # target user explicitly; the web app authenticates the normal way.
+    if JOURNAL_KEY and request.headers.get("X-Journal-Key", "") == JOURNAL_KEY:
+        if not user_id:
+            raise HTTPException(400, "user_id is required for journal-key requests")
+        uid = user_id
     else:
-        trades.insert(0, trade.dict())
-    await save_user_journal_async(trades, user_id)
+        user = await require_auth(request)
+        uid = str(user["id"])
+    try:
+        trades = await _db_load_journal(uid)
+        existing = next((i for i,t in enumerate(trades) if t.get("id")==trade.id), None)
+        if existing is not None:
+            trades[existing] = trade.dict()
+        else:
+            trades.insert(0, trade.dict())
+        await _db_save_journal(uid, trades)
+    except Exception as e:
+        raise HTTPException(503, f"Journal database unavailable: {e}")
     return JSONResponse({"ok": True})
 
 @app.put("/api/journal/{trade_id}")
-async def update_trade(trade_id: str, trade: TradeEntry, user_id: str = ""):
-    trades = load_user_journal(user_id)
-    for i, t in enumerate(trades):
-        if t["id"] == trade_id:
-            trades[i] = trade.dict()
-            await save_user_journal_async(trades, user_id)
-            return JSONResponse({"ok": True})
+async def update_trade(trade_id: str, trade: TradeEntry, request: Request):
+    user = await require_auth(request)
+    uid = str(user["id"])
+    try:
+        trades = await _db_load_journal(uid)
+        for i, t in enumerate(trades):
+            if t["id"] == trade_id:
+                trades[i] = trade.dict()
+                await _db_save_journal(uid, trades)
+                return JSONResponse({"ok": True})
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(503, f"Journal database unavailable: {e}")
     raise HTTPException(404, "Trade not found")
 
 class TradeAnalysisRequest(BaseModel):
     trade: dict
 
 @app.post("/api/journal/analyse")
-async def analyse_trade(req: TradeAnalysisRequest):
+async def analyse_trade(req: TradeAnalysisRequest, request: Request):
     """Analyse a single trade using the same quant frameworks as market intelligence."""
+    await require_auth(request)
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
 
@@ -2156,10 +2100,15 @@ Return ONLY valid JSON (no markdown, no backticks):
 
 
 @app.delete("/api/journal/{trade_id}")
-async def delete_trade(trade_id: str, user_id: str = ""):
-    trades = load_user_journal(user_id)
-    trades = [t for t in trades if t["id"] != trade_id]
-    await save_user_journal_async(trades, user_id)
+async def delete_trade(trade_id: str, request: Request):
+    user = await require_auth(request)
+    uid = str(user["id"])
+    try:
+        trades = await _db_load_journal(uid)
+        trades = [t for t in trades if t["id"] != trade_id]
+        await _db_save_journal(uid, trades)
+    except Exception as e:
+        raise HTTPException(503, f"Journal database unavailable: {e}")
     return JSONResponse({"ok": True})
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
@@ -2185,8 +2134,9 @@ BINANCE_INTERVAL_MAP = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H
 YAHOO_INTERVAL_MAP  = {"M1":"1m","M5":"5m","M15":"15m","M30":"30m","H1":"1h","H4":"1h","D1":"1d","W1":"1wk"}
 
 @app.get("/api/mt5/accounts")
-async def mt5_list_accounts():
+async def mt5_list_accounts(request: Request):
     """List all MetaAPI accounts — use this to find the correct account ID."""
+    await require_admin(request)
     if not META_API_TOKEN:
         return JSONResponse({"error": "META_API_TOKEN not set"})
     import ssl as _ssl4
@@ -2213,8 +2163,9 @@ async def mt5_list_accounts():
                 return JSONResponse({"http": r.status, "raw": raw[:500]})
 
 @app.get("/api/mt5/debug/{account_id}")
-async def mt5_debug(account_id: str):
+async def mt5_debug(account_id: str, request: Request):
     """Return raw MetaAPI data for debugging."""
+    await require_admin(request)
     if not META_API_TOKEN:
         return JSONResponse({"error": "META_API_TOKEN not set"})
     headers = {"auth-token": META_API_TOKEN}
@@ -2445,8 +2396,9 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
 
 
 @app.get("/api/journal/debug")
-async def journal_debug():
-    """Show journal storage info for debugging."""
+async def journal_debug(request: Request):
+    """Show legacy file-journal storage info for debugging."""
+    await require_admin(request)
     trades = load_journal()
     return JSONResponse({
         "file": str(JOURNAL_FILE),
