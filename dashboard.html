@@ -3483,6 +3483,15 @@ function qScoreClass(sig){
   return 'n';
 }
 
+// Lucide icon set (MIT) — used for the quant-factor pills instead of emoji
+const SC_ICON={
+  momentum:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>',
+  trend:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>',
+  volatility:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>',
+  relStrength:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/><path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M7 21h10"/></svg>',
+  d5Momentum:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/><path d="M8 17h.01"/><path d="M12 17h.01"/><path d="M16 17h.01"/></svg>',
+};
+
 function buildQuantPanel(d){
   const qs = d.quantScore; // real server-computed 5-factor score, when available
 
@@ -3501,17 +3510,17 @@ function buildQuantPanel(d){
     else { sig='STRONG SELL'; sigCls='ss'; sigColor='#f87171'; }
 
     const factorMap=[
-      ['momentum',    '⚡','Momentum'],
-      ['trend',       '↩','Trend'],
-      ['volatility',  '📊','Volatility'],
-      ['rel_strength','🌍','Rel. Strength'],
-      ['d5_momentum', '📈','5-Day Mom.'],
+      ['momentum',    SC_ICON.momentum,   'Momentum'],
+      ['trend',       SC_ICON.trend,      'Trend'],
+      ['volatility',  SC_ICON.volatility, 'Volatility'],
+      ['rel_strength',SC_ICON.relStrength,'Rel. Strength'],
+      ['d5_momentum', SC_ICON.d5Momentum, '5-Day Mom.'],
     ];
     factorPills=factorMap.map(([key,icon,label])=>{
       const v=qs[key]??0; // 0-20
       const fc=v>=14?'green':v<8?'red':'';
       return `<div class="qs-factor" style="display:flex;align-items:center;gap:8px;padding:6px 10px">
-        <span style="font-size:13px">${icon}</span>
+        <span style="display:inline-flex;color:var(--t3)">${icon}</span>
         <div>
           <div class="qs-factor-name">${label}</div>
           <div class="qs-factor-val ${fc}" style="font-size:10px;color:${fc==='green'?'#4ade80':fc==='red'?'#f87171':'var(--t3)'}">${v}/20</div>
@@ -6759,23 +6768,23 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div class="qs-modal-section">
       <div class="qs-modal-section-title">The 5 Analysis Factors (0–20 each)</div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">⚡ Momentum</div>
+        <div class="qs-modal-factor-name" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;color:var(--t3)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg></span> Momentum</div>
         <div class="qs-modal-factor-desc">Scores the size of the 24-hour price move — bigger moves in either direction score higher, reflecting stronger directional velocity right now.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">↩ Trend</div>
+        <div class="qs-modal-factor-name" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;color:var(--t3)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg></span> Trend</div>
         <div class="qs-modal-factor-desc">Checks whether the 24-hour move and the 5-day move point the same direction. Confirmed trends score higher than moves that contradict the recent trajectory.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">📊 Volatility</div>
+        <div class="qs-modal-factor-name" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;color:var(--t3)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg></span> Volatility</div>
         <div class="qs-modal-factor-desc">Rewards a healthy, tradeable volatility range. Both dead-quiet and extreme/chaotic volatility score lower than a moderate, trending range.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">🌍 Relative Strength</div>
+        <div class="qs-modal-factor-name" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;color:var(--t3)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/><path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M7 21h10"/></svg></span> Relative Strength</div>
         <div class="qs-modal-factor-desc">Compares this asset's 24-hour move against the average of its peers in the same market category — outperforming the peer group scores higher.</div>
       </div>
       <div class="qs-modal-factor">
-        <div class="qs-modal-factor-name">📈 5-Day Momentum</div>
+        <div class="qs-modal-factor-name" style="display:flex;align-items:center;gap:6px"><span style="display:inline-flex;color:var(--t3)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/><path d="M8 17h.01"/><path d="M12 17h.01"/><path d="M16 17h.01"/></svg></span> 5-Day Momentum</div>
         <div class="qs-modal-factor-desc">Same idea as Momentum but over a 5-day window, to weigh in the medium-term trajectory alongside the 24-hour reading.</div>
       </div>
     </div>
