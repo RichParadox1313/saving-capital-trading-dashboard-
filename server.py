@@ -5,7 +5,7 @@ Reliable price sources — no extra API keys required beyond Anthropic
 """
 
 import asyncio, json, os, re, time, xml.etree.ElementTree as ET, random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import aiohttp, anthropic
@@ -24,7 +24,7 @@ app = FastAPI()
 
 # Auth & payments system
 try:
-    from auth_payments import register_auth_routes, get_db, close_db, require_auth, require_admin
+    from auth_payments import register_auth_routes, get_db, close_db, require_auth, require_admin, get_current_user
     _auth_enabled = True
 except ImportError:
     print("[STARTUP] auth_payments.py not found — auth routes disabled")
@@ -76,6 +76,7 @@ news_cache     = {"data": [], "ts": 0.0}
 analysis_cache = {}
 # Per-IP rate limiting for expensive endpoints
 _rate_limits: dict = {}  # ip -> {count, window_start}
+_free_analysis_used: dict = {}  # ip -> True — one free analysis for non-subscribers
 RATE_LIMIT_ANALYSIS = 5   # max 5 analyses per hour per IP
 RATE_LIMIT_WINDOW   = 3600
 
@@ -1388,8 +1389,24 @@ ANALYSIS_JSON_SCHEMA = {
 async def api_analysis(req: AnalysisRequest, request: Request):
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
-    # Rate limit: 5 analyses per IP per hour
     client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
+
+    # Access control: unlimited (subject to the rate limit below) for anyone
+    # with an active subscription (free trial or paid). Everyone else — not
+    # signed in, or signed in with a lapsed subscription — gets exactly one
+    # free analysis, tracked by IP, before being asked to sign up/subscribe.
+    user = await get_current_user(request) if _auth_enabled else None
+    expires_at = user.get("expires_at") if user else None
+    is_active_sub = bool(user and user.get("status") == "active" and
+                          (expires_at is None or expires_at > datetime.now(timezone.utc)))
+    if not is_active_sub:
+        if _free_analysis_used.get(client_ip):
+            if user:
+                raise HTTPException(403, "Your free trial has ended. Subscribe to keep generating analyses.")
+            raise HTTPException(403, "You've used your free analysis. Sign up for a free month to continue.")
+        _free_analysis_used[client_ip] = True
+
+    # Rate limit: 5 analyses per IP per hour
     if not check_rate_limit(client_ip):
         raise HTTPException(429, "Rate limit exceeded — max 5 analyses per hour. Please try again later.")
     today     = datetime.utcnow().strftime("%Y-%m-%d")
