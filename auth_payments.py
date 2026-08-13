@@ -280,14 +280,19 @@ async def signup(body: SignupBody, request: Request):
             "INSERT INTO users (email, password) VALUES ($1,$2) RETURNING id",
             email, hash_password(body.password)
         )
+        # First month free — every new account starts on an active Pro trial
+        # rather than a paywalled 'pending' state.
+        trial_started = datetime.now(timezone.utc)
+        trial_expires = trial_started + timedelta(days=31)
         await conn.execute(
-            "INSERT INTO subscriptions (user_id, plan, status) VALUES ($1,'basic','pending')",
-            user_id
+            "INSERT INTO subscriptions (user_id, plan, status, started_at, expires_at) "
+            "VALUES ($1,'pro','active',$2,$3)",
+            user_id, trial_started, trial_expires
         )
 
-    log.info(f"[SIGNUP] #{user_id} {email}")
+    log.info(f"[SIGNUP] #{user_id} {email} — free Pro trial until {trial_expires.date()}")
     token = create_jwt({"user_id": user_id, "email": email})
-    return JSONResponse({"token": token, "email": email, "plan": "basic", "status": "pending"})
+    return JSONResponse({"token": token, "email": email, "plan": "pro", "status": "active"})
 
 async def login(body: LoginBody, request: Request):
     ip = _get_ip(request)

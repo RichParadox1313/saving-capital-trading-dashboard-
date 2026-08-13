@@ -626,18 +626,6 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .jmodal-btns{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
 
 
-/* MT5 Connect */
-.mt5-connect{background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:20px 24px;margin-bottom:16px}
-.mt5-connect-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--t1);margin-bottom:4px}
-.mt5-connect-sub{font-size:11px;color:var(--t4);margin-bottom:16px;line-height:1.6;font-weight:300}
-.mt5-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mt5-status{font-size:11px;font-family:'DM Mono',monospace;padding:8px 12px;border-radius:6px;margin-top:10px;display:none}
-.mt5-status.ok{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2);display:block}
-.mt5-status.err{background:var(--rdim);color:#f87171;border:1px solid rgba(239,68,68,0.2);display:block}
-.mt5-status.loading{background:var(--gdim);color:var(--t3);border:1px solid var(--br);display:block}
-.mt5-connected{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;margin-bottom:14px}
-.mt5-conn-dot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);flex-shrink:0}
-.mt5-conn-info{font-size:11px;color:var(--t2);font-family:'DM Mono',monospace}
 
 footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:11px;color:var(--t4);max-width:800px;margin:0 auto;line-height:1.8;font-weight:300}
 
@@ -740,9 +728,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .jtable{min-width:600px}
   .jmodal{padding:16px;margin:8px}
   .jform-grid{grid-template-columns:1fr}
-
-  /* MT5 */
-  .mt5-form{grid-template-columns:1fr}
 }
 
 /* ── Mobile: Phone (≤480px) ──────────────────────────────── */
@@ -1292,23 +1277,6 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 .jv2-eco-actual-neg{color:#f87171;font-family:'DM Mono',monospace;font-weight:600}
 .jv2-eco-val{font-family:'DM Mono',monospace;color:var(--t2)}
 
-/* MT5 bar */
-.jv2-mt5-connected{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);font-family:'DM Mono',monospace}
-.jv2-mt5-dot{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);flex-shrink:0;animation:mt5-pulse 2s ease-in-out infinite}
-@keyframes mt5-pulse{0%,100%{box-shadow:0 0 6px var(--g)}50%{box-shadow:0 0 14px var(--g),0 0 24px rgba(34,197,94,0.3)}}
-.jv2-mt5-card{background:rgba(7,13,7,0.9);border:1px solid var(--br2);border-radius:12px;padding:14px 18px;margin-bottom:16px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.jv2-mt5-account-card{display:flex;align-items:center;justify-content:space-between;background:rgba(7,13,7,0.9);border:1px solid var(--br2);border-radius:12px;padding:14px 20px;margin-bottom:16px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);gap:16px;flex-wrap:wrap}
-.jv2-mt5-account-left{display:flex;align-items:center;gap:12px}
-.jv2-mt5-account-name{font-size:13px;font-weight:600;color:var(--t1);font-family:'DM Sans',sans-serif;margin-bottom:2px}
-.jv2-mt5-account-sub{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;letter-spacing:.5px}
-.jv2-mt5-account-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.jv2-mt5-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1px solid;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.jv2-mt5-btn.sync{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.35);color:var(--g)}
-.jv2-mt5-btn.sync:hover{background:rgba(34,197,94,0.2);border-color:var(--g)}
-.jv2-mt5-btn.change{background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.3);color:#60a5fa}
-.jv2-mt5-btn.change:hover{background:rgba(96,165,250,0.15);border-color:#60a5fa}
-.jv2-mt5-btn.disconnect{background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.25);color:#f87171}
-.jv2-mt5-btn.disconnect:hover{background:rgba(239,68,68,0.15);border-color:#f87171}
 
 
 /* ═══════════════════════════════════════════════
@@ -1475,7 +1443,6 @@ img, video, canvas, svg { max-width: 100%; }
   .jv2-main { padding: 12px 12px 80px; }
   .jv2-stats-grid { grid-template-columns: 1fr 1fr; }
   .jv2-two-col { grid-template-columns: 1fr; gap: 10px; }
-  .mt5-form { grid-template-columns: 1fr; }
   .jv2-cal2-day { min-height: 56px; padding: 5px; }
   .jv2-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .jv2-table { min-width: 580px; }
@@ -1755,7 +1722,7 @@ img, video, canvas, svg { max-width: 100%; }
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live Market News</b><span data-i18n="feat3Sub">Institutional Sources · Instant Updates</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">Manual trade log · P&L · Win rate</span></div></div>
 </div>
 
 </div>
@@ -1864,7 +1831,7 @@ const LANGS = {
     feat1Title:"Advanced Price Engine", feat1Sub:"Live Feed · Sub-Second Response",
     feat2Title:"Quant AI Analysis", feat2Sub:"5 Wall Street frameworks",
     feat3Title:"Live Market News", feat3Sub:"Institutional Sources · Instant Updates",
-    feat4Title:"Trading Journal", feat4Sub:"MT5 auto-sync · P&L · Win rate",
+    feat4Title:"Trading Journal", feat4Sub:"Manual trade log · P&L · Win rate",
     live:"Live", liveNews:"Live News",
     selectAsset:"SELECT", selectMsg:"Click an asset above to view Quant Grade market analysis",
     price:"Price", change24h:"24h", change5d:"5-Day", sentiment:"Sentiment", phase:"Phase", mktCap:"Mkt Cap",
@@ -1895,7 +1862,7 @@ const LANGS = {
     feat1Title:"Цени в реално време", feat1Sub:"Binance WebSocket · Крипто под секунда",
     feat2Title:"Quant AI анализ", feat2Sub:"5 Уолстрийт методологии",
     feat3Title:"Живи новини", feat3Sub:"Institutional Sources · Instant Updates",
-    feat4Title:"Търговски дневник", feat4Sub:"MT5 синхронизация · P&L · % печалба",
+    feat4Title:"Търговски дневник", feat4Sub:"Ръчен дневник · P&L · % печалба",
     live:"Живо", liveNews:"Живи новини",
     selectAsset:"ИЗБЕРИ", selectMsg:"Кликнете актив за Quant Grade пазарен анализ",
     price:"Цена", change24h:"24ч", change5d:"5 дни", sentiment:"Настроение", phase:"Фаза", mktCap:"Пазарна кап.",
@@ -1926,7 +1893,7 @@ const LANGS = {
     feat1Title:"מחירים בזמן אמת", feat1Sub:"Binance WebSocket · קריפטו תת-שנייתי",
     feat2Title:"ניתוח Quant AI", feat2Sub:"5 מסגרות וול סטריט",
     feat3Title:"עדכוני חדשות חי", feat3Sub:"Institutional Sources · Instant Updates",
-    feat4Title:"יומן מסחר", feat4Sub:"סינכרון MT5 · P&L · שיעור זכייה",
+    feat4Title:"יומן מסחר", feat4Sub:"יומן ידני · P&L · שיעור זכייה",
     live:"חי", liveNews:"חדשות חי",
     selectAsset:"בחר", selectMsg:"לחץ על נכס לעיל לצפייה בניתוח שוק Quant Grade",
     price:"מחיר", change24h:"24ש", change5d:"5 ימים", sentiment:"סנטימנט", phase:"שלב", mktCap:"שווי שוק",
@@ -2046,230 +2013,6 @@ function goPage(page){
   window.scrollTo(0,0);
   // Start/stop background animations
   startBgAnim(page);
-}
-
-// ── MT5 Account Connection ─────────────────────────────────────────────────
-async function connectMT5(){
-  const login    = document.getElementById('mt5-login')?.value?.trim();
-  const password = document.getElementById('mt5-password')?.value?.trim();
-  const server   = document.getElementById('mt5-server')?.value?.trim();
-  const broker   = document.getElementById('mt5-broker')?.value?.trim();
-  const status   = document.getElementById('mt5-status');
-
-  if(!login||!password||!server){
-    if(status){status.textContent='Please fill in account number, password and server.';status.className='mt5-status err';}
-    return;
-  }
-
-  if(status){status.textContent='Connecting to MT5 via MetaAPI... this may take up to 30 seconds...';status.className='mt5-status loading';}
-  const btn = document.querySelector('#mt5-connect-box .jbtn-primary');
-  if(btn){btn.disabled=true;btn.textContent='Connecting...';}
-
-  try{
-    const r = await fetch('/api/mt5/connect',{
-      method:'POST',
-      headers:scAuthHeaders({'Content-Type':'application/json'}),
-      body: JSON.stringify({accountId:'',login,password,server,broker,name:'SC-'+login})
-    });
-    const data = await r.json();
-    if(r.ok && data.ok){
-      // Save connection info (no password stored)
-      localStorage.setItem('sc_mt5', JSON.stringify({login,server,broker,accountId:data.accountId}));
-      if(status){status.textContent='✓ '+data.message;status.className='mt5-status ok';}
-      setTimeout(()=>{ loadJournal(); },1500);
-      // Auto-sync after 35s — gives MetaAPI time to deploy and connect to broker
-      setTimeout(()=>{
-        if(status){status.textContent='⟳ Importing trades from MT5...';status.className='mt5-status loading';}
-        syncMT5().then(()=>{
-          if(status){status.textContent='✓ Sync complete — check your journal';status.className='mt5-status ok';}
-          loadJournal();
-        });
-      }, 35000);
-    } else {
-      const msg = data.detail||data.message||'Connection failed';
-      if(status){status.textContent='✗ '+msg;status.className='mt5-status err';}
-      console.error('[MT5]', data);
-      if(btn){btn.disabled=false;btn.textContent='🔗 Connect Account';}
-    }
-  }catch(e){
-    if(status){status.textContent='✗ Could not reach dashboard server. Check your connection.';status.className='mt5-status err';}
-    if(btn){btn.disabled=false;btn.textContent='🔗 Connect Account';}
-  }
-}
-
-async function syncMT5(silentMode = false){
-  const info = JSON.parse(localStorage.getItem('sc_mt5')||'null');
-  if(!info?.accountId){ if(!silentMode) alert('No MT5 account connected.'); return; }
-
-  const link = document.querySelector('[onclick="syncMT5()"]');
-  if(link){ link.textContent='↻ Syncing...'; link.style.opacity='0.5'; link.style.pointerEvents='none'; }
-
-  // Show live sync log
-  let logEl = document.getElementById('mt5-sync-log');
-  if(!logEl){
-    logEl = document.createElement('div');
-    logEl.id = 'mt5-sync-log';
-    logEl.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--br);border-radius:6px;font-family:DM Mono,monospace;font-size:10px;color:var(--t3);line-height:1.7';
-    const statusEl = document.getElementById('mt5-status');
-    if(statusEl) statusEl.after(logEl);
-    else document.querySelector('.mt5-connected')?.appendChild(logEl);
-  }
-
-  const log = (msg, color='var(--t3)') => {
-    const ts = new Date().toLocaleTimeString();
-    logEl.innerHTML += `<div style="color:${color}">[${ts}] ${msg}</div>`;
-    logEl.scrollTop = logEl.scrollHeight;
-  };
-
-  logEl.innerHTML = '';
-  log('Starting sync...');
-  log(`Account: ${info.login} @ ${info.server}`);
-  log(`Stored ID: ${info.accountId}`);
-
-  try{
-    log('Calling /api/mt5/sync — resolving account & fetching deals...');
-    const r = await fetch(`/api/mt5/sync/${info.accountId}?login=${encodeURIComponent(info.login||'')}&server=${encodeURIComponent(info.server||'')}`, {headers: scAuthHeaders()});
-    const data = await r.json().catch(()=>({}));
-
-    if(r.ok){
-      log(`✓ Server responded OK`, 'var(--g)');
-      log(`Resolved account ID: ${data.resolved_id || info.accountId}`, 'var(--g)');
-      // Update stored account ID if it was resolved to a different one
-      if(data.resolved_id && data.resolved_id !== info.accountId){
-        info.accountId = data.resolved_id;
-        localStorage.setItem('sc_mt5', JSON.stringify(info));
-        log(`↻ Updated stored account ID to correct one`, '#fbbf24');
-      }
-      log(`Raw deals from MetaAPI: ${data.raw_deals ?? '?'}`, '#fbbf24');
-      log(`New trades saved: ${data.new_trades ?? 0}`, data.new_trades > 0 ? '#4ade80' : '#fbbf24');
-      log(`Open positions: ${data.positions ?? 0}`);
-      log(`Total in journal: ${data.total ?? '?'}`);
-
-      if((data.new_trades||0) === 0 && (data.raw_deals||0) === 0){
-        log('⚠ MetaAPI returned 0 deals — account may still be syncing history. Try again in 1 minute.', '#f59e0b');
-      } else if((data.new_trades||0) === 0 && (data.raw_deals||0) > 0){
-        log('⚠ Deals received but filtered (may be duplicate or wrong type). Check Railway logs.', '#f59e0b');
-      } else {
-        log('✓ Trades saved to journal!', '#4ade80');
-      }
-
-      // Use trades from server response directly (most reliable)
-      if (data.trades && Array.isArray(data.trades) && data.trades.length > 0) {
-        jTrades = data.trades;
-        localStorage.setItem('sc_journal', JSON.stringify(jTrades));
-        log(`✓ ${jTrades.length} trades loaded directly from sync`, '#4ade80');
-        renderJournal();
-      } else {
-        await loadJournal();
-      }
-      log(`✓ Journal refreshed — ${jTrades.length} trades now showing`, '#4ade80');
-      log(`✓ Trading calendar updated`, '#4ade80');
-
-      if(link){ link.textContent=`↻ Synced (${data.new_trades||0} new)`; }
-      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
-    } else {
-      log(`✗ Sync failed: HTTP ${r.status}`, '#f87171');
-      log(`Error: ${data.detail||data.error||JSON.stringify(data)}`, '#f87171');
-      if(link){ link.textContent='✗ Sync failed'; link.style.color='#f87171'; }
-      setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
-    }
-  }catch(e){
-    log(`✗ Network error: ${e.message}`, '#f87171');
-    if(link){ link.textContent='✗ Error'; link.style.color='#f87171'; }
-    setTimeout(()=>{ if(link){ link.textContent='↻ Sync now'; link.style.color='var(--g)'; link.style.opacity=''; link.style.pointerEvents=''; }}, 4000);
-  }
-}
-
-// ── AUTO-SYNC ────────────────────────────────────────────────────────────────
-// Syncs MT5 trades automatically every 5 minutes when connected
-// and whenever the user navigates back to the journal page
-
-let _autoSyncInterval = null;
-let _lastSyncTime = 0;
-const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
-
-async function jv2AutoSync(silent = true) {
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
-  if (!mt5Info) return; // Not connected
-  
-  const now = Date.now();
-  if (now - _lastSyncTime < 30000) return; // Don't sync more than once per 30s
-  _lastSyncTime = now;
-
-  if (!silent) {
-    // Show subtle syncing indicator in topbar
-    const statusBar = document.getElementById('jv2-mt5-status-bar');
-    if (statusBar) {
-      const dot = statusBar.querySelector('.jv2-mt5-dot');
-      if (dot) dot.style.background = '#f59e0b';
-    }
-  }
-
-  try {
-    await syncMT5(true); // true = silent mode
-  } catch(e) {
-    console.warn('[SC] Auto-sync failed:', e.message);
-  }
-
-  if (!silent) {
-    const statusBar = document.getElementById('jv2-mt5-status-bar');
-    if (statusBar) {
-      const dot = statusBar.querySelector('.jv2-mt5-dot');
-      if (dot) dot.style.background = '';
-    }
-  }
-}
-
-function jv2StartAutoSync() {
-  jv2StopAutoSync();
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
-  if (!mt5Info) return;
-
-  // Sync immediately on start
-  setTimeout(() => jv2AutoSync(true), 1000);
-
-  // Then every 5 minutes
-  _autoSyncInterval = setInterval(() => {
-    const page = document.getElementById('page-journal-page');
-    if (page && page.style.display !== 'none') {
-      jv2AutoSync(true);
-    }
-  }, AUTO_SYNC_INTERVAL);
-
-  console.log('[SC] Auto-sync started — every 5 minutes');
-}
-
-function jv2StopAutoSync() {
-  if (_autoSyncInterval) {
-    clearInterval(_autoSyncInterval);
-    _autoSyncInterval = null;
-  }
-}
-
-// Update status bar to show last sync time
-function jv2UpdateSyncTime() {
-  const statusBar = document.getElementById('jv2-mt5-status-bar');
-  if (!statusBar) return;
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
-  if (!mt5Info) return;
-  const ago = _lastSyncTime ? Math.round((Date.now() - _lastSyncTime) / 1000) : null;
-  const agoStr = ago === null ? 'never' : ago < 60 ? 'just now' : Math.round(ago/60) + 'm ago';
-  statusBar.innerHTML = `
-    <div class="jv2-mt5-connected">
-      <div class="jv2-mt5-dot"></div>
-      <span>${mt5Info.broker || mt5Info.server} · #${mt5Info.login}</span>
-      <span style="color:var(--t4);margin-left:8px;font-size:9px">synced ${agoStr}</span>
-    </div>`;
-}
-
-// Update the sync time display every 30 seconds
-setInterval(jv2UpdateSyncTime, 30000);
-
-function disconnectMT5(){
-  if(!confirm('Disconnect MT5 account? Your existing trades will remain in the journal.')) return;
-  localStorage.removeItem('sc_mt5');
-  jv2RenderMT5Block();
-  renderJournal();
 }
 
 // ── Trading Journal ────────────────────────────────────────────────────────
@@ -2501,7 +2244,6 @@ function jCalSetRange(r){ jCalRange=r; jCalToday(); }
 function renderJournal(){
   // Render all V2 panels - functions defined in script block 4
   try {
-    jv2RenderMT5Block();
     jv2RenderStats();
     jv2RenderDailyTable();
     jv2RenderDiscipline();
@@ -2736,260 +2478,6 @@ async function deleteJTrade(id){
 
 function editJTrade(id){ openJModal(id); }
 
-
-const BROKERS = [
-  // ── CFD / Regulated Retail Brokers ────────────────────────────────────────
-  { name:"ActivTrades",                type:"cfd", servers:["ActivTrades-Live","ActivTrades-Live2","ActivTrades-Demo"] },
-  { name:"ACY Securities",             type:"cfd", servers:["ACY-Live","ACY-Live2","ACY-Demo"] },
-  { name:"Admirals",                   type:"cfd", servers:["Admirals-Live","Admirals-Live2","Admirals-Live3","Admirals-Demo"] },
-  { name:"Admirals (EU)",              type:"cfd", servers:["AdmiralsEU-Live","AdmiralsEU-Live2","AdmiralsEU-Demo"] },
-  { name:"ADSS",                       type:"cfd", servers:["ADSS-Live","ADSS-Live2","ADSS-Demo"] },
-  { name:"Alpari",                     type:"cfd", servers:["Alpari-ECN-Live","Alpari-Standard-Live","Alpari-Pro-Demo","Alpari-Demo"] },
-  { name:"Alpha Capital Group",        type:"cfd", servers:["AlphaCapital-Live","AlphaCapital-Live 2","AlphaCapital-Demo"] },
-  { name:"Alvexo",                     type:"cfd", servers:["Alvexo-Live","Alvexo-Demo"] },
-  { name:"Amana Capital",              type:"cfd", servers:["AmanaCapital-Live","AmanaCapital-Demo"] },
-  { name:"AMarkets",                   type:"cfd", servers:["AMarkets-Real","AMarkets-Real2","AMarkets-Demo"] },
-  { name:"ATC Brokers",                type:"cfd", servers:["ATCBrokers-Live","ATCBrokers-Demo"] },
-  { name:"ATFX",                       type:"cfd", servers:["ATFX-Live","ATFX-Live 2","ATFX-Live 3","ATFX-Demo"] },
-  { name:"AvaTrade",                   type:"cfd", servers:["AvaTrade-Live","AvaTrade-Live 2","AvaTrade-Live 3","AvaTrade-Demo"] },
-  { name:"Axi",                        type:"cfd", servers:["Axi-Live","Axi-Live 2","Axi-Live 3","Axi-Live 4","Axi-Live 5","Axi-Demo"] },
-  { name:"Axiory",                     type:"cfd", servers:["Axiory-Live","Axiory-Live2","Axiory-Demo"] },
-  { name:"Baxia Markets",              type:"cfd", servers:["BaxiaMarkets-Live","BaxiaMarkets-Demo"] },
-  { name:"BDSwiss",                    type:"cfd", servers:["BDSwiss-Live","BDSwiss-Live 2","BDSwiss-Demo"] },
-  { name:"BlackBull Markets",          type:"cfd", servers:["BlackBullMarkets-Live","BlackBullMarkets-Live 2","BlackBullMarkets-Live 3","BlackBullMarkets-Live 4","BlackBullMarkets-Demo"] },
-  { name:"Blueberry Markets",          type:"cfd", servers:["Blueberry-Live","Blueberry-Live2","Blueberry-Demo"] },
-  { name:"Capex.com",                  type:"cfd", servers:["Capex-Live","Capex-Demo"] },
-  { name:"Capital.com",                type:"cfd", servers:["CapitalCom-Live","CapitalCom-Live2","CapitalCom-Demo"] },
-  { name:"Capitalcore",                type:"cfd", servers:["Capitalcore-Live","Capitalcore-Demo"] },
-  { name:"CFI Financial",              type:"cfd", servers:["CFI-Live","CFI-Live 2","CFI-Live 3","CFI-Demo"] },
-  { name:"City Index",                 type:"cfd", servers:["CityIndex-Live","CityIndex-Live2","CityIndex-Demo"] },
-  { name:"ClickTrades",                type:"cfd", servers:["ClickTrades-Live","ClickTrades-Demo"] },
-  { name:"CMC Markets",                type:"cfd", servers:["CMCMarkets-Live","CMCMarkets-Demo"] },
-  { name:"Coinexx",                    type:"cfd", servers:["Coinexx-Live","Coinexx-Demo"] },
-  { name:"Conotoxia",                  type:"cfd", servers:["Conotoxia-Live","Conotoxia-Demo"] },
-  { name:"CWG Markets",                type:"cfd", servers:["CWGMarkets-Live","CWGMarkets-Demo"] },
-  { name:"Darwinex",                   type:"cfd", servers:["Darwinex-Live","Darwinex-Demo"] },
-  { name:"DeltaStock",                 type:"cfd", servers:["DeltaStock-Live","DeltaStock-Demo"] },
-  { name:"Deriv",                      type:"cfd", servers:["Deriv-Server","Deriv-Server 2","Deriv-Server 3","Deriv-Demo"] },
-  { name:"Doo Prime",                  type:"cfd", servers:["DooPrime-Live","DooPrime-Live2","DooPrime-Demo"] },
-  { name:"Dukascopy",                  type:"cfd", servers:["Dukascopy-Live","Dukascopy-Demo"] },
-  { name:"EasyMarkets",                type:"cfd", servers:["easyMarkets-Live","easyMarkets-Live2","easyMarkets-Demo"] },
-  { name:"Eightcap",                   type:"cfd", servers:["Eightcap-Live","Eightcap-Live02","Eightcap-Live03","Eightcap-Live04","Eightcap-Live05","Eightcap-Demo"] },
-  { name:"Equiti",                     type:"cfd", servers:["Equiti-Live","Equiti-Live 2","Equiti-Demo"] },
-  { name:"Errante",                    type:"cfd", servers:["Errante-Live","Errante-Demo"] },
-  { name:"ETO Markets",                type:"cfd", servers:["ETOMarkets-Live","ETOMarkets-Demo"] },
-  { name:"eToro",                      type:"cfd", servers:["eToro-Live","eToro-Demo"] },
-  { name:"eToroX",                     type:"cfd", servers:["eToroX-Live","eToroX-Demo"] },
-  { name:"Excentral",                  type:"cfd", servers:["Excentral-Live","Excentral-Demo"] },
-  { name:"Exness (BVI)",               type:"cfd", servers:["ExnessBV-Real3","ExnessBV-Real6","ExnessBV-Real7","ExnessBV-Real8","ExnessBV-Real9","ExnessBV-Trial4"] },
-  { name:"Exness (Global)",            type:"cfd", servers:["Exness-Real","Exness-Real2","Exness-Real3","Exness-Real4","Exness-Real6","Exness-Real7","Exness-Real8","Exness-Real9","Exness-Real11","Exness-Real12","Exness-Real14","Exness-Real15","Exness-Real23","Exness-Real24","Exness-Real25","Exness-Real26","Exness-Real27","Exness-Real28","Exness-Trial","Exness-Trial2","Exness-Trial4","Exness-Trial5","Exness-Trial6","Exness-Trial7"] },
-  { name:"Exness (MT5 / Seychelles)",  type:"cfd", servers:["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4","Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8","Exness-MT5Real9","Exness-MT5Real10","Exness-MT5Real11","Exness-MT5Real12","Exness-MT5Real13","Exness-MT5Real14","Exness-MT5Real15","Exness-MT5Real16","Exness-MT5Real17","Exness-MT5Real18","Exness-MT5Trial","Exness-MT5Trial2","Exness-MT5Trial3","Exness-MT5Trial4","Exness-MT5Trial5"] },
-  { name:"Exness (UK/FCA)",            type:"cfd", servers:["ExnessUK-Real","ExnessUK-Demo"] },
-  { name:"FBS",                        type:"cfd", servers:["FBS-Real","FBS-Real 2","FBS-Real 3","FBS-Demo"] },
-  { name:"FIBO Group",                 type:"cfd", servers:["FIBOGroup-Live","FIBOGroup-Demo"] },
-  { name:"Finalto",                    type:"cfd", servers:["Finalto-Live","Finalto-Demo"] },
-  { name:"Fondex",                     type:"cfd", servers:["Fondex-Live","Fondex-Demo"] },
-  { name:"Forex.com",                  type:"cfd", servers:["FOREX.com-1","FOREX.com-2","FOREX.com-3","FOREX.com-Demo"] },
-  { name:"Forex4you",                  type:"cfd", servers:["Forex4you-Pro","Forex4you-Demo"] },
-  { name:"ForexChief",                 type:"cfd", servers:["ForexChief-MT5Live","ForexChief-MT5Live2","ForexChief-MT5Demo"] },
-  { name:"ForexMart",                  type:"cfd", servers:["ForexMart-Live","ForexMart-Demo"] },
-  { name:"FP Markets",                 type:"cfd", servers:["FPMarkets-Live","FPMarkets-Live2","FPMarkets-Live3","FPMarkets-Live4","FPMarkets-Live5","FPMarkets-Demo"] },
-  { name:"FP Markets (EU)",            type:"cfd", servers:["FPMarketsEU-Live","FPMarketsEU-Demo"] },
-  { name:"Friedberg Direct",           type:"cfd", servers:["FriedbergDirect-Live","FriedbergDirect-Demo"] },
-  { name:"Fusion Markets",             type:"cfd", servers:["FusionMarkets-Live","FusionMarkets-Live2","FusionMarkets-Demo"] },
-  { name:"FX Choice",                  type:"cfd", servers:["FXChoice-Live","FXChoice-Demo"] },
-  { name:"FXCM",                       type:"cfd", servers:["FXCM-USDReal","FXCM-USDReal02","FXCM-GBPReal01","FXCM-USDDemo01"] },
-  { name:"FxGrow",                     type:"cfd", servers:["FxGrow-Live","FxGrow-Demo"] },
-  { name:"FXOpen",                     type:"cfd", servers:["FXOpen-ECN Live","FXOpen-STP Live","FXOpen-Demo"] },
-  { name:"FxPesa",                     type:"cfd", servers:["EGMSecurities-Live","EGMSecurities-Demo"] },
-  { name:"FXPrimus",                   type:"cfd", servers:["FXPrimus-Live","FXPrimus-Live2","FXPrimus-Demo"] },
-  { name:"FxPro",                      type:"cfd", servers:["FxPro.com-Real","FxPro.com-Real2","FxPro.com-Real3","FxPro.com-Real4","FxPro.com-Real5","FxPro.com-Real6","FxPro.com-Demo"] },
-  { name:"FXTM (ForexTime)",           type:"cfd", servers:["FXTM-Real","FXTM-Real2","FXTM-Real3","FXTM-Real4","FXTM-Real5","FXTM-Real6","FXTM-Demo"] },
-  { name:"GBE Brokers",                type:"cfd", servers:["GBEBrokers-Live","GBEBrokers-Demo"] },
-  { name:"Gerchik and Co",             type:"cfd", servers:["GerchikCo-Live","GerchikCo-Demo"] },
-  { name:"GKFX",                       type:"cfd", servers:["GKFX-Live","GKFX-Demo"] },
-  { name:"Global Prime",               type:"cfd", servers:["GlobalPrime-Live","GlobalPrime-Live2","GlobalPrime-Demo"] },
-  { name:"GO Markets",                 type:"cfd", servers:["GOMarkets-Live","GOMarkets-Live 2","GOMarkets-Live 3","GOMarkets-Demo"] },
-  { name:"Grand Capital",              type:"cfd", servers:["GrandCapital-Live","GrandCapital-Demo"] },
-  { name:"Hantec Markets",             type:"cfd", servers:["HantecMarkets-Live","HantecMarkets-Demo"] },
-  { name:"Headway",                    type:"cfd", servers:["Headway-Live","Headway-Demo"] },
-  { name:"HFM / HF Markets (EU)",      type:"cfd", servers:["HFMarketsEurope-Live1 Server","HFMarketsEurope-Demo Server"] },
-  { name:"HFM / HF Markets (Global)",  type:"cfd", servers:["HFMarketsGlobal-Live1 Server","HFMarketsGlobal-Live2 Server","HFMarketsGlobal-Live3 Server","HFMarketsGlobal-Demo Server"] },
-  { name:"HYCM",                       type:"cfd", servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
-  { name:"HYCM Capital (UK)",          type:"cfd", servers:["HYCM-Live","HYCM-Live2","HYCM-Demo"] },
-  { name:"IC Markets (EU / Raw Trading Ltd)", type:"cfd", servers:["ICMarketsEU-Live","ICMarketsEU-Live2","ICMarketsEU-Live3","ICMarketsEU-Demo"] },
-  { name:"IC Markets (Global)",        type:"cfd", servers:["ICMarkets-Live","ICMarkets-Live02","ICMarkets-Live03","ICMarkets-Live04","ICMarkets-Live05","ICMarkets-Live06","ICMarkets-Demo"] },
-  { name:"IC Markets (SC)",            type:"cfd", servers:["ICMarketsSC-Live","ICMarketsSC-Live01","ICMarketsSC-Live02","ICMarketsSC-Live03","ICMarketsSC-Live04","ICMarketsSC-Live05","ICMarketsSC-Live06","ICMarketsSC-Live07","ICMarketsSC-Live08","ICMarketsSC-Live09","ICMarketsSC-Live10","ICMarketsSC-Live11","ICMarketsSC-Live12","ICMarketsSC-Live13","ICMarketsSC-Live14","ICMarketsSC-Live15","ICMarketsSC-Live16","ICMarketsSC-Live17","ICMarketsSC-Live18","ICMarketsSC-Live19","ICMarketsSC-Live20","ICMarketsSC-Live21","ICMarketsSC-Live22","ICMarketsSC-Live23","ICMarketsSC-Live24","ICMarketsSC-Live25","ICMarketsSC-Live26","ICMarketsSC-Demo"] },
-  { name:"ICM Capital",                type:"cfd", servers:["ICMCapital-Live","ICMCapital-Demo"] },
-  { name:"IG Markets",                 type:"cfd", servers:["IG-LIVE","IG-LIVE2","IG-LIVE3","IG-DEMO"] },
-  { name:"INFINOX",                    type:"cfd", servers:["INFINOX-Live","INFINOX-Demo"] },
-  { name:"InstaForex",                 type:"cfd", servers:["InstaForexCom-Live","InstaForexCom-Live2","InstaForexCom-Demo"] },
-  { name:"Interactive Brokers",        type:"cfd", servers:["InteractiveBrokers-Live","InteractiveBrokers-Demo"] },
-  { name:"Intertrader",                type:"cfd", servers:["Intertrader-Live","Intertrader-Demo"] },
-  { name:"IUX Markets",                type:"cfd", servers:["IUXMarkets-Live","IUXMarkets-Live2","IUXMarkets-Demo"] },
-  { name:"Just2Trade",                 type:"cfd", servers:["Just2Trade-Live","Just2Trade-Demo"] },
-  { name:"JustMarkets",                type:"cfd", servers:["JustMarkets-Live","JustMarkets-Live2","JustMarkets-Demo"] },
-  { name:"Key to Markets",             type:"cfd", servers:["KeyToMarkets-Live","KeyToMarkets-Demo"] },
-  { name:"KVB Prime",                  type:"cfd", servers:["KVBPrime-Live","KVBPrime-Demo"] },
-  { name:"Libertex",                   type:"cfd", servers:["Libertex-Real","Libertex-Real2","Libertex-Demo"] },
-  { name:"Lirunex",                    type:"cfd", servers:["Lirunex-Live","Lirunex-Demo"] },
-  { name:"LiteFinance",                type:"cfd", servers:["LiteFinance-Live","LiteFinance-ECN-Live","LiteFinance-Demo"] },
-  { name:"LQDFXpro",                   type:"cfd", servers:["LQDFXpro-Live","LQDFXpro-Demo"] },
-  { name:"M4Markets",                  type:"cfd", servers:["M4Markets-Live","M4Markets-Live2","M4Markets-Demo"] },
-  { name:"Markets.com",                type:"cfd", servers:["Markets.com-Live","Markets.com-Demo"] },
-  { name:"Moneta Markets",             type:"cfd", servers:["MonetaMarkets-Live","MonetaMarkets-Live2","MonetaMarkets-Demo"] },
-  { name:"MultiBank Group",            type:"cfd", servers:["MultiBank-Live","MultiBank-Live 2","MultiBank-Live 3","MultiBank-Demo"] },
-  { name:"NAGA Markets",               type:"cfd", servers:["NAGA-Live","NAGA-Live2","NAGA-Demo"] },
-  { name:"NAGA Markets (EU)",          type:"cfd", servers:["NAGAmarkets-Live","NAGAmarkets-Demo"] },
-  { name:"NordFX",                     type:"cfd", servers:["NordFX-Real","NordFX-Real 2","NordFX-Demo"] },
-  { name:"Nuvei Markets",              type:"cfd", servers:["NuveiMarkets-Live","NuveiMarkets-Demo"] },
-  { name:"OANDA",                      type:"cfd", servers:["OANDA-v20 Live-1","OANDA-v20 Live-2","OANDA-v20 Live-3","OANDA-v20 Demo-1","OANDA-v20 Demo-2"] },
-  { name:"Octa",                       type:"cfd", servers:["Octa-Real","Octa-Real 2","Octa-Demo"] },
-  { name:"OctaFX",                     type:"cfd", servers:["OctaFX-Real","OctaFX-Real2","OctaFX-Demo"] },
-  { name:"OnEquity",                   type:"cfd", servers:["OnEquity-Live","OnEquity-Demo"] },
-  { name:"Orbex",                      type:"cfd", servers:["Orbex-Live","Orbex-Demo"] },
-  { name:"Orient Finance",             type:"cfd", servers:["OrientFinance-Live","OrientFinance-Demo"] },
-  { name:"Pepperstone",                type:"cfd", servers:["Pepperstone-MT5-Live01","Pepperstone-MT5-Live02","Pepperstone-MT5-Live03","Pepperstone-MT5-Live04","Pepperstone-MT5-Live05","Pepperstone-Demo"] },
-  { name:"Pepperstone (Bahamas)",      type:"cfd", servers:["Pepperstone-Group-Live","Pepperstone-Group-Demo"] },
-  { name:"Pepperstone (CMA Kenya)",    type:"cfd", servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
-  { name:"Pepperstone (DMCC UAE)",     type:"cfd", servers:["Pepperstone-MT5-Live01","Pepperstone-Demo"] },
-  { name:"Pepperstone (UK/EU)",        type:"cfd", servers:["PepperstoneUK-Live","PepperstoneUK-Live2","PepperstoneUK-Live3","PepperstoneUK-Demo"] },
-  { name:"PFD NZ",                     type:"cfd", servers:["PFDNZ-Live","PFDNZ-Demo"] },
-  { name:"PrimeXBT",                   type:"cfd", servers:["PrimeXBT-Live","PrimeXBT-Demo"] },
-  { name:"ProfiForex",                 type:"cfd", servers:["ProfiForex-Live","ProfiForex-Demo"] },
-  { name:"PU Prime",                   type:"cfd", servers:["PUPrime-Live","PUPrime-Live2","PUPrime-Live 4","PUPrime-Live 5","PUPrime-Live 6","PUPrime-Demo"] },
-  { name:"Purple Trading",             type:"cfd", servers:["PurpleTrading-Live","PurpleTrading-Demo"] },
-  { name:"R1investing",                type:"cfd", servers:["R1investing-Live","R1investing-Demo"] },
-  { name:"Rakuten Securities",         type:"cfd", servers:["RakutenSecurities-Live","RakutenSecurities-Demo"] },
-  { name:"Raw Trading Ltd",            type:"cfd", servers:["ICMarketsSC-Demo","ICMarketsSC-MT5"] },
-  { name:"RoboForex",                  type:"cfd", servers:["RoboForex-Pro","RoboForex-ECN","RoboForex-Pro-Demo","RoboForex-ECN-Demo"] },
-  { name:"RockGlobal",                 type:"cfd", servers:["RockGlobal-Live","RockGlobal-Demo"] },
-  { name:"Saxo Bank",                  type:"cfd", servers:["SaxoBank-Live","SaxoBank-Demo"] },
-  { name:"Scandinavian Capital Markets",type:"cfd", servers:["SCM-Live","SCM-Demo"] },
-  { name:"Scope Markets",              type:"cfd", servers:["ScopeMarkets-Live","ScopeMarkets-Demo"] },
-  { name:"ScoreCM Ltd.",               type:"cfd", servers:["ScoreCM-Live","ScoreCM-Demo"] },
-  { name:"Skilling",                   type:"cfd", servers:["Skilling-Live","Skilling-Demo"] },
-  { name:"Spreadex",                   type:"cfd", servers:["Spreadex-Live","Spreadex-Demo"] },
-  { name:"Squared Financial (Global)", type:"cfd", servers:["SquaredFinancialGlobal-Live","SquaredFinancialGlobal-Demo"] },
-  { name:"SquaredFinancial",           type:"cfd", servers:["SquaredFinancial-Live","SquaredFinancial-Demo"] },
-  { name:"Startrader",                 type:"cfd", servers:["Startrader-Live","Startrader-Demo"] },
-  { name:"SuperForex",                 type:"cfd", servers:["SuperForex-Live","SuperForex-Demo"] },
-  { name:"Swissquote",                 type:"cfd", servers:["Swissquote-Live","Swissquote-Live2","Swissquote-Demo"] },
-  { name:"Switch Markets",             type:"cfd", servers:["SwitchMarkets-Live","SwitchMarkets-Demo"] },
-  { name:"Taurex (Zenfinex)",          type:"cfd", servers:["Taurex-Live","Taurex-Live2","Taurex-Demo"] },
-  { name:"TeleTrade",                  type:"cfd", servers:["TeleTrade-Live","TeleTrade-Demo"] },
-  { name:"ThinkMarkets",               type:"cfd", servers:["ThinkMarkets-Live","ThinkMarkets-Live 2","ThinkMarkets-Demo"] },
-  { name:"ThinkMarkets (EU)",          type:"cfd", servers:["ThinkMarketsEU-Live","ThinkMarketsEU-Demo"] },
-  { name:"Tickmill",                   type:"cfd", servers:["Tickmill-Live","Tickmill-Live2","Tickmill-Live3","Tickmill-Live4","Tickmill-Demo"] },
-  { name:"Tickmill (EU)",              type:"cfd", servers:["TickmillEurope-Live","TickmillEurope-Live2","TickmillEurope-Demo"] },
-  { name:"TIO Markets",                type:"cfd", servers:["TIOMarkets-Live","TIOMarkets-Demo"] },
-  { name:"TMGM",                       type:"cfd", servers:["TMGM-Live","TMGM-Live 2","TMGM-Demo"] },
-  { name:"Trade Nation",               type:"cfd", servers:["TradeNation-Live","TradeNation-Demo"] },
-  { name:"Trade360",                   type:"cfd", servers:["Trade360-Live","Trade360-Demo"] },
-  { name:"Tradeview",                  type:"cfd", servers:["Tradeview-Live","Tradeview-Demo"] },
-  { name:"Trading 212",                type:"cfd", servers:["Trading212-Live","Trading212-Demo"] },
-  { name:"TrioMarkets",                type:"cfd", servers:["TrioMarkets-Live","TrioMarkets-Demo"] },
-  { name:"Ultima Markets (EU / Huaprime)", type:"cfd", servers:["Huaprime-Live","Huaprime-Live2","Huaprime-Demo"] },
-  { name:"Ultima Markets LTD",         type:"cfd", servers:["UltimaMarkets-Live 1","UltimaMarkets-Live 2","UltimaMarkets-Live 3","UltimaMarkets-Demo"] },
-  { name:"Uniglobe Markets",           type:"cfd", servers:["UniglobeMarkets-Live","UniglobeMarkets-Demo"] },
-  { name:"Valutrades",                 type:"cfd", servers:["Valutrades-Live","Valutrades-Demo"] },
-  { name:"Vantage (AU/ASIC)",          type:"cfd", servers:["Vantage-Live","Vantage-Live2","Vantage-Demo"] },
-  { name:"Vantage (International)",    type:"cfd", servers:["VantageInternational-Live","VantageInternational-Live 3","VantageInternational-Live 4","VantageInternational-Live 5","VantageInternational-Live 6","VantageInternational-Live 7","VantageInternational-Live 8","VantageInternational-Live 10","VantageInternational-Live 11","VantageInternational-Live 12","VantageInternational-Demo"] },
-  { name:"Vantage (UK / FCA)",         type:"cfd", servers:["VantageGlobalPrime-Live","VantageGlobalPrime-Live2","VantageGlobalPrime-Demo"] },
-  { name:"VT Markets",                 type:"cfd", servers:["VTMarkets-Live","VTMarkets-Live 2","VTMarkets-Live 3","VTMarkets-Demo"] },
-  { name:"Weltrade",                   type:"cfd", servers:["Weltrade-Live","Weltrade-Demo"] },
-  { name:"WeTrade",                    type:"cfd", servers:["WeTrade-Live","WeTrade-Demo"] },
-  { name:"Windsor Brokers",            type:"cfd", servers:["WindsorBrokers-Live","WindsorBrokers-Demo"] },
-  { name:"XM (Trading Point / EU)",    type:"cfd", servers:["TradingPoint-Real","TradingPoint-Real2","TradingPoint-Demo"] },
-  { name:"XM (XMGlobal)",              type:"cfd", servers:["XMGlobal-Real","XMGlobal-Real 2","XMGlobal-Real 3","XMGlobal-Real 4","XMGlobal-Real 5","XMGlobal-Real 6","XMGlobal-Real 7","XMGlobal-Real 8","XMGlobal-Demo"] },
-  { name:"XTB",                        type:"cfd", servers:["XTB-Real","XTB-Real2","XTB-Demo"] },
-  { name:"ZFX (Zeal Capital)",         type:"cfd", servers:["ZFX-Live","ZFX-Live2","ZFX-Demo"] },
-
-  // ── Prop Firms / Funded Trading Programs ──────────────────────────────────
-  { name:"Apex Trader Funding",        type:"prop", servers:["ApexTraderFunding-Live","ApexTraderFunding-Evaluation","ApexTraderFunding-Demo"] },
-  { name:"AquaFutures",                type:"prop", servers:["AquaFutures-Live","AquaFutures-Demo"] },
-  { name:"Audacity Capital",           type:"prop", servers:["AudacityCapital-Live","AudacityCapital-Demo"] },
-  { name:"Bespoke Funding Program",    type:"prop", servers:["BespokeFunding-Live","BespokeFunding-Demo"] },
-  { name:"Blue Guardian",              type:"prop", servers:["BlueGuardian-Live","BlueGuardian-Live 2","BlueGuardian-Demo"] },
-  { name:"Blueberry Funded",           type:"prop", servers:["Blueberry-Live","Blueberry-Live 2","Blueberry-Live 3","Blueberry-Demo"] },
-  { name:"Breakout Prop",              type:"prop", servers:["BreakoutProp-Live","BreakoutProp-Demo"] },
-  { name:"BrightFunded",               type:"prop", servers:["BrightFunded-Live","BrightFunded-Live 2","BrightFunded-Demo"] },
-  { name:"Bullwaves Prime",            type:"prop", servers:["BullwavesPrime-Live","BullwavesPrime-Demo"] },
-  { name:"City Traders Imperium",      type:"prop", servers:["CTI-Live","CTI-Live 2","CTI-Instant","CTI-Demo"] },
-  { name:"DNA Funded",                 type:"prop", servers:["DNAFunded-Live","DNAFunded-Live 2","DNAFunded-Demo","DNAMarkets-Live","DNAMarkets-Demo"] },
-  { name:"E8 Funding",                 type:"prop", servers:["E8Funding-Live","E8Funding-Live 2","E8Funding-Evaluation","E8Funding-Demo"] },
-  { name:"Earn2Trade",                 type:"prop", servers:["Earn2Trade-Live","Earn2Trade-Gauntlet","Earn2Trade-Demo"] },
-  { name:"Fidelcrest",                 type:"prop", servers:["Fidelcrest-Live","Fidelcrest-Live 2","Fidelcrest-Micro","Fidelcrest-Demo"] },
-  { name:"Finotive Funding",           type:"prop", servers:["FinotiveFunding-Live","FinotiveFunding-Demo"] },
-  { name:"For Traders",                type:"prop", servers:["ForTraders-Live","ForTraders-Demo"] },
-  { name:"Forex Optimum",              type:"prop", servers:["ForexOptimum-Live","ForexOptimum-Demo"] },
-  { name:"Forex Prop Firm",            type:"prop", servers:["ForexPropFirm-Live","ForexPropFirm-Live 2","ForexPropFirm-Demo"] },
-  { name:"FTMO",                       type:"prop", servers:["FTMO-Server","FTMO-Server 2","FTMO-Server 3","FTMO-Server 4","FTMO-Demo","FTMO-Evaluation"] },
-  { name:"FTMO (US via OANDA)",        type:"prop", servers:["OANDA Corporation-Live","OANDA Corporation-Demo"] },
-  { name:"FTUK",                       type:"prop", servers:["FTUK-Live","FTUK-Demo"] },
-  { name:"Funded Trading Plus",        type:"prop", servers:["FundedTradingPlus-Live","FundedTradingPlus-Demo"] },
-  { name:"FundedNext",                 type:"prop", servers:["FundedNext-Live","FundedNext-Live 2","FundedNext-Stellar","FundedNext-Demo","FundedNext-Evaluation","FNmarkets-Live","FNmarkets-Demo"] },
-  { name:"FundedX",                    type:"prop", servers:["FundedX-Live","FundedX-Demo"] },
-  { name:"FunderPro",                  type:"prop", servers:["FunderPro-Live","FunderPro-Demo"] },
-  { name:"Funding Pips",               type:"prop", servers:["FundingPips-Live","FundingPips-Live 2","FundingPips-Live 3","FundingPips-Demo"] },
-  { name:"Funding Traders",            type:"prop", servers:["FundingTraders-Live","FundingTraders-Demo"] },
-  { name:"FXIFY",                      type:"prop", servers:["FXPIG-Live","FXPIG-Live 2","FXPIG-Live 3","FXPIG-Demo"] },
-  { name:"Glow Node",                  type:"prop", servers:["GlowNode-Live","GlowNode-Demo"] },
-  { name:"Goat Funded Trader",         type:"prop", servers:["GoatFundedTrader-Live","GoatFundedTrader-Demo"] },
-  { name:"GreenFields Capital",        type:"prop", servers:["GreenFieldsCapital-Live","GreenFieldsCapital-Demo"] },
-  { name:"Hantec Trader",              type:"prop", servers:["HantecMarkets-Live","HantecMarkets-Live 2","HantecMarkets-Demo"] },
-  { name:"Hola Prime",                 type:"prop", servers:["HolaPrime-Live","HolaPrime-Live 2","HolaPrime-Demo"] },
-  { name:"IC Funded",                  type:"prop", servers:["ICMarkets-Live","ICMarkets-Live02","ICMarketsSC-Live","ICMarketsSC-Demo"] },
-  { name:"Instant Funding",            type:"prop", servers:["InstantFunding-Live","InstantFunding-Demo"] },
-  { name:"Khweza Capital",             type:"prop", servers:["KhwezaCapital-Live","KhwezaCapital-Demo"] },
-  { name:"Lark Funding",               type:"prop", servers:["LarkFunding-Live","LarkFunding-Demo"] },
-  { name:"Lux Trading Firm",           type:"prop", servers:["LuxTradingFirm-Live","LuxTradingFirm-Demo"] },
-  { name:"Maven Trading",              type:"prop", servers:["MavenTrading-Live","MavenTrading-Demo"] },
-  { name:"Ment Funding",               type:"prop", servers:["MentFunding-Live","MentFunding-Demo"] },
-  { name:"My Flash Funding",           type:"prop", servers:["MyFlashFunding-Live","MyFlashFunding-Demo"] },
-  { name:"Omega Fintech",              type:"prop", servers:["OmegaFintech-Live","OmegaFintech-Demo"] },
-  { name:"OneFunded",                  type:"prop", servers:["OneFunded-Live","OneFunded-Demo"] },
-  { name:"Prop Firm Challenge",        type:"prop", servers:["PropFirmChallenge-Live","PropFirmChallenge-Demo"] },
-  { name:"Seacrest Funded (MyFundedFX)",type:"prop", servers:["SeacrestFunded-Live","SeacrestFunded-Live 2","SeacrestFunded-Demo","MyFundedFX-Live","MyFundedFX-Demo"] },
-  { name:"Skilled Funded Trader",      type:"prop", servers:["SkilledFundedTrader-Live","SkilledFundedTrader-Demo"] },
-  { name:"Smart Prop Trader",          type:"prop", servers:["SmartPropTrader-Live","SmartPropTrader-Live 2","SmartPropTrader-Demo"] },
-  { name:"Surge Trader",               type:"prop", servers:["SurgeTrader-Live","SurgeTrader-Demo"] },
-  { name:"Swift Funded",               type:"prop", servers:["SwiftFunded-Live","SwiftFunded-Demo"] },
-  { name:"The 5%ers",                  type:"prop", servers:["The5ers-Live","The5ers-Live 2","The5ers-Hyper","The5ers-Bootcamp","The5ers-Low-Risk","The5ers-Demo"] },
-  { name:"The Forex Funder",           type:"prop", servers:["TheForexFunder-Live","TheForexFunder-Demo"] },
-  { name:"The Funded Trader",          type:"prop", servers:["TheFundedTrader-Live","TheFundedTrader-Live 2","TheFundedTrader-Standard","TheFundedTrader-Royal","TheFundedTrader-Demo"] },
-  { name:"The Trading Pit",            type:"prop", servers:["TheTradingPit-Live","TheTradingPit-Live 2","TheTradingPit-Demo"] },
-  { name:"TopStep",                    type:"prop", servers:["TopStep-Live","TopStep-Live 2","TopStep-Combine","TopStep-Demo"] },
-  { name:"TopTier Trader",             type:"prop", servers:["TopTierTrader-Live","TopTierTrader-Demo"] },
-  { name:"Traders With Edge",          type:"prop", servers:["TradersWithEdge-Live","TradersWithEdge-Demo"] },
-  { name:"TradingPRO",                 type:"prop", servers:["TradingPRO-Live","TradingPRO-Demo"] },
-  { name:"True Forex Funds",           type:"prop", servers:["TrueForexFunds-Live","TrueForexFunds-Live 2","TrueForexFunds-Demo"] },
-  { name:"Wall Street Funded",         type:"prop", servers:["WSFMarkets-Server","WSFMarkets-Server 2","WSFMarkets-Demo"] },
-];
-function populateBrokers(){
-  const sel = document.getElementById('mt5-broker');
-  if(!sel) return;
-  if(typeof BROKERS === 'undefined' || !BROKERS.length) return;
-  const cfdBrokers = BROKERS.filter(b=>b.type==='cfd').sort((a,b)=>a.name.localeCompare(b.name));
-  const propFirms  = BROKERS.filter(b=>b.type==='prop').sort((a,b)=>a.name.localeCompare(b.name));
-  sel.innerHTML = '<option value="">— Select Broker —</option>' +
-    '<optgroup label="CFD Retail Brokers">' +
-    cfdBrokers.map(b=>'<option value="'+b.name+'">'+b.name+'</option>').join('') +
-    '</optgroup>' +
-    '<optgroup label="Prop Firms / Funded Programs">' +
-    propFirms.map(b=>'<option value="'+b.name+'">'+b.name+'</option>').join('') +
-    '</optgroup>';
-}
-
-function onBrokerChange(){
-  const brokerName = document.getElementById('mt5-broker').value;
-  const broker = BROKERS.find(b=>b.name===brokerName);
-  const serverSel = document.getElementById('mt5-server');
-  if(!broker || !serverSel) return;
-  serverSel.innerHTML = '<option value="">— Select Server —</option>' +
-    broker.servers.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
-  serverSel.disabled = false;
-}
 
 
 // ── AI Trade Analysis ─────────────────────────────────────────────────────────
@@ -6310,7 +5798,6 @@ setLang(localStorage.getItem('sc_lang')||'en');
     </div>
     <!-- RIGHT: actions -->
     <div class="jv2-topbar-right">
-      <div id="jv2-mt5-status-bar"></div>
       <div class="qpick-wrap" id="jv2-qpick" style="position:relative">
         <button class="jv2-btn-primary" onclick="openQuickPick('jv2-qpick')">+ Add Trade ▾</button>
         <div class="qpick-menu" style="right:0;left:auto">
@@ -6339,52 +5826,6 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <div id="jv2-debug-content"></div>
       </div>
 
-      <!-- MT5 Connect / Status -->
-      <div id="jv2-mt5-block">
-        <div class="jv2-mt5-card" id="jv2-mt5-connect-form">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--t1)">Connect MT5 Account</div>
-            <span style="font-size:9px;color:var(--t4);font-family:'DM Mono',monospace;padding:3px 10px;border:1px solid var(--br);border-radius:20px">Powered by MetaAPI · Encrypted</span>
-          </div>
-          <div style="font-size:11px;color:var(--t4);margin-bottom:14px;line-height:1.6">Enter your MetaTrader 5 credentials to automatically sync your trades. Your credentials are sent securely and never stored on our servers.</div>
-          <div class="mt5-form">
-            <div>
-              <label class="jlabel">Account Number</label>
-              <input class="jinput" id="mt5-login" placeholder="e.g. 12345678" type="number"/>
-            </div>
-            <div>
-              <label class="jlabel">Password</label>
-              <input class="jinput" id="mt5-password" placeholder="Your MT5 password" type="password"/>
-            </div>
-            <div style="grid-column:1/-1">
-              <label class="jlabel">Broker</label>
-              <select class="jselect" id="mt5-broker" onchange="onBrokerChange()" style="width:100%" onclick="if(!this.options.length||this.options.length<3)populateBrokers()">
-                <option value="">— Select your broker —</option>
-              </select>
-            </div>
-            <div style="grid-column:1/-1">
-              <label class="jlabel">Server</label>
-              <select class="jselect" id="mt5-server" disabled style="width:100%">
-                <option value="">— Select broker first —</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <button class="jbtn jbtn-primary" onclick="connectMT5()" style="padding:10px 22px">
-              🔗 Connect Account
-            </button>
-            <span style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace">Your credentials are never stored</span>
-          </div>
-          <div class="mt5-status" id="mt5-status"></div>
-        </div>
-        <div id="jv2-mt5-connected-bar" style="display:none;margin-bottom:16px">
-          <div class="mt5-connected">
-            <div class="mt5-conn-dot"></div>
-            <div class="mt5-conn-info" id="jv2-mt5-conn-info">MT5 Connected</div>
-          </div>
-        </div>
-      </div>
-
       <!-- RAW TEST PANEL -->
       <div id="jv2-test-panel" style="margin-bottom:16px;padding:14px 16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.4);border-radius:10px;font-family:monospace;font-size:11px;color:#fbbf24;line-height:2">
         <div style="font-weight:700;margin-bottom:6px;font-size:12px">⚡ LIVE DIAGNOSTICS</div>
@@ -6395,7 +5836,6 @@ setLang(localStorage.getItem('sc_lang')||'en');
         <div>Last error: <span id="diag-err" style="color:#f87171">none</span></div>
         <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
           <button onclick="diagRun()" style="background:#f59e0b;border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">Run Test</button>
-          <button onclick="diagSync()" style="background:#22c55e;border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">Force Sync</button>
           <button onclick="document.getElementById('jv2-test-panel').style.display='none'" style="background:transparent;border:1px solid #f59e0b;color:#f59e0b;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px">Hide</button>
         </div>
       </div>
@@ -6796,7 +6236,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
   <div class="hp-sdiv"></div>
   <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h7M2 11h5" stroke="#22c55e" stroke-width="1.2" stroke-linecap="round"/></svg><div><b data-i18n="feat3Title">Live Market News</b><span data-i18n="feat3Sub">Institutional Sources · Instant Updates</span></div></div>
   <div class="hp-sdiv"></div>
-  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">MT5 auto-sync · P&L · Win rate</span></div></div>
+  <div class="hp-sf"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="2" stroke="#22c55e" stroke-width="1.1"/><path d="M4.5 5h6M4.5 7.5h6M4.5 10h4" stroke="#22c55e" stroke-width="1.1" stroke-linecap="round"/></svg><div><b data-i18n="feat4Title">Trading Journal</b><span data-i18n="feat4Sub">Manual trade log · P&L · Win rate</span></div></div>
 </div>
 
 
@@ -6838,7 +6278,7 @@ setLang(localStorage.getItem('sc_lang')||'en');
         </div>
         <div class="sc-auth-feat">
           <div class="sc-auth-feat-dot"></div>
-          <div class="sc-auth-feat-text"><strong>AI Trading Journal</strong>MT5 sync · P&amp;L tracking · Psychology tags</div>
+          <div class="sc-auth-feat-text"><strong>AI Trading Journal</strong>Manual trade log · P&amp;L tracking · Psychology tags</div>
         </div>
       </div>
       <div class="sc-auth-stats" style="position:relative;z-index:1">
@@ -7154,7 +6594,7 @@ function scShowGate(page) {
       <div class="sc-gate-icon">🔒</div>
       <div class="sc-gate-title">PRO REQUIRED</div>
       <div class="sc-gate-sub">
-        ${titles[page]} is available on the Pro plan. Upgrade now to unlock all 7 institutional quant models, the AI trading journal, and MT5 auto-sync.
+        ${titles[page]} is available on the Pro plan. Upgrade now to unlock all 7 institutional quant models and the AI trading journal.
       </div>
       <div class="sc-gate-plans">
         <div class="sc-gate-plan" onclick="scOpenPayment('basic')">
@@ -7176,7 +6616,6 @@ function scShowGate(page) {
             <span>Everything in Basic</span>
             <span>7 Quant models</span>
             <span>AI Trading Journal</span>
-            <span>MT5 auto-sync</span>
           </div>
         </div>
       </div>
@@ -7521,80 +6960,6 @@ function jv2SetTab(tab) {
 // ── Main render — called when journal loads ───────────────────────────────────
 // renderJournal defined earlier — no duplicate needed
 
-// ── MT5 Block ─────────────────────────────────────────────────────────────────
-function jv2RenderMT5Block() {
-  const statusBar  = document.getElementById('jv2-mt5-status-bar');
-  const connectForm = document.getElementById('jv2-mt5-connect-form');
-  const connectedBar = document.getElementById('jv2-mt5-connected-bar');
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
-
-  if (mt5Info) {
-    // Start auto-sync when account is connected
-    if (typeof jv2StartAutoSync === 'function') jv2StartAutoSync();
-    // ── Show connected account card ──────────────────────────────
-    if (connectForm)   connectForm.style.display   = 'none';
-    if (connectedBar) {
-      connectedBar.style.display = 'block';
-      connectedBar.innerHTML = `
-        <div class="jv2-mt5-account-card">
-          <div class="jv2-mt5-account-left">
-            <div class="jv2-mt5-dot"></div>
-            <div>
-              <div class="jv2-mt5-account-name">${mt5Info.broker || mt5Info.server || 'MT5 Account'}</div>
-              <div class="jv2-mt5-account-sub">Account #${mt5Info.login} · ${mt5Info.server || ''}</div>
-            </div>
-          </div>
-          <div class="jv2-mt5-account-actions">
-            <button class="jv2-mt5-btn sync" onclick="syncMT5(false)">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 2.5A5.5 5.5 0 1 0 12 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1v3h-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Sync Now
-            </button>
-            <button class="jv2-mt5-btn change" onclick="jv2ChangeAccount()">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M8 3l3 3.5-3 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Change Account
-            </button>
-            <button class="jv2-mt5-btn disconnect" onclick="disconnectMT5()">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L10.5 5 8 7.5M5 5h5.5M4.5 2.5H3a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Disconnect
-            </button>
-          </div>
-        </div>`;
-    }
-    if (statusBar) statusBar.innerHTML = `
-      <div class="jv2-mt5-connected">
-        <div class="jv2-mt5-dot"></div>
-        <span>${mt5Info.broker || mt5Info.server} · #${mt5Info.login}</span>
-      </div>`;
-  } else {
-    // ── Show connect form ────────────────────────────────────────
-    if (connectForm)   connectForm.style.display   = 'block';
-    if (connectedBar) {
-      connectedBar.style.display = 'none';
-      connectedBar.innerHTML = '';
-    }
-    if (statusBar) statusBar.innerHTML = '';
-    populateBrokers();
-    setTimeout(populateBrokers, 200);
-  }
-}
-
-function jv2ChangeAccount() {
-  // Show the connect form without removing current account yet
-  const connectForm  = document.getElementById('jv2-mt5-connect-form');
-  const connectedBar = document.getElementById('jv2-mt5-connected-bar');
-  if (connectForm)   connectForm.style.display   = 'block';
-  if (connectedBar) connectedBar.style.display   = 'none';
-  // Pre-fill with current account number
-  const mt5Info = JSON.parse(localStorage.getItem('sc_mt5') || 'null');
-  if (mt5Info) {
-    const loginEl = document.getElementById('mt5-login');
-    if (loginEl) loginEl.value = mt5Info.login || '';
-  }
-  populateBrokers();
-  // Scroll to the form
-  if (connectForm) connectForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 // ── Statistics ────────────────────────────────────────────────────────────────
 function jv2CalcStats() {
   const closed = jTrades.filter(t => { const st=(t.status||'').toUpperCase(); return st==='CLOSED'||st==='CLOSE'||st==='FILLED'||st==='DONE'||jTrades.every(x=>(x.status||'').toUpperCase()!=='CLOSED'); });
@@ -7836,7 +7201,7 @@ function jv2RenderTrades(trades) {
   const list = (trades || jTrades).slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
 
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:rgba(167,243,208,0.3);font-family:monospace;font-size:11px;letter-spacing:1px">NO TRADES YET — CONNECT MT5 AND SYNC</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:rgba(167,243,208,0.3);font-family:monospace;font-size:11px;letter-spacing:1px">NO TRADES YET — ADD YOUR FIRST TRADE</td></tr>';
     return;
   }
 
@@ -8314,12 +7679,9 @@ async function jv2ShowDebug() {
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('page-journal-page')?.style.display !== 'none') {
     setTimeout(() => {
-      if (typeof jv2RenderMT5Block === 'function') {
-        jv2RenderMT5Block();
-        jv2RenderStats();
-        jv2RenderDailyTable();
-        jv2RenderDiscipline();
-      }
+      jv2RenderStats();
+      jv2RenderDailyTable();
+      jv2RenderDiscipline();
     }, 200);
   }
 });
@@ -8598,15 +7960,6 @@ async function diagRun() {
   }
 }
 
-async function diagSync() {
-  try {
-    document.getElementById('diag-err').textContent = 'syncing...';
-    await syncMT5();
-    await diagRun();
-  } catch(e) {
-    document.getElementById('diag-err').textContent = 'sync error: ' + e.message;
-  }
-}
 
 // Auto-run when journal page opens
 document.addEventListener('DOMContentLoaded', function() {
