@@ -44,22 +44,23 @@ async def startup_event():
         try:
             await get_db()
             print("[STARTUP] Database connected")
-            # Ensure journal table exists
+            # Ensure AI market-calls cache table exists
             try:
                 import auth_payments as _ap2
                 db = await _ap2.get_db()
                 await db.execute("""
-                    CREATE TABLE IF NOT EXISTS journal_trades (
-                        id TEXT NOT NULL,
-                        user_id TEXT NOT NULL,
-                        trade_data JSONB NOT NULL,
-                        created_at TIMESTAMPTZ DEFAULT NOW(),
-                        PRIMARY KEY (id, user_id)
+                    CREATE TABLE IF NOT EXISTS ai_market_calls (
+                        id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+                        payload JSONB NOT NULL,
+                        generated_at TIMESTAMPTZ DEFAULT NOW()
                     )
                 """)
-                print("[STARTUP] journal_trades table ready")
+                print("[STARTUP] ai_market_calls table ready")
             except Exception as e2:
-                print(f"[STARTUP] journal_trades table: {e2}")
+                print(f"[STARTUP] ai_market_calls table: {e2}")
+            # Warm the in-memory market-calls cache from Postgres — never
+            # calls Claude at boot, just loads whatever was last generated.
+            asyncio.create_task(_warm_market_calls_cache())
         except Exception as e:
             print(f"[STARTUP] DB not reachable at startup (will retry lazily per-request): {e}")
     print("[STARTUP] Pre-loading all prices...")
@@ -1385,6 +1386,21 @@ ANALYSIS_JSON_SCHEMA = {
     "additionalProperties": False,
 }
 
+async def _check_and_mark_free_analysis(user_id) -> bool:
+    """Per-account free-analysis cap, durable in Postgres. Returns True if this
+    account already used its one free analysis; otherwise marks it used and
+    returns False. Row-locked so two simultaneous requests can't both slip
+    through before either write lands."""
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    async with db.acquire() as conn:
+        async with conn.transaction():
+            used = await conn.fetchval("SELECT free_analysis_used FROM users WHERE id=$1 FOR UPDATE", user_id)
+            if used:
+                return True
+            await conn.execute("UPDATE users SET free_analysis_used=TRUE WHERE id=$1", user_id)
+            return False
+
 @app.post("/api/analysis")
 async def api_analysis(req: AnalysisRequest, request: Request):
     if not ANTHROPIC_API_KEY:
@@ -1392,19 +1408,23 @@ async def api_analysis(req: AnalysisRequest, request: Request):
     client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
 
     # Access control: unlimited (subject to the rate limit below) for anyone
-    # with an active subscription (free trial or paid). Everyone else — not
-    # signed in, or signed in with a lapsed subscription — gets exactly one
-    # free analysis, tracked by IP, before being asked to sign up/subscribe.
+    # with an active subscription. Signed-in users without one get exactly one
+    # free analysis, tracked durably per-account in Postgres. Anonymous
+    # visitors (not signed in at all) fall back to the old per-IP cap, since
+    # there's no account to tie it to.
     user = await get_current_user(request) if _auth_enabled else None
     expires_at = user.get("expires_at") if user else None
     is_active_sub = bool(user and user.get("status") == "active" and
                           (expires_at is None or expires_at > datetime.now(timezone.utc)))
     if not is_active_sub:
-        if _free_analysis_used.get(client_ip):
-            if user:
-                raise HTTPException(403, "Your free trial has ended. Subscribe to keep generating analyses.")
-            raise HTTPException(403, "You've used your free analysis. Sign up for a free month to continue.")
-        _free_analysis_used[client_ip] = True
+        if user:
+            already_used = await _check_and_mark_free_analysis(user["id"])
+            if already_used:
+                raise HTTPException(403, "You've used your free analysis. Subscribe to keep generating analyses.")
+        else:
+            if _free_analysis_used.get(client_ip):
+                raise HTTPException(403, "You've used your free analysis. Sign up for a free month to continue.")
+            _free_analysis_used[client_ip] = True
 
     # Rate limit: 5 analyses per IP per hour
     if not check_rate_limit(client_ip):
@@ -1545,258 +1565,266 @@ Return ONLY valid JSON no markdown:
     raise HTTPException(503, f"Anthropic API overloaded — please try again in a moment")
 
 
-# ─── Trading Journal ──────────────────────────────────────────────────────────
-import json as _json
-from pathlib import Path as _Path
+# ─── AI Trading Ideas & Crypto Calls ──────────────────────────────────────────
+# Server-generated and cached — one shared feed for every Pro user, not a
+# per-user journal. Regenerated lazily when stale so we don't call Claude on
+# every page load.
 
-# Railway persistent storage: mount a Volume at /data in Railway dashboard
-# Without a volume, falls back to /tmp (survives restarts but not redeploys)
-_DATA_DIR = _Path("/data") if _Path("/data").exists() else _Path("/tmp")
-JOURNAL_FILE = _DATA_DIR / "sc_journal.json"
-if not _Path("/data").exists():
-    print("[WARN] /data not mounted — using /tmp (data resets on redeploy). Mount a Railway volume at /data to persist.")
+IDEAS_TTL_HOURS = int(os.environ.get("IDEAS_TTL_HOURS", "4"))
+MARKET_CALLS_TTL = IDEAS_TTL_HOURS * 3600
+N_IDEAS = 6
+N_CRYPTO_CALLS = 8
 
-# ── PostgreSQL journal helpers (uses the same asyncpg pool from auth_payments) ──
-# These raise on failure rather than silently falling back to the ephemeral
-# container filesystem — a boot-time or transient DB error must surface as a
-# clear 503 to the client, not quietly lose the user's journal data.
-async def _db_load_journal(user_id: str) -> list:
-    """Load journal trades from PostgreSQL."""
+market_calls_cache: dict = {"data": None, "ts": 0.0}
+_market_calls_gen_lock = asyncio.Lock()
+
+async def _db_load_market_calls():
+    """Load the last-generated market calls payload from PostgreSQL."""
     import auth_payments as _ap
     db = await _ap.get_db()
-    rows = await db.fetch(
-        "SELECT trade_data FROM journal_trades WHERE user_id=$1 ORDER BY created_at DESC",
-        user_id
+    row = await db.fetchrow("SELECT payload FROM ai_market_calls WHERE id=1")
+    return json.loads(row["payload"]) if row else None
+
+async def _db_save_market_calls(payload: dict):
+    """Upsert the market calls payload into PostgreSQL."""
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    await db.execute(
+        """INSERT INTO ai_market_calls (id, payload, generated_at) VALUES (1, $1, NOW())
+           ON CONFLICT (id) DO UPDATE SET payload=$1, generated_at=NOW()""",
+        json.dumps(payload)
     )
-    return [_json.loads(r['trade_data']) for r in rows]
 
-async def _db_save_journal(user_id: str, trades: list):
-    """Save journal trades to PostgreSQL (delete + re-insert per user)."""
-    import auth_payments as _ap
-    db = await _ap.get_db()
-    await db.execute("DELETE FROM journal_trades WHERE user_id=$1", user_id)
-    if trades:
-        await db.executemany(
-            "INSERT INTO journal_trades (id, user_id, trade_data) VALUES ($1, $2, $3)",
-            [(t.get('id', str(i)), user_id, _json.dumps(t)) for i, t in enumerate(trades)]
-        )
-print(f"  Journal storage: {JOURNAL_FILE}")
-
-JOURNAL_KEY = os.environ.get("JOURNAL_API_KEY", "")
-
-def load_journal() -> list:
+async def _warm_market_calls_cache():
+    """Load whatever was last generated into memory at boot — never calls Claude."""
     try:
-        if JOURNAL_FILE.exists():
-            return _json.loads(JOURNAL_FILE.read_text())
+        payload = await _db_load_market_calls()
+        if payload:
+            market_calls_cache.update({"data": payload, "ts": payload.get("ts", 0)})
+            print("  Market calls cache warmed from Postgres")
     except Exception as e:
-        print(f"Journal load error: {e}")
-    return []
+        print(f"  Market calls cache warm failed (non-fatal): {e}")
 
-class TradeEntry(BaseModel):
-    id: str
-    date: str
-    asset: str
-    direction: str   # LONG / SHORT
-    entry: float
-    exit: float | None = None
-    size: float
-    pnl: float | None = None
-    status: str      # OPEN / CLOSED
-    strategy: str = ""
-    notes: str = ""
-    createdAt: str
-
-@app.get("/api/journal")
-async def get_journal(request: Request):
-    """Load the authenticated user's journal — Postgres-backed, no anonymous access."""
-    user = await require_auth(request)
-    try:
-        trades = await _db_load_journal(str(user["id"]))
-    except Exception as e:
-        raise HTTPException(503, f"Journal database unavailable: {e}")
-    return JSONResponse(trades)
-
-@app.post("/api/journal")
-async def add_trade(trade: TradeEntry, request: Request, user_id: str = ""):
-    # MT5 EA automation authenticates with a shared secret and supplies the
-    # target user explicitly; the web app authenticates the normal way.
-    if JOURNAL_KEY and request.headers.get("X-Journal-Key", "") == JOURNAL_KEY:
-        if not user_id:
-            raise HTTPException(400, "user_id is required for journal-key requests")
-        uid = user_id
-    else:
-        user = await require_auth(request)
-        uid = str(user["id"])
-    try:
-        trades = await _db_load_journal(uid)
-        existing = next((i for i,t in enumerate(trades) if t.get("id")==trade.id), None)
-        if existing is not None:
-            trades[existing] = trade.dict()
-        else:
-            trades.insert(0, trade.dict())
-        await _db_save_journal(uid, trades)
-    except Exception as e:
-        raise HTTPException(503, f"Journal database unavailable: {e}")
-    return JSONResponse({"ok": True})
-
-@app.put("/api/journal/{trade_id}")
-async def update_trade(trade_id: str, trade: TradeEntry, request: Request):
-    user = await require_auth(request)
-    uid = str(user["id"])
-    try:
-        trades = await _db_load_journal(uid)
-        for i, t in enumerate(trades):
-            if t["id"] == trade_id:
-                trades[i] = trade.dict()
-                await _db_save_journal(uid, trades)
-                return JSONResponse({"ok": True})
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(503, f"Journal database unavailable: {e}")
-    raise HTTPException(404, "Trade not found")
-
-class TradeAnalysisRequest(BaseModel):
-    trade: dict
-
-TRADE_ANALYSIS_JSON_SCHEMA = {
+MARKET_CALLS_ITEM_SCHEMA = {
     "type": "object",
     "properties": {
-        "verdict":          {"type": "string"},
-        "verdict_positive": {"type": "boolean"},
-        "strengths":        {"type": "string"},
-        "weaknesses":       {"type": "string"},
-        "market_context":   {"type": "string"},
-        "risk_management":  {"type": "string"},
-        "psychology":       {"type": "string"},
-        "lesson":           {"type": "string"},
-        "generated_at":     {"type": "string"},
+        "id":           {"type": "string"},
+        "entryZone":    {"type": "string"},
+        "stopLoss":     {"type": "string"},
+        "targets":      {"type": "array", "items": {"type": "string"}},
+        "timeframe":    {"type": "string"},
+        "rationale":    {"type": "string"},
+        "invalidation": {"type": "string"},
     },
-    "required": ["verdict","verdict_positive","strengths","weaknesses","market_context",
-                 "risk_management","psychology","lesson","generated_at"],
+    "required": ["id","entryZone","stopLoss","targets","timeframe","rationale","invalidation"],
+    "additionalProperties": False,
+}
+MARKET_CALLS_CRYPTO_ITEM_SCHEMA = {
+    **MARKET_CALLS_ITEM_SCHEMA,
+    "properties": {**MARKET_CALLS_ITEM_SCHEMA["properties"], "fundingContext": {"type": "string"}},
+    "required": MARKET_CALLS_ITEM_SCHEMA["required"] + ["fundingContext"],
+}
+MARKET_CALLS_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "ideas":       {"type": "array", "items": MARKET_CALLS_ITEM_SCHEMA},
+        "cryptoCalls": {"type": "array", "items": MARKET_CALLS_CRYPTO_ITEM_SCHEMA},
+    },
+    "required": ["ideas", "cryptoCalls"],
     "additionalProperties": False,
 }
 
-@app.post("/api/journal/analyse")
-async def analyse_trade(req: TradeAnalysisRequest, request: Request):
-    """Analyse a single trade using the same quant frameworks as market intelligence."""
-    await require_auth(request)
-    client_ip = request.headers.get("X-Forwarded-For","").split(",")[0].strip() or request.client.host
-    if not check_rate_limit(client_ip):
-        raise HTTPException(429, "Rate limit exceeded — max 5 analyses per hour. Please try again later.")
+def _select_call_candidates(prices: dict, n_ideas: int, n_crypto: int):
+    """Score every priced asset and rank each pool by conviction (|score-50|).
+    The deterministic score/signal is the source of truth — Claude never sees
+    or invents it, it only drafts the setup around a fixed selection."""
+    scored = []
+    for name, d in prices.items():
+        if not d.get("price"):
+            continue
+        try:
+            score = _q_score_asset(d.get("name", name), d, prices)
+        except Exception:
+            continue
+        scored.append((name, d, score))
+    crypto = sorted((x for x in scored if x[1].get("tab") == "crypto"),
+                     key=lambda x: abs(x[2]["total"] - 50), reverse=True)[:n_crypto]
+    ideas = sorted((x for x in scored if x[1].get("tab") != "crypto"),
+                    key=lambda x: abs(x[2]["total"] - 50), reverse=True)[:n_ideas]
+    return ideas, crypto
+
+async def _generate_market_calls() -> dict:
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
-
-    trade = req.trade
-    asset   = trade.get("asset", "Unknown")
-    direction = trade.get("direction", "LONG")
-    entry   = trade.get("entry")
-    exit_p  = trade.get("exit")
-    sl      = trade.get("sl")
-    tp      = trade.get("tp")
-    size    = trade.get("size")
-    pnl     = trade.get("pnl")
-    rr      = trade.get("rr")
-    strategy = trade.get("strategy", "")
-    notes   = trade.get("notes", "")
-    psych_tags = trade.get("psychTags", [])
-    date    = trade.get("date", "")
-    status  = trade.get("status", "CLOSED")
-
-    # Get current live prices for context
-    if not price_cache["data"] or time.time() - price_cache["ts"] > PRICE_TTL:
+    if not price_cache["data"]:
         data = await load_all_prices()
         price_cache.update({"data": data, "ts": time.time()})
-
     prices = price_cache["data"]
-    ph = detect_phase(prices)
 
-    # Format price context
-    price_lines = ["CURRENT LIVE MARKET PRICES:"]
-    for pid, pdata in list(prices.items())[:12]:
-        if pdata.get("price"):
-            price_lines.append(f"  {pdata.get('name', pid)}: ${pdata['price']:,.4g}  {pdata.get('change', 0):+.2f}%")
-    price_ctx = "\n".join(price_lines)
+    ideas, crypto = _select_call_candidates(prices, N_IDEAS, N_CRYPTO_CALLS)
 
-    # Build detailed trade context
-    pnl_str = f"${pnl:+.2f}" if pnl is not None else "Open"
-    rr_str  = f"1:{rr:.2f}" if rr else ("N/A (no SL/TP set)" if not sl else "N/A")
-    sl_str  = f"${float(sl):,.4g}" if sl else "Not set"
-    tp_str  = f"${float(tp):,.4g}" if tp else "Not set"
-    entry_str = f"${float(entry):,.4g}" if entry else "N/A"
-    exit_str  = f"${float(exit_p):,.4g}" if exit_p else "Still open"
-    size_str  = f"${float(size):,.0f}" if size else "N/A"
-    psych_str = ", ".join(psych_tags) if psych_tags else "None tagged"
-    prompt = f"""You are a senior quantitative analyst and trading coach at Saving Capital, a professional trading academy.
-Analyse this trade using the same institutional frameworks (Bridgewater macro, RenTech momentum, Citadel risk management, Two Sigma factor models) used in our market intelligence system.
+    funding, fg = {}, {}
+    if crypto:
+        try:
+            funding, fg = await asyncio.gather(_q_fetch_funding(), _q_fetch_fg())
+        except Exception as e:
+            print(f"  Market calls funding/F&G fetch failed (non-fatal): {e}")
 
-{price_ctx}
+    def _fmt_asset(name, d, score):
+        return (f'- id="{name}" {d.get("name",name)} ({d.get("sym","")}): price {d.get("price")}, '
+                f'24h {d.get("change",0):+.2f}%, 5d {d.get("change5d",0):+.2f}%, '
+                f'quant score {score["total"]}/100 ({score["signal"]})')
 
-GLOBAL MARKET REGIME: {ph['phase']} | {ph['regime']} | {ph['risk']} risk
-{ph['bullPct']}% of tracked assets positive | Average move: {ph['avg']}%
+    idea_lines = [_fmt_asset(n, d, s) for n, d, s in ideas]
+    crypto_lines = []
+    for n, d, s in crypto:
+        line = _fmt_asset(n, d, s)
+        fr = funding.get(d.get("sym", "").replace("/USD", "").upper())
+        if fr:
+            line += f", funding {fr['rate']}% ({fr['sentiment']})"
+        crypto_lines.append(line)
+    fg_line = f"Fear & Greed Index: {fg['value']} ({fg['label']}) — {fg['signal']}" if fg else ""
 
-TRADE TO ANALYSE:
-Asset: {asset}
-Direction: {direction}
-Date: {date}
-Status: {status}
-Entry: {entry_str}
-Exit: {exit_str}
-Stop Loss: {sl_str}
-Take Profit: {tp_str}
-Position Size: {size_str}
-P&L: {pnl_str}
-Risk:Reward Ratio: {rr_str}
-Strategy/Setup: {strategy or 'Not specified'}
-Notes: {notes or 'None'}
-Psychology Tags: {psych_str}
+    prompt = f"""You are a senior quantitative analyst producing a batch of trading ideas and crypto calls for a trading dashboard. For EACH asset listed below, you are given its id, price, and a deterministic multi-factor quant score/signal that is already final — do not restate or change the score, only build a concrete setup around it.
 
-Return ONLY valid JSON (no markdown, no backticks):
-{{
-  "verdict": "2-3 sentence overall assessment of this trade — was it a good trade regardless of outcome? Reference the specific price levels.",
-  "verdict_positive": true or false (true if trade was well-executed even if it lost, false if it was a bad trade even if it won),
-  "strengths": "What the trader did well — specific to this trade (entry timing, risk management, setup selection, discipline). Be specific, mention actual prices.",
-  "weaknesses": "What could be improved — concrete and actionable. If SL/TP not set, flag it. If psychology tags suggest emotional trading, address it directly.",
-  "market_context": "What the market was doing at {date} for {asset} based on the regime data and current price context. How did macro conditions affect this trade?",
-  "risk_management": "Assessment of the risk management: position sizing relative to account, SL placement, RR ratio quality. Be direct — good RR or not?",
-  "psychology": "{f'The trader tagged: {psych_str}. ' if psych_tags else ''}Assess the psychological state during this trade and how it likely affected decision-making.",
-  "lesson": "Single most important lesson from this trade — one punchy sentence that the trader should remember.",
-  "generated_at": "{datetime.utcnow().strftime('%d %b %Y %H:%M UTC')}"\n}}"""
+GENERAL MARKET IDEAS (forex/stocks/indices/commodities):
+{chr(10).join(idea_lines) if idea_lines else "(none available)"}
+
+CRYPTO CALLS:
+{chr(10).join(crypto_lines) if crypto_lines else "(none available)"}
+{fg_line}
+
+For each asset, using its id exactly as given, provide: entryZone (a specific price range near the current price), stopLoss (a specific price/level), targets (1-2 specific price levels), timeframe ("Intraday", "Swing (3-10d)", or "Position (2-8wk)"), rationale (2-3 sentences referencing the quant score/signal and price action), and invalidation (1 sentence: what would prove this idea wrong). For crypto calls only, also provide fundingContext (1 sentence using the funding rate/Fear&Greed data if given, else a brief note that funding data was unavailable).
+
+Return ONLY valid JSON, no markdown."""
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    for attempt in range(3):
+    last_error = None
+    parsed = None
+    for attempt in range(4):
         try:
             if attempt > 0:
-                await asyncio.sleep(10 * attempt)
-            msg = client.messages.create(
-                model="claude-sonnet-5",
-                max_tokens=1200,
-                output_config={"format": {"type": "json_schema", "schema": TRADE_ANALYSIS_JSON_SCHEMA}},
-                messages=[{"role": "user", "content": prompt}]
-            )
-            text = msg.content[0].text.strip()
-            result = json.loads(text)
-            return JSONResponse(result)
+                wait = [0, 10, 20, 40][attempt]
+                print(f"  Market calls Anthropic retry {attempt}/3 after {wait}s...")
+                await asyncio.sleep(wait)
+            msg = client.messages.create(model="claude-sonnet-5", max_tokens=4000,
+                                          output_config={"format": {"type": "json_schema", "schema": MARKET_CALLS_JSON_SCHEMA}},
+                                          messages=[{"role": "user", "content": prompt}])
+            parsed = json.loads(msg.content[0].text.strip())
+            break
         except anthropic.APIStatusError as e:
-            if e.status_code == 529 and attempt < 2:
+            last_error = e
+            if e.status_code == 529:
+                print(f"  Market calls Anthropic overloaded (529) — attempt {attempt+1}/4")
                 continue
-            raise HTTPException(500, f"AI error: {e}")
+            raise HTTPException(500, f"Market calls generation error: {e}")
         except Exception as e:
-            raise HTTPException(500, f"Analysis error: {e}")
-    raise HTTPException(503, "Service overloaded, try again")
+            print(f"  Market calls generation exception: {type(e).__name__}: {e}")
+            raise HTTPException(500, f"Market calls generation error: {type(e).__name__}: {e}")
+    if parsed is None:
+        raise HTTPException(503, f"Anthropic API overloaded generating market calls: {last_error}")
 
+    ai_ideas_by_id  = {i["id"]: i for i in parsed.get("ideas", [])}
+    ai_crypto_by_id = {i["id"]: i for i in parsed.get("cryptoCalls", [])}
 
-@app.delete("/api/journal/{trade_id}")
-async def delete_trade(trade_id: str, request: Request):
-    user = await require_auth(request)
-    uid = str(user["id"])
+    def _merge(n, d, s, ai):
+        return {
+            "id": n, "asset": d.get("name", n), "symbol": d.get("sym", ""),
+            "assetClass": d.get("tab", ""),
+            "direction": "LONG" if s["total"] >= 50 else "SHORT",
+            "signal": s["signal"], "confidence": s["total"],
+            "price": d.get("price"), "change24h": d.get("change"), "change5d": d.get("change5d"),
+            "entryZone": ai.get("entryZone", ""), "stopLoss": ai.get("stopLoss", ""),
+            "targets": ai.get("targets", []), "timeframe": ai.get("timeframe", ""),
+            "rationale": ai.get("rationale", ""), "invalidation": ai.get("invalidation", ""),
+        }
+
+    result_ideas = [_merge(n, d, s, ai_ideas_by_id.get(n, {})) for n, d, s in ideas]
+    result_crypto = []
+    for n, d, s in crypto:
+        item = _merge(n, d, s, ai_crypto_by_id.get(n, {}))
+        item["fundingContext"] = ai_crypto_by_id.get(n, {}).get("fundingContext", "")
+        result_crypto.append(item)
+
+    payload = {
+        "ideas": result_ideas,
+        "cryptoCalls": result_crypto,
+        "generatedAt": datetime.utcnow().strftime('%d %b %Y %H:%M UTC'),
+        "ts": time.time(),
+        "model": "claude-sonnet-5",
+    }
+    market_calls_cache.update({"data": payload, "ts": payload["ts"]})
     try:
-        trades = await _db_load_journal(uid)
-        trades = [t for t in trades if t["id"] != trade_id]
-        await _db_save_journal(uid, trades)
+        await _db_save_market_calls(payload)
     except Exception as e:
-        raise HTTPException(503, f"Journal database unavailable: {e}")
-    return JSONResponse({"ok": True})
+        print(f"  Market calls DB save failed (non-fatal, in-memory cache still updated): {e}")
+    return payload
+
+async def _background_generate_market_calls():
+    if _market_calls_gen_lock.locked():
+        return
+    async with _market_calls_gen_lock:
+        try:
+            await _generate_market_calls()
+            print("  Background market-calls generation done")
+        except Exception as e:
+            print(f"  Background market-calls generation failed: {e}")
+
+def _mask_market_calls_for_preview(payload: dict) -> dict:
+    """Non-Pro users see the same cards (asset, signal, confidence) as a real
+    teaser, but the actionable setup details are locked — not just a blocked
+    page. Enforced server-side so the real numbers never leave the server for
+    an unpaid account, not just hidden by CSS."""
+    LOCK = "Upgrade to Pro to unlock"
+    def _mask_item(item):
+        masked = dict(item)
+        masked["entryZone"]    = LOCK
+        masked["stopLoss"]     = LOCK
+        masked["targets"]      = [LOCK]
+        masked["timeframe"]    = LOCK
+        masked["rationale"]    = LOCK
+        masked["invalidation"] = LOCK
+        if "fundingContext" in masked:
+            masked["fundingContext"] = LOCK
+        return masked
+    return {
+        **payload,
+        "ideas":       [_mask_item(i) for i in payload.get("ideas", [])],
+        "cryptoCalls": [_mask_item(i) for i in payload.get("cryptoCalls", [])],
+        "locked": True,
+    }
+
+@app.get("/api/trading-ideas")
+async def get_trading_ideas(request: Request):
+    user = await require_auth(request)
+    now = time.time()
+    if market_calls_cache["data"] is None:
+        try:
+            payload = await _db_load_market_calls()
+        except Exception as e:
+            payload = None
+            print(f"  Market calls DB load failed (non-fatal): {e}")
+        if payload:
+            market_calls_cache.update({"data": payload, "ts": payload.get("ts", 0)})
+    if market_calls_cache["data"] is None:
+        # Nothing generated yet anywhere — must generate synchronously once
+        await _generate_market_calls()
+    elif now - market_calls_cache["ts"] >= MARKET_CALLS_TTL:
+        asyncio.create_task(_background_generate_market_calls())
+
+    expires_at = user.get("expires_at")
+    is_pro_active = bool(user.get("status") == "active" and user.get("plan") == "pro" and
+                          (expires_at is None or expires_at > datetime.now(timezone.utc)))
+    data = market_calls_cache["data"]
+    if not is_pro_active:
+        data = _mask_market_calls_for_preview(data)
+    return JSONResponse(data)
+
+@app.post("/api/trading-ideas/regenerate")
+async def regenerate_trading_ideas(request: Request):
+    await require_admin(request)
+    data = await _generate_market_calls()
+    return JSONResponse(data)
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
 
@@ -1964,22 +1992,6 @@ async def backtest_data(symbol: str, interval: str = "H1", from_date: str = "", 
             print(f"  BT CoinGecko failed: {e}")
 
     return JSONResponse({"error": f"No data found for {sym}"}, status_code=404)
-
-
-
-@app.get("/api/journal/debug")
-async def journal_debug(request: Request):
-    """Show legacy file-journal storage info for debugging."""
-    await require_admin(request)
-    trades = load_journal()
-    return JSONResponse({
-        "file": str(JOURNAL_FILE),
-        "exists": JOURNAL_FILE.exists(),
-        "trade_count": len(trades),
-        "trades_sample": trades[:3],
-        "data_dir_exists": _Path("/data").exists(),
-        "tmp_journal": (_Path("/tmp") / "sc_journal.json").exists(),
-    })
 
 # ─── Optional Quantitative Analysis Tools ─────────────────────────────────────
 

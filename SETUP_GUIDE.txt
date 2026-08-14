@@ -49,11 +49,19 @@ In Railway → your server service → Variables tab, add:
 │ NOWPAYMENTS_API_KEY │ (get from nowpayments.io after signup)                 │
 │ NOWPAYMENTS_IPN_SECRET │ (get from nowpayments.io → IPN settings)           │
 │ ANTHROPIC_API_KEY   │ (already set)                                          │
+│ RESEND_API_KEY      │ (get from resend.com after signup)                     │
+│ RESEND_FROM_EMAIL   │ Saving Capital <onboarding@resend.dev>  (see note below)│
 └─────────────────────┴────────────────────────────────────────────────────────┘
 
 ⚠️  JWT_SECRET is the value generated for you above.
     KEEP IT SECRET — it signs all user login tokens.
     If you ever change it, all users will be logged out.
+
+⚠️  RESEND_FROM_EMAIL — until you verify your own sending domain in the
+    Resend dashboard, Resend only delivers from onboarding@resend.dev and
+    only TO the email address on your own Resend account. Signup emails to
+    real users won't arrive until a domain is verified — the admin
+    notification email will still work since it goes to your own address.
 
 
 ══════════════════════════════════════════════════════════
@@ -151,12 +159,12 @@ SUBSCRIPTION LOGIC SUMMARY
 Basic ($19/mo):
   ✅ Market Intelligence (all prices, news, analysis)
   ❌ Quant Tools (locked)
-  ❌ Trading Journal (locked)
+  ❌ Trading Ideas & Crypto Calls (locked)
 
 Pro ($49/mo):
   ✅ Everything in Basic
   ✅ Quant Tools (7 institutional models)
-  ✅ Trading Journal (MT5 sync, AI analysis)
+  ✅ Trading Ideas & Crypto Calls (AI-generated, refreshed regularly)
 
 Payment flow:
   1. User clicks Subscribe → chooses Basic or Pro

@@ -23,6 +23,8 @@ NOWPAYMENTS_KEY  = os.environ.get("NOWPAYMENTS_API_KEY", "")
 NOWPAYMENTS_IPN  = os.environ.get("NOWPAYMENTS_IPN_SECRET", "")
 DATABASE_URL     = os.environ.get("DATABASE_URL", "")
 APP_URL          = os.environ.get("APP_URL", "https://your-app.railway.app").rstrip("/")
+RESEND_API_KEY   = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "Saving Capital <onboarding@resend.dev>")
 
 if not JWT_SECRET:
     raise RuntimeError("JWT_SECRET env var is not set. Add it in Railway → Variables.")
@@ -30,7 +32,7 @@ if not JWT_SECRET:
 # ─── Plans ─────────────────────────────────────────────────────────────────────
 PLANS = {
     "basic": {"name": "Basic", "price_usd": 19.00, "features": ["markets"]},
-    "pro":   {"name": "Pro",   "price_usd": 49.00, "features": ["markets", "quant", "journal"]},
+    "pro":   {"name": "Pro",   "price_usd": 49.00, "features": ["markets", "quant", "ideas"]},
 }
 
 # ─── Rate limiting ─────────────────────────────────────────────────────────────
@@ -140,14 +142,16 @@ async def _init_schema():
     async with _db_pool.acquire() as conn:
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id          SERIAL PRIMARY KEY,
-                email       TEXT UNIQUE NOT NULL,
-                password    TEXT NOT NULL,
-                created_at  TIMESTAMPTZ DEFAULT NOW(),
-                last_login  TIMESTAMPTZ,
-                banned      BOOLEAN DEFAULT FALSE,
-                ban_reason  TEXT
+                id                  SERIAL PRIMARY KEY,
+                email               TEXT UNIQUE NOT NULL,
+                password            TEXT NOT NULL,
+                created_at          TIMESTAMPTZ DEFAULT NOW(),
+                last_login          TIMESTAMPTZ,
+                banned              BOOLEAN DEFAULT FALSE,
+                ban_reason          TEXT,
+                free_analysis_used  BOOLEAN NOT NULL DEFAULT FALSE
             );
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS free_analysis_used BOOLEAN NOT NULL DEFAULT FALSE;
             CREATE TABLE IF NOT EXISTS subscriptions (
                 id          SERIAL PRIMARY KEY,
                 user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -258,6 +262,56 @@ class AdminPlanBody(BaseModel):
     plan: str
     months: int = 1
 
+# ─── Email (Resend) ─────────────────────────────────────────────────────────────
+async def send_email(to: str, subject: str, html: str) -> bool:
+    """Fire-and-forget transactional email via Resend. Never raises — logs and
+    returns False on any failure so a Resend outage can never break signup."""
+    if not RESEND_API_KEY:
+        log.warning(f"[EMAIL] RESEND_API_KEY not set — skipping email to {to}")
+        return False
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            r = await s.post(
+                "https://api.resend.com/emails",
+                json={"from": RESEND_FROM_EMAIL, "to": [to], "subject": subject, "html": html},
+                headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+            )
+            if r.status >= 400:
+                log.warning(f"[EMAIL] Resend {r.status} sending to {to} failed: {await r.text()}")
+                return False
+            return True
+    except Exception as e:
+        log.warning(f"[EMAIL] send to {to} failed: {e}")
+        return False
+
+def _welcome_email_html(email: str) -> str:
+    return f"""
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#0a0a0a">
+      <h2 style="color:#16a34a">Welcome to Saving Capital</h2>
+      <p>Your account (<strong>{email}</strong>) is live. You've got full access to
+      Market Intelligence — 120+ live assets, prices, and news — plus one free
+      AI-generated market analysis to try out.</p>
+      <p>Quant Tools and AI Trading Ideas &amp; Crypto Calls are available as a preview —
+      upgrade to Pro any time for full access.</p>
+      <p><a href="{APP_URL}" style="display:inline-block;background:#16a34a;color:#fff;
+      padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+      Launch Platform</a></p>
+      <p style="color:#666;font-size:12px;margin-top:32px">Saving Capital — this is an
+      automated message, please don't reply directly to it.</p>
+    </div>
+    """.strip()
+
+def _admin_signup_email_html(email: str, user_id: int) -> str:
+    now_str = datetime.now(timezone.utc).strftime("%d %b %Y %H:%M UTC")
+    return f"""
+    <div style="font-family:monospace;max-width:480px;margin:0 auto">
+      <p><strong>New signup</strong></p>
+      <p>Email: {email}<br>
+      User ID: {user_id}<br>
+      Signed up: {now_str}</p>
+    </div>
+    """.strip()
+
 # ─── Auth endpoints ────────────────────────────────────────────────────────────
 async def signup(body: SignupBody, request: Request):
     ip = _get_ip(request)
@@ -280,19 +334,25 @@ async def signup(body: SignupBody, request: Request):
             "INSERT INTO users (email, password) VALUES ($1,$2) RETURNING id",
             email, hash_password(body.password)
         )
-        # First month free — every new account starts on an active Pro trial
-        # rather than a paywalled 'pending' state.
-        trial_started = datetime.now(timezone.utc)
-        trial_expires = trial_started + timedelta(days=31)
         await conn.execute(
-            "INSERT INTO subscriptions (user_id, plan, status, started_at, expires_at) "
-            "VALUES ($1,'pro','active',$2,$3)",
-            user_id, trial_started, trial_expires
+            "INSERT INTO subscriptions (user_id, plan, status) VALUES ($1,'basic','pending')",
+            user_id
         )
 
-    log.info(f"[SIGNUP] #{user_id} {email} — free Pro trial until {trial_expires.date()}")
+    log.info(f"[SIGNUP] #{user_id} {email}")
+
+    if ADMIN_EMAIL:
+        asyncio.create_task(send_email(
+            ADMIN_EMAIL, f"New signup: {email}",
+            _admin_signup_email_html(email, user_id)
+        ))
+    asyncio.create_task(send_email(
+        email, "Welcome to Saving Capital",
+        _welcome_email_html(email)
+    ))
+
     token = create_jwt({"user_id": user_id, "email": email})
-    return JSONResponse({"token": token, "email": email, "plan": "pro", "status": "active"})
+    return JSONResponse({"token": token, "email": email, "plan": "basic", "status": "pending"})
 
 async def login(body: LoginBody, request: Request):
     ip = _get_ip(request)
