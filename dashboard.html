@@ -123,27 +123,43 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 @keyframes hpdot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .hp-clk{font-size:10px;font-family:'DM Mono',monospace;color:rgba(167,243,208,.2)}
 
-/* HERO GRID */
-.hp-hero{position:relative;z-index:2;min-height:100svh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:62px 56px 60px;max-width:1380px;margin:0 auto;gap:40px}
+/* HERO — full-bleed video with overlaid headline + single account card */
+.hp-hero{position:relative;z-index:2;min-height:min(78vh,720px);max-width:1380px;margin:0 auto;overflow:hidden}
+.hp-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.hp-hero-scrim{position:absolute;inset:0;z-index:1;background:
+  linear-gradient(0deg, rgba(3,7,4,.94) 0%, rgba(3,7,4,.55) 38%, rgba(3,7,4,.18) 65%, rgba(3,7,4,.35) 100%),
+  linear-gradient(90deg, rgba(3,7,4,.5) 0%, transparent 35%, transparent 65%, rgba(3,7,4,.3) 100%)}
 
-/* LEFT */
-.hp-left{display:flex;flex-direction:column;gap:0}
-.hp-eyebrow{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(34,197,94,.45);font-family:'DM Mono',monospace;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hp-eyebrow-line{display:inline-block;width:22px;height:1px;background:rgba(34,197,94,.4);flex-shrink:0}
-.hp-eyebrow-dot{color:rgba(34,197,94,.3);font-size:7px}
-.hp-tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;margin-top:-8px}
-.hp-tag-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.18);border-radius:100px;font-size:10px;letter-spacing:1px;color:rgba(167,243,208,.65);font-family:'DM Mono',monospace;text-transform:uppercase;transition:all .2s}
-.hp-tag-pill:hover{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.35);color:rgba(167,243,208,.9)}
-.hp-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3.5rem,7.5vw,7.8rem);line-height:.9;letter-spacing:-3px;color:rgba(255,255,255,.9);margin-bottom:24px}
+.hp-hero-headline{position:absolute;left:56px;bottom:56px;z-index:2;max-width:520px}
+.hp-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,6vw,6.2rem);line-height:.95;letter-spacing:-3px;color:rgba(255,255,255,.95);margin-bottom:20px;overflow-wrap:break-word;word-break:break-word}
 .hp-h1-g{display:block;background:linear-gradient(140deg,#fff 0%,#a7f3d0 28%,#22c55e 52%,#86efac 72%,#f0fdf4 100%);background-size:250% 250%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:hpg 6s ease infinite;filter:drop-shadow(0 0 40px rgba(34,197,94,.2))}
 @keyframes hpg{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.hp-body{font-size:15px;color:rgba(167,243,208,.46);max-width:460px;line-height:1.85;font-weight:300;margin-bottom:32px}
-.hp-actions{display:flex;align-items:center;gap:12px;margin-bottom:38px;flex-wrap:wrap}
+.hp-body{font-size:15px;color:rgba(255,255,255,.6);max-width:440px;line-height:1.8;font-weight:300;margin-bottom:26px}
+.hp-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hp-cta{display:flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:10px;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#020602;background:linear-gradient(135deg,#16a34a,#22c55e,#4ade80);background-size:200% 200%;animation:hpg 4s ease infinite;box-shadow:0 6px 28px rgba(34,197,94,.22),0 0 0 1px rgba(34,197,94,.28);transition:transform .2s,box-shadow .2s}
 .hp-cta:hover{transform:translateY(-2px);box-shadow:0 14px 48px rgba(34,197,94,.38),0 0 0 1px rgba(34,197,94,.44)}
-.hp-cta2{padding:13px 24px;border:1px solid rgba(34,197,94,.18);border-radius:10px;background:rgba(34,197,94,.04);color:rgba(167,243,208,.58);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.hp-cta2{padding:13px 24px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
 .hp-cta2:hover{border-color:rgba(34,197,94,.4);color:var(--g);background:rgba(34,197,94,.08);transform:translateY(-1px)}
-.hp-nums{display:flex;align-items:stretch;gap:10px;margin-bottom:28px}
+
+/* Single account-style card — replaces the old scattered ticker cards */
+.hp-hero-card{position:absolute;right:56px;bottom:56px;z-index:2;width:264px;background:rgba(8,14,11,0.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.hp-hc-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.hp-hc-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 6px #4ade80;animation:hpdot 2s infinite}
+.hp-hc-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.65)}
+.hp-hc-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.hp-hc-sublabel{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:3px}
+.hp-hc-price{font-family:'DM Mono',monospace;font-size:19px;font-weight:600;color:#fff}
+.hp-hc-chg-wrap{text-align:right}
+.hp-hc-chg{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+.hp-hc-chg.up{color:#4ade80}.hp-hc-chg.dn{color:#f87171}.hp-hc-chg.flat{color:rgba(255,255,255,.4)}
+.hp-hc-spark{width:100%;height:40px;display:block;margin-bottom:14px;opacity:.85}
+.hp-hc-links{display:flex;gap:8px}
+.hp-hc-link{flex:1;text-align:center;padding:8px 0;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:10px;letter-spacing:.5px;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+.hp-hc-link:hover{border-color:rgba(34,197,94,.4);color:var(--g)}
+
+/* Stats + firms strip — relocated from the old two-column hero */
+.hp-substrip{max-width:1380px;margin:0 auto;padding:32px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;border-bottom:1px solid rgba(34,197,94,.08)}
+.hp-nums{display:flex;align-items:stretch;gap:10px}
 .hp-num{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px 18px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.1);border-radius:10px;flex:1;min-width:90px;transition:border-color .2s}
 .hp-num:hover{border-color:rgba(34,197,94,0.25)}
 .hp-num strong{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--g);letter-spacing:1px;line-height:1}
@@ -155,107 +171,15 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .hp-firm:hover{color:rgba(167,243,208,.55)}
 .hp-fd{color:rgba(34,197,94,.2);font-size:8px;margin:0 2px}
 
-/* RIGHT: holographic charts visual */
-.hp-right{position:relative;display:flex;align-items:center;justify-content:center;height:580px}
-.hp-visual-wrap{position:relative;width:min(560px,90vw);height:min(560px,90vw);display:flex;align-items:center;justify-content:center;overflow:visible}
-
-/* Ambient glow behind the panels */
-.hp-visual-glow{
-  display:block;
-  position:absolute;inset:-20%;z-index:1;
-  background:radial-gradient(ellipse 70% 70% at 55% 50%, rgba(34,197,94,0.18) 0%, rgba(34,197,94,0.06) 50%, transparent 75%);
-  filter:blur(30px);
-  animation:glow-pulse 4s ease-in-out infinite;
-}
-@keyframes glow-pulse{
-  0%,100%{opacity:.7;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.08)}
-}
-
-/* The hero image — 3D floating glass charts */
-.hp-visual-img{
-  width:530px;height:530px;object-fit:contain;
-  position:relative;z-index:2;
-  filter:
-    drop-shadow(0 0 40px rgba(34,197,94,.5))
-    drop-shadow(0 20px 60px rgba(0,0,0,.8))
-    drop-shadow(0 0 120px rgba(34,197,94,.2))
-    brightness(1.05) saturate(1.1) contrast(1.05);
-  animation:panel-float 7s ease-in-out infinite;
-  transform-origin:center center;
-}
-.hp-visual-img:is(video){
-  animation:panel-float 7s ease-in-out infinite;
-}
-@keyframes panel-float{
-  0%  {transform:translateY(0px)   translateX(0px)   rotate(-1deg) scale(1)}
-  25% {transform:translateY(-12px) translateX(4px)   rotate(0.5deg) scale(1.01)}
-  50% {transform:translateY(-20px) translateX(0px)   rotate(1deg)  scale(1.015)}
-  75% {transform:translateY(-10px) translateX(-4px)  rotate(0deg)  scale(1.005)}
-  100%{transform:translateY(0px)   translateX(0px)   rotate(-1deg) scale(1)}
-}
-/* Subtle shimmer on hover */
-.hp-visual-img:hover{
-  filter:
-    drop-shadow(0 0 60px rgba(34,197,94,.7))
-    drop-shadow(0 20px 60px rgba(0,0,0,.8))
-    drop-shadow(0 0 150px rgba(34,197,94,.35))
-    brightness(1.1) saturate(1.2) contrast(1.05);
-  transform:translateY(-14px) scale(1.02);
-  transition:filter .3s ease, transform .4s ease;
-}
-
-
-/* Hero chart animation overlay */
-.hero-chart-canvas{
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  z-index:3;pointer-events:none;border-radius:16px;
-  mix-blend-mode:screen;opacity:0.85;
-}
-/* Pills */
-.hp-pill{position:absolute;z-index:5;display:flex;align-items:center;gap:9px;background:rgba(3,8,3,.86);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(34,197,94,.15);border-radius:100px;padding:9px 15px 9px 11px;box-shadow:0 6px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(34,197,94,.06);transition:all .25s}
-.hp-pill:hover{border-color:rgba(34,197,94,.32);transform:scale(1.05)}
-.hp-pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:hpdot 2.5s infinite}
-.pdg{background:var(--g);box-shadow:0 0 8px var(--g)}
-.pdy{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.5);animation-delay:.5s}
-.pdb{background:#60a5fa;box-shadow:0 0 8px rgba(96,165,250,.4);animation-delay:1s}
-.pdp{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.4);animation-delay:1.5s}
-.hp-plab{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,.3);font-family:'DM Mono',monospace;margin-bottom:2px}
-.hp-pval{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--t1);line-height:1}
-/* New ticker design */
-.hp-ticker{position:absolute;z-index:10;display:flex;flex-direction:column;gap:0;background:rgba(2,8,2,0.75);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(34,197,94,0.15);border-radius:12px;overflow:hidden;min-width:130px}
-.hp-ticker-l{left:-20px;top:50%;transform:translateY(-50%);animation:tickfloat 5s ease-in-out infinite}
-.hp-ticker-r{right:-20px;top:50%;transform:translateY(-50%);animation:tickfloat 5s ease-in-out infinite 2.5s}
-@keyframes tickfloat{0%,100%{transform:translateY(-50%) translateY(0px)}50%{transform:translateY(-50%) translateY(-8px)}}
-.hp-tick-item{padding:12px 14px}
-.hp-tick-div{height:1px;background:rgba(34,197,94,0.1);margin:0 10px}
-.hp-tick-top{display:flex;align-items:center;gap:5px;margin-bottom:5px}
-.hp-tick-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:hpdot 2.5s infinite}
-.hp-tick-sym{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(167,243,208,.4);font-family:'DM Mono',monospace}
-.hp-tick-price{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:rgba(255,255,255,.9);line-height:1;margin-bottom:3px}
-.hp-tick-chg{font-family:'DM Mono',monospace;font-size:9px;font-weight:500}
-.hp-tick-chg.up{color:#4ade80}.hp-tick-chg.dn{color:#f87171}.hp-tick-chg.flat{color:var(--t4)}
-.hp-live-badge{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;background:rgba(2,8,2,0.8);border:1px solid rgba(34,197,94,0.2);border-radius:20px;padding:4px 12px;font-size:8px;letter-spacing:2px;color:rgba(34,197,94,0.7);font-family:'DM Mono',monospace;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.hp-live-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:hpdot 1.5s infinite}
-.hp-pchg{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;white-space:nowrap}
-.hp-ptl{top:5%;left:-2%;animation:hpf1 5s ease-in-out infinite}
-.hp-ptr{top:5%;right:-2%;animation:hpf2 6.5s 1s ease-in-out infinite}
-.hp-pbl{bottom:12%;left:-2%;animation:hpf3 5.5s .5s ease-in-out infinite}
-.hp-pbr{bottom:10%;right:-2%;animation:hpf4 7s 2s ease-in-out infinite}
-@keyframes hpf1{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-@keyframes hpf2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-10px) rotate(-1deg)}}
-@keyframes hpf3{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-@keyframes hpf4{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-9px) rotate(.5deg)}}
-
 /* STRIP */
-.hp-strip{position:fixed;bottom:0;left:0;width:100%;z-index:300;display:flex;align-items:center;flex-wrap:nowrap;background:rgba(2,5,2,.97);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);border-top:1px solid rgba(34,197,94,.12);padding:12px 40px;gap:0}
+.hp-strip{position:fixed;bottom:0;left:0;width:100%;z-index:300;display:flex;align-items:center;flex-wrap:nowrap;background:rgba(2,5,2,.97);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);border-top:1px solid rgba(34,197,94,.12);padding:12px 40px calc(12px + env(safe-area-inset-bottom)) 40px;gap:0}
 .hp-sf{display:flex;align-items:center;gap:12px;flex:1;min-width:200px;padding:4px 0}
 .hp-sf b{display:block;font-size:12px;font-weight:600;color:var(--t1);font-family:'Syne',sans-serif;margin-bottom:2px}
 .hp-sf span{font-size:10px;color:rgba(167,243,208,.26);font-family:'DM Mono',monospace}
 .hp-sdiv{width:1px;background:rgba(34,197,94,.07);margin:0 28px;height:40px;flex-shrink:0}
 
 /* Responsive */
-@media(max-width:980px){.hp-hero{grid-template-columns:1fr;padding:80px 24px 40px;min-height:auto}.hp-right{display:none}.hp-h1{font-size:clamp(2.8rem,8vw,5.5rem)}.hp-strip{padding:16px 24px;gap:14px}.hp-sdiv{display:none}}
+@media(max-width:980px){.hp-hero{min-height:auto;padding:80px 24px 40px;overflow:visible}.hp-hero-video,.hp-hero-scrim,.hp-hero-card{display:none}.hp-hero-headline{position:static;max-width:100%}.hp-h1{font-size:clamp(2.8rem,8vw,5.5rem)}.hp-substrip{padding:24px}.hp-strip{padding:16px 24px calc(16px + env(safe-area-inset-bottom)) 24px;gap:14px}.hp-sdiv{display:none}}
 @media(max-width:560px){.hp-nav{padding:0 16px}.hp-np{font-size:8px;padding:5px 9px}.hp-clk,.hp-live{display:none}.hp-nums{flex-wrap:wrap;gap:8px}}
 
 
@@ -460,6 +384,11 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 .ti-card{background:rgba(7,13,7,0.85);border:1px solid var(--br);border-radius:14px;padding:20px 22px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .ti-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px}
+.ti-card{cursor:pointer;transition:border-color .2s}
+.ti-card:hover{border-color:var(--br2)}
+.ti-star{background:transparent;border:none;color:var(--t4);font-size:16px;cursor:pointer;line-height:1;padding:2px;transition:color .2s}
+.ti-star:hover{color:var(--g)}
+.ti-star.saved{color:var(--g)}
 .ti-asset{font-size:14px;font-weight:600;color:var(--t1)}
 .ti-sym{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;font-weight:400}
 .ti-price{font-size:12px;color:var(--t3);font-family:'DM Mono',monospace;margin-top:3px}
@@ -473,6 +402,30 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .ti-invalidation{font-size:11px;color:var(--t4);line-height:1.6;border-top:1px solid var(--br);padding-top:10px}
 .ti-invalidation b{color:var(--t3)}
 .ti-empty{grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--t4);font-size:13px}
+.ti-unsave{width:100%;margin-top:12px;padding:8px 0;background:transparent;border:1px solid rgba(248,113,113,.25);color:#f87171;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;cursor:pointer;transition:all .2s}
+.ti-unsave:hover{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.45)}
+.ti-track-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.ti-tstat{background:rgba(7,13,7,0.85);padding:16px 14px;text-align:center}
+.ti-tstat b{display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--g);letter-spacing:1px;margin-bottom:4px}
+.ti-tstat span{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace}
+.ti-track-list{display:flex;flex-direction:column;gap:1px;background:var(--br);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.ti-trow{display:grid;grid-template-columns:1.5fr 1fr 1.5fr 1fr;gap:10px;align-items:center;background:rgba(7,13,7,0.85);padding:12px 16px;font-size:12px}
+.ti-trow-asset{color:var(--t1);font-weight:600}
+.ti-trow-dir{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px}
+.ti-trow-outcome{font-size:11px;color:var(--t2)}
+.ti-trow-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--t4);text-align:right}
+@media(max-width:768px){.ti-track-stats{grid-template-columns:repeat(2,1fr)}.ti-trow{grid-template-columns:1fr 1fr;font-size:11px}}
+.ti-movers-sub{font-size:12px;color:var(--t3);line-height:1.6;margin-bottom:18px;max-width:640px}
+.ti-movers-list{display:flex;flex-direction:column;gap:10px}
+.ti-mrow{background:rgba(7,13,7,0.85);border:1px solid var(--br);border-radius:12px;padding:14px 18px}
+.ti-mrow-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ti-mrow-asset{font-size:14px;font-weight:600;color:var(--t1)}
+.ti-mrow-chg{font-family:'DM Mono',monospace;font-size:16px;font-weight:700}
+.ti-mrow-stats{display:flex;gap:16px;font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:8px}
+.ti-mrow-note{font-size:12px;color:var(--t3);line-height:1.6;border-top:1px solid var(--br);padding-top:8px}
+.ti-detail-news{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--br);padding-top:14px}
+.ti-detail-news a{font-size:12px;color:var(--t2);text-decoration:none;line-height:1.5;transition:color .2s}
+.ti-detail-news a:hover{color:var(--g)}
 @media(max-width:768px){
   .ti-topbar{padding:0 12px}
   .ti-panel{padding:74px 12px 60px}
@@ -483,6 +436,12 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 /* ── Mobile: Tablet (≤768px) ──────────────────────────────── */
 @media(max-width:768px){
+  /* Inputs — iOS Safari auto-zooms the page on focus for any input/select/
+     textarea under 16px, which is jarring and hard to undo with pinch-zoom
+     disabled. Force 16px on every form field on mobile regardless of
+     whatever a more specific class sets elsewhere. */
+  input,select,textarea{font-size:16px !important}
+
   /* Nav */
   nav{padding:0 12px;height:50px}
   .nav-pages{gap:1px;padding:2px}
@@ -496,16 +455,18 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .nt-item{font-size:11px;padding:0 14px}
 
   /* Home page */
-  .hp-hero{grid-template-columns:1fr;padding:70px 16px 30px;min-height:auto}
-  .hp-right{display:none}
+  .hp-hero{min-height:auto;padding:70px 16px 30px;overflow:visible}
+  .hp-hero-video,.hp-hero-scrim,.hp-hero-card{display:none}
+  .hp-hero-headline{position:static;max-width:100%}
   .hp-h1{font-size:clamp(2.8rem,11vw,4.5rem);letter-spacing:-1px}
   .hp-body{font-size:13px;margin-bottom:20px}
   .hp-actions{flex-direction:column;gap:10px}
   .hp-cta,.hp-cta2{width:100%;justify-content:center;font-size:13px;padding:12px 20px}
+  .hp-substrip{padding:20px 16px;flex-direction:column;align-items:flex-start;gap:16px}
   .hp-nums{flex-wrap:wrap;gap:8px}
   .hp-num strong{font-size:1.4rem}
   .hp-ndiv{display:none}
-  .hp-strip{padding:14px 16px;gap:10px}
+  .hp-strip{padding:14px 16px calc(14px + env(safe-area-inset-bottom)) 16px;gap:10px}
   .hp-sf b{font-size:11px}
   .hp-sf span{font-size:9px}
   .hp-sdiv{display:none}
@@ -646,8 +607,8 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 /* RTL support for Hebrew */
 [dir="rtl"] .hp-hero{direction:rtl}
-[dir="rtl"] .hp-left{text-align:right}
-[dir="rtl"] .hp-eyebrow{flex-direction:row-reverse}
+[dir="rtl"] .hp-hero-headline{text-align:right;left:auto;right:56px}
+[dir="rtl"] .hp-hero-card{right:auto;left:56px}
 [dir="rtl"] .hp-actions{flex-direction:row-reverse}
 [dir="rtl"] .hp-nums{flex-direction:row-reverse}
 [dir="rtl"] .pbar{direction:rtl}
@@ -1025,14 +986,12 @@ img, video, canvas, svg { max-width: 100%; }
 
   /* ── HERO TITLE — this is the main overflow culprit ── */
   .hp-hero {
-    grid-template-columns: 1fr;
     padding: 62px 16px 28px;
     min-height: auto;
-    gap: 16px;
-    overflow: hidden;
+    overflow: visible;
   }
-  .hp-right { display: none; }
-  .hp-left { width: 100%; max-width: 100%; overflow: hidden; }
+  .hp-hero-video, .hp-hero-scrim, .hp-hero-card { display: none; }
+  .hp-hero-headline { position: static; width: 100%; max-width: 100%; overflow: hidden; }
   .hp-h1 span { display: inline; }
   .hp-h1 {
     font-size: clamp(2rem, 9.5vw, 3.2rem) !important;
@@ -1043,7 +1002,6 @@ img, video, canvas, svg { max-width: 100%; }
     hyphens: none;
   }
   .hp-h1-g { display: inline; }
-  .hp-eyebrow { font-size: 8px; letter-spacing: 2px; margin-bottom: 14px; flex-wrap: wrap; gap: 6px; }
   .hp-body { font-size: 13px; max-width: 100%; margin-bottom: 20px; line-height: 1.6; }
 
   /* ── CTA BUTTONS ── */
@@ -1073,10 +1031,6 @@ img, video, canvas, svg { max-width: 100%; }
   .hp-sf { flex: none; width: calc(50% - 5px); min-width: 0; }
   .hp-sf b { font-size: 11px; }
   .hp-sf span { font-size: 9px; }
-
-  /* ── TAG ROW ── */
-  .hp-tag-row { flex-wrap: wrap; gap: 6px; }
-  .hp-tag-pill { font-size: 9px; padding: 4px 10px; }
 
   /* ── FIRMS ── */
   .hp-firms { font-size: 10px; flex-wrap: wrap; gap: 6px; }
@@ -1271,27 +1225,19 @@ img, video, canvas, svg { max-width: 100%; }
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- HERO — full-bleed video, headline + single account-style card overlaid -->
 <div class="hp-hero">
+  <video class="hp-hero-video" id="hp-hero-img" autoplay loop muted playsinline>
+    <source src="/img/hero_v2.mp4" type="video/mp4">
+  </video>
+  <div class="hp-hero-scrim"></div>
 
-  <!-- LEFT: text -->
-  <div class="hp-left">
-    <div class="hp-eyebrow">
-      <span class="hp-eyebrow-line"></span>
-      <span>Saving Capital</span>
-      <span class="hp-eyebrow-dot">|</span>
-      <span>Wall Street Intelligence</span>
-      <span class="hp-eyebrow-dot">|</span>
-      <span>Quant Powered</span>
-    </div>
-
+  <div class="hp-hero-headline">
     <h1 class="hp-h1">
       <span data-i18n="heroLine1">The Future of</span><br>
-      <span class="hp-h1-g">Market<br>Intelligence</span>
+      <span class="hp-h1-g">Market Intelligence</span>
     </h1>
-
     <p class="hp-body">120+ assets. Institutional-grade quantitative analysis powered by Bridgewater, RenTech and Citadel frameworks — running in real time.</p>
-
     <div class="hp-actions">
       <button class="hp-cta" onclick="scUser ? goPage('markets') : scShowAuth()">
         Launch Platform
@@ -1299,88 +1245,50 @@ img, video, canvas, svg { max-width: 100%; }
       </button>
       <button class="hp-cta2" onclick="scUser ? goPage('ideas-page') : (scAuthTab('signup'),scShowAuth())" data-i18n="ideasBtn">Trading Ideas</button>
     </div>
-
-    <div class="hp-tag-row">
-      <div class="hp-tag-pill">Next-Gen Trading</div>
-      <div class="hp-tag-pill">Quant Algorithmic</div>
-      <div class="hp-tag-pill">Real-Time Edge</div>
-    </div>
-
-    <div class="hp-nums">
-      <div class="hp-num"><strong>120+</strong><span>Assets<br>Tracked</span></div>
-      <div class="hp-num"><strong>5</strong><span>Wall Street<br>Frameworks</span></div>
-      <div class="hp-num"><strong>&lt;1s</strong><span>Price<br>Update</span></div>
-      <div class="hp-num"><strong>24/7</strong><span>Live<br>Coverage</span></div>
-    </div>
-
-    <div class="hp-firms">
-      <span class="hp-fl">Powered by</span>
-      <span class="hp-firm">Bridgewater</span>
-      <span class="hp-fd">·</span>
-      <span class="hp-firm">RenTech</span>
-      <span class="hp-fd">·</span>
-      <span class="hp-firm">Citadel</span>
-    </div>
   </div>
 
-  <!-- RIGHT: hero video -->
-  <div class="hp-right">
-    <div class="hp-visual-wrap" id="hp-visual">
-      <div class="hp-visual-glow"></div>
-      <video class="hp-visual-img" id="hp-hero-img" autoplay loop muted playsinline>
-        <source src="/img/hero_v2.mp4" type="video/mp4">
-      </video>
-
-      <!-- Price ticker — left side -->
-      <div class="hp-ticker hp-ticker-l">
-        <div class="hp-tick-item">
-          <div class="hp-tick-top">
-            <span class="hp-tick-dot" style="background:#f59e0b"></span>
-            <span class="hp-tick-sym">XAU/USD</span>
-          </div>
-          <div class="hp-tick-price" id="hp-gold">$—</div>
-          <div class="hp-tick-chg" id="hp-gold-c">—</div>
-        </div>
-        <div class="hp-tick-div"></div>
-        <div class="hp-tick-item">
-          <div class="hp-tick-top">
-            <span class="hp-tick-dot" style="background:#6366f1"></span>
-            <span class="hp-tick-sym">EUR/USD</span>
-          </div>
-          <div class="hp-tick-price" id="hp-eur">—</div>
-          <div class="hp-tick-chg" id="hp-eur-c">—</div>
-        </div>
+  <div class="hp-hero-card">
+    <div class="hp-hc-top">
+      <span class="hp-hc-dot"></span>
+      <span class="hp-hc-label">GOLD · XAU/USD</span>
+    </div>
+    <div class="hp-hc-row">
+      <div>
+        <div class="hp-hc-sublabel">Price</div>
+        <div class="hp-hc-price" id="hp-gold">$—</div>
       </div>
-
-      <!-- Price ticker — right side -->
-      <div class="hp-ticker hp-ticker-r">
-        <div class="hp-tick-item">
-          <div class="hp-tick-top">
-            <span class="hp-tick-dot" style="background:#f97316"></span>
-            <span class="hp-tick-sym">BTC/USD</span>
-          </div>
-          <div class="hp-tick-price" id="hp-btc">$—</div>
-          <div class="hp-tick-chg" id="hp-btc-c">—</div>
-        </div>
-        <div class="hp-tick-div"></div>
-        <div class="hp-tick-item">
-          <div class="hp-tick-top">
-            <span class="hp-tick-dot" style="background:#22c55e"></span>
-            <span class="hp-tick-sym">S&amp;P 500</span>
-          </div>
-          <div class="hp-tick-price" id="hp-spx">$—</div>
-          <div class="hp-tick-chg" id="hp-spx-c">—</div>
-        </div>
+      <div class="hp-hc-chg-wrap">
+        <div class="hp-hc-sublabel">24h</div>
+        <div class="hp-hc-chg" id="hp-gold-c">—</div>
       </div>
-
-      <!-- Live badge -->
-      <div class="hp-live-badge">
-        <span class="hp-live-dot"></span>LIVE
-      </div>
-
+    </div>
+    <svg class="hp-hc-spark" viewBox="0 0 240 46" preserveAspectRatio="none">
+      <polyline id="hp-hc-spark-line" points="0,34 24,30 48,32 72,24 96,27 120,18 144,21 168,12 192,15 216,8 240,10"
+                fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="hp-hc-links">
+      <div class="hp-hc-link" onclick="scUser ? goPage('markets') : scShowAuth()">Market Intel</div>
+      <div class="hp-hc-link" onclick="scUser ? goPage('quant') : scShowAuth()">Quant Tools</div>
     </div>
   </div>
+</div>
 
+<!-- Stats + firms strip, relocated from the old hero for a cleaner full-bleed banner -->
+<div class="hp-substrip">
+  <div class="hp-nums">
+    <div class="hp-num"><strong>120+</strong><span>Assets<br>Tracked</span></div>
+    <div class="hp-num"><strong>5</strong><span>Wall Street<br>Frameworks</span></div>
+    <div class="hp-num"><strong>&lt;1s</strong><span>Price<br>Update</span></div>
+    <div class="hp-num"><strong>24/7</strong><span>Live<br>Coverage</span></div>
+  </div>
+  <div class="hp-firms">
+    <span class="hp-fl">Powered by</span>
+    <span class="hp-firm">Bridgewater</span>
+    <span class="hp-fd">·</span>
+    <span class="hp-firm">RenTech</span>
+    <span class="hp-fd">·</span>
+    <span class="hp-firm">Citadel</span>
+  </div>
 </div>
 
 <!-- BOTTOM STRIP -->
@@ -1601,40 +1509,20 @@ function setLang(lang){
 // ── HOME: Mouse parallax + Clock + Live prices ───────────────
 (function(){
 
-  // Subtle mouse parallax on hero image
-  let mx = innerWidth/2, my = innerHeight/2;
-  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
-  function raf(){
-    const img = document.getElementById('hp-hero-img');
-    if(img){
-      const rx = (mx/innerWidth - .5) * 12;
-      const ry = (my/innerHeight - .5) * 8;
-      img.style.transform = `perspective(1200px) rotateY(${-2+rx*.3}deg) rotateX(${2-ry*.2}deg) translateY(${Math.sin(Date.now()*.001)*14}px)`;
-    }
-    requestAnimationFrame(raf);
-  }
-  raf();
-
   // Set saved timezone on load
   const tzSel = document.getElementById('tz-sel');
   if(tzSel) tzSel.value = _tz;
   tick();
 
-  // Live prices
+  // Live price on the hero card (Gold/XAU)
   function updatePills(){
     if(typeof prices==='undefined'){ setTimeout(updatePills,2500); return; }
     const fp = p=>{ if(!p) return'—'; if(p>10000) return'$'+p.toLocaleString('en',{maximumFractionDigits:0}); if(p>100) return'$'+p.toFixed(2); return p.toFixed(4); };
     const fc = c=>{ if(c==null) return'—'; return(c>=0?'+':'')+c.toFixed(2)+'%'; };
     const cc = c=> c==null?'flat':c>0?'up':'dn';
-    const set = (pId,cId,val,chg)=>{
-      const ep=document.getElementById(pId), ec=document.getElementById(cId);
-      if(ep) ep.textContent=fp(val);
-      if(ec){ ec.textContent=fc(chg); ec.className='hp-tick-chg '+cc(chg); }
-    };
-    set('hp-btc','hp-btc-c', prices.bitcoin?.price, prices.bitcoin?.change);
-    set('hp-gold','hp-gold-c', prices.XAUUSD?.price, prices.XAUUSD?.change);
-    set('hp-eur','hp-eur-c', prices.EURUSD?.price, prices.EURUSD?.change);
-    set('hp-spx','hp-spx-c', prices.SPX?.price, prices.SPX?.change);
+    const ep=document.getElementById('hp-gold'), ec=document.getElementById('hp-gold-c');
+    if(ep) ep.textContent=fp(prices.XAUUSD?.price);
+    if(ec){ ec.textContent=fc(prices.XAUUSD?.change); ec.className='hp-hc-chg '+cc(prices.XAUUSD?.change); }
     setTimeout(updatePills, 4000);
   }
   setTimeout(updatePills, 3000);
@@ -1705,31 +1593,73 @@ function scGaugeSvg(confidence, color, size){
   </svg>`;
 }
 
-function buildIdeaCard(item){
+// Keyed by item.id (== the underlying asset key, reused across generation
+// cycles) so click handlers can look up the full object without embedding
+// JSON in onclick attributes. Always holds whatever was rendered most
+// recently for that id.
+let tiItemsById = {};
+
+function tiFmtPrice(n){
+  if(n==null) return '🔒';
+  if(n>10000) return '$'+n.toLocaleString('en',{maximumFractionDigits:0});
+  if(n>100) return '$'+n.toFixed(2);
+  return '$'+n.toFixed(4);
+}
+function tiFmtEntry(item){
+  if(item.entryLow==null || item.entryHigh==null) return '🔒';
+  if(item.entryLow===item.entryHigh) return tiFmtPrice(item.entryLow);
+  return tiFmtPrice(item.entryLow)+' – '+tiFmtPrice(item.entryHigh);
+}
+
+async function tiSaveFavorite(itemId, ev){
+  ev.stopPropagation();
+  const item = tiItemsById[itemId];
+  if(!item) return;
+  const btn = ev.currentTarget;
+  try{
+    const r = await fetch('/api/trading-ideas/favorites', {
+      method:'POST', headers: scAuthHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({item})
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    btn.textContent = '★';
+    btn.classList.add('saved');
+    setTimeout(()=>{ btn.textContent='☆'; btn.classList.remove('saved'); }, 1500);
+  }catch(e){
+    console.warn('[SC] save favorite failed:', e.message);
+    btn.textContent = '!';
+    setTimeout(()=>{ btn.textContent='☆'; }, 1500);
+  }
+}
+
+function buildIdeaCard(item, extraFooterHtml){
+  tiItemsById[item.id] = item;
   const {sig, sigCls, sigColor} = scSignalFromScore(item.confidence||0);
-  const targets = (item.targets||[]).map(tg=>`<span class="ti-target">${tg}</span>`).join('');
+  const targets = (item.targets&&item.targets.length) ? item.targets.map(tg=>`<span class="ti-target">${tiFmtPrice(tg)}</span>`).join('') : '🔒';
   const chg = item.change24h!=null ? `${item.change24h>=0?'+':''}${item.change24h.toFixed(2)}%` : '—';
   const fundingRow = item.fundingContext ? `<div class="ti-funding">${item.fundingContext}</div>` : '';
-  return `<div class="ti-card">
+  return `<div class="ti-card" onclick="tiShowDetail('${item.id}')">
     <div class="ti-card-head">
       <div>
         <div class="ti-asset">${item.asset||item.id} <span class="ti-sym">${item.symbol||''}</span></div>
         <div class="ti-price">${item.price!=null?('$'+item.price.toLocaleString('en',{maximumFractionDigits:4})):'—'} <span class="${item.change24h>=0?'up':'dn'}">${chg}</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
+        <button class="ti-star" onclick="tiSaveFavorite('${item.id}', event)" title="Save idea">☆</button>
         <span class="qs-signal ${sigCls}">${sig}</span>
         <div style="position:relative;width:44px;height:44px">${scGaugeSvg(item.confidence||0, sigColor, 44)}</div>
       </div>
     </div>
     <div class="ti-levels">
-      <div class="ti-level"><span>Entry</span><b>${item.entryZone||'—'}</b></div>
-      <div class="ti-level"><span>Stop</span><b>${item.stopLoss||'—'}</b></div>
-      <div class="ti-level"><span>Targets</span><b>${targets||'—'}</b></div>
+      <div class="ti-level"><span>Entry</span><b>${tiFmtEntry(item)}</b></div>
+      <div class="ti-level"><span>Stop</span><b>${tiFmtPrice(item.stopLoss)}</b></div>
+      <div class="ti-level"><span>Targets</span><b>${targets}</b></div>
       <div class="ti-level"><span>Timeframe</span><b>${item.timeframe||'—'}</b></div>
     </div>
     <div class="ti-rationale">${item.rationale||''}</div>
     ${fundingRow}
     <div class="ti-invalidation"><b>Invalidation:</b> ${item.invalidation||'—'}</div>
+    ${extraFooterHtml||''}
   </div>`;
 }
 
@@ -1745,12 +1675,160 @@ function tiRenderGrids(){
 
 function tiSetTab(tab){
   tiActiveTab = tab;
-  document.getElementById('ti-tab-ideas')?.classList.toggle('active', tab==='ideas');
-  document.getElementById('ti-tab-crypto')?.classList.toggle('active', tab==='crypto');
-  const p1 = document.getElementById('ti-panel-ideas');
-  const p2 = document.getElementById('ti-panel-crypto');
-  if(p1) p1.style.display = tab==='ideas' ? '' : 'none';
-  if(p2) p2.style.display = tab==='crypto' ? '' : 'none';
+  ['ideas','crypto','saved','track','movers'].forEach(t=>{
+    document.getElementById('ti-tab-'+t)?.classList.toggle('active', tab===t);
+    const p = document.getElementById('ti-panel-'+t);
+    if(p) p.style.display = tab===t ? '' : 'none';
+  });
+  if(tab==='saved' && !tiSavedLoaded) tiLoadFavorites();
+  if(tab==='track' && !tiTrackLoaded) tiLoadTrackRecord();
+  if(tab==='movers' && !tiMoversLoaded) tiLoadMovers();
+}
+
+let tiSavedLoaded = false, tiTrackLoaded = false, tiMoversLoaded = false;
+
+async function tiLoadFavorites(){
+  const grid = document.getElementById('ti-saved-grid');
+  if(grid) grid.innerHTML = '<div class="ti-empty">Loading…</div>';
+  try{
+    const r = await fetch('/api/trading-ideas/favorites', {headers: scAuthHeaders()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    tiSavedLoaded = true;
+    const items = data.items || [];
+    if(grid) grid.innerHTML = items.length
+      ? items.map(item=>buildIdeaCard(item,
+          `<button class="ti-unsave" onclick="tiDeleteFavorite(${item._favoriteId}, event)" title="Remove">✕ Remove Saved Idea</button>`
+        )).join('')
+      : '<div class="ti-empty">No saved ideas yet — click the ☆ on any card to save it.</div>';
+  }catch(e){
+    console.warn('[SC] tiLoadFavorites failed:', e.message);
+    if(grid) grid.innerHTML = '<div class="ti-empty">Failed to load saved ideas.</div>';
+  }
+}
+
+async function tiDeleteFavorite(favoriteId, ev){
+  if(ev) ev.stopPropagation();
+  try{
+    await fetch('/api/trading-ideas/favorites/'+favoriteId, {method:'DELETE', headers: scAuthHeaders()});
+  }catch(e){ console.warn('[SC] tiDeleteFavorite failed:', e.message); }
+  tiSavedLoaded = false;
+  tiLoadFavorites();
+}
+
+async function tiLoadTrackRecord(){
+  const statsEl = document.getElementById('ti-track-stats');
+  const listEl  = document.getElementById('ti-track-list');
+  if(statsEl) statsEl.innerHTML = '<div class="ti-empty">Loading…</div>';
+  try{
+    const r = await fetch('/api/trading-ideas/track-record', {headers: scAuthHeaders()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    tiTrackLoaded = true;
+    if(statsEl) statsEl.innerHTML = `
+      <div class="ti-tstat"><b>${data.winRate!=null?data.winRate+'%':'—'}</b><span>Win Rate</span></div>
+      <div class="ti-tstat"><b>${data.totalResolved}</b><span>Resolved Calls</span></div>
+      <div class="ti-tstat"><b>${data.targetHits}</b><span>Target Hit</span></div>
+      <div class="ti-tstat"><b>${data.stopHits}</b><span>Stop Hit</span></div>
+      <div class="ti-tstat"><b>${data.totalPending}</b><span>Still Open</span></div>`;
+    const outcomeLabel = {target_hit:'✅ Target Hit', stop_hit:'❌ Stop Hit', expired:'⌛ Expired'};
+    const calls = data.recentCalls || [];
+    if(listEl) listEl.innerHTML = calls.length
+      ? calls.map(c=>`
+        <div class="ti-trow">
+          <div class="ti-trow-asset">${c.asset||c.id||'—'}</div>
+          <div class="ti-trow-dir ${c.direction==='LONG'?'up':'dn'}">${c.direction||'—'}</div>
+          <div class="ti-trow-outcome">${outcomeLabel[c.outcome]||c.outcome||'—'}</div>
+          <div class="ti-trow-date">${c.generatedAt||'—'}</div>
+        </div>`).join('')
+      : '<div class="ti-empty">No resolved calls yet — check back after the next few generation cycles.</div>';
+  }catch(e){
+    console.warn('[SC] tiLoadTrackRecord failed:', e.message);
+    if(statsEl) statsEl.innerHTML = '<div class="ti-empty">Failed to load track record.</div>';
+  }
+}
+
+async function tiLoadMovers(){
+  const listEl = document.getElementById('ti-movers-list');
+  if(listEl) listEl.innerHTML = '<div class="ti-empty">Loading…</div>';
+  try{
+    const r = await fetch('/api/trading-ideas/movers', {headers: scAuthHeaders()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    tiMoversLoaded = true;
+    if(data.locked){
+      if(listEl) listEl.innerHTML = `<div class="ti-empty">${data.count} coin${data.count===1?'':'s'} currently flagged — upgrade to Pro to see them.</div>`;
+      return;
+    }
+    const items = data.items || [];
+    if(listEl) listEl.innerHTML = items.length
+      ? items.map(m=>`
+        <div class="ti-mrow">
+          <div class="ti-mrow-top">
+            <div class="ti-mrow-asset">${m.name} <span class="ti-sym">${m.symbol}</span></div>
+            <div class="ti-mrow-chg up">+${m.change24h.toFixed(1)}%</div>
+          </div>
+          <div class="ti-mrow-stats">
+            <span>${m.price!=null?('$'+m.price.toLocaleString('en',{maximumFractionDigits:6})):'—'}</span>
+            <span>Mkt Cap $${(m.marketCap/1e6).toFixed(0)}M</span>
+            <span>Vol $${(m.volume24h/1e6).toFixed(1)}M</span>
+          </div>
+          <div class="ti-mrow-note">${m.shortNote}</div>
+        </div>`).join('')
+      : '<div class="ti-empty">No coins currently meet the threshold — check back soon.</div>';
+  }catch(e){
+    console.warn('[SC] tiLoadMovers failed:', e.message);
+    if(listEl) listEl.innerHTML = '<div class="ti-empty">Failed to load top movers.</div>';
+  }
+}
+
+function tiShowDetail(itemId){
+  const item = tiItemsById[itemId];
+  if(!item) return;
+  const {sig, sigCls, sigColor} = scSignalFromScore(item.confidence||0);
+  const targets = (item.targets&&item.targets.length) ? item.targets.map(tg=>tiFmtPrice(tg)).join(', ') : '🔒 Upgrade to Pro to unlock';
+
+  // Best-effort related news — the feed has no per-asset tagging server-side,
+  // so this is a simple title match, not a guaranteed relevance match.
+  const needle = (item.asset||item.symbol||'').toLowerCase();
+  const related = (typeof _ntItems!=='undefined' && _ntItems ? _ntItems : [])
+    .filter(n => needle && n.title && n.title.toLowerCase().includes(needle))
+    .slice(0, 4);
+  const newsHtml = related.length
+    ? `<div class="ti-detail-news">${related.map(n=>`<a href="${n.link}" target="_blank" rel="noopener">${n.title}</a>`).join('')}</div>`
+    : '';
+
+  const body = document.getElementById('ti-detail-modal-body');
+  if(!body) return;
+  body.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div class="qs-modal-title">${item.asset||item.id} <span class="ti-sym">${item.symbol||''}</span></div>
+        <div class="qs-modal-sub">${item.price!=null?('$'+item.price.toLocaleString('en',{maximumFractionDigits:4})):'—'} · ${item.timeframe||'—'}</div>
+      </div>
+      <button onclick="document.getElementById('ti-detail-modal-bg').classList.remove('open')" style="background:none;border:1px solid var(--br);color:var(--t4);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px">✕</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+      <div style="position:relative;width:72px;height:72px">${scGaugeSvg(item.confidence||0, sigColor, 72)}</div>
+      <div>
+        <span class="qs-signal ${sigCls}">${sig}</span>
+        <div style="font-size:11px;color:var(--t4);margin-top:6px">Confidence ${item.confidence!=null?item.confidence:'—'}/100</div>
+      </div>
+    </div>
+    <div class="ti-levels" style="margin-bottom:16px">
+      <div class="ti-level"><span>Entry</span><b>${tiFmtEntry(item)}</b></div>
+      <div class="ti-level"><span>Stop</span><b>${tiFmtPrice(item.stopLoss)}</b></div>
+      <div class="ti-level"><span>Targets</span><b>${targets}</b></div>
+      <div class="ti-level"><span>Direction</span><b>${item.direction||'—'}</b></div>
+    </div>
+    <div class="ti-label" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin-bottom:6px">Rationale</div>
+    <div class="ti-rationale" style="margin-bottom:14px">${item.rationale||'—'}</div>
+    <div class="ti-label" style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--g);margin-bottom:6px">Invalidation</div>
+    <div class="ti-rationale" style="margin-bottom:14px">${item.invalidation||'—'}</div>
+    ${item.fundingContext ? `<div class="ti-funding" style="margin-bottom:14px">${item.fundingContext}</div>` : ''}
+    ${newsHtml}
+  `;
+  document.getElementById('ti-detail-modal-bg')?.classList.add('open');
 }
 
 async function loadTradingIdeas(){
@@ -4793,6 +4871,9 @@ setLang(localStorage.getItem('sc_lang')||'en');
     <div class="ti-tabs">
       <button class="ti-tab active" onclick="tiSetTab('ideas')" id="ti-tab-ideas">Ideas &amp; Setups</button>
       <button class="ti-tab" onclick="tiSetTab('crypto')" id="ti-tab-crypto">Crypto Calls</button>
+      <button class="ti-tab" onclick="tiSetTab('saved')" id="ti-tab-saved">Saved</button>
+      <button class="ti-tab" onclick="tiSetTab('track')" id="ti-tab-track">Track Record</button>
+      <button class="ti-tab" onclick="tiSetTab('movers')" id="ti-tab-movers">Top Movers</button>
     </div>
     <div class="ti-meta" id="ti-generated-at">Updated —</div>
   </div>
@@ -4802,9 +4883,25 @@ setLang(localStorage.getItem('sc_lang')||'en');
   <div class="ti-panel" id="ti-panel-crypto" style="display:none">
     <div class="ti-grid" id="ti-crypto-grid"></div>
   </div>
+  <div class="ti-panel" id="ti-panel-saved" style="display:none">
+    <div class="ti-grid" id="ti-saved-grid"></div>
+  </div>
+  <div class="ti-panel" id="ti-panel-track" style="display:none">
+    <div class="ti-track-stats" id="ti-track-stats"></div>
+    <div class="ti-track-list" id="ti-track-list"></div>
+  </div>
+  <div class="ti-panel" id="ti-panel-movers" style="display:none">
+    <div class="ti-movers-sub">Coins up ≥50% in 24h with a market cap over $30M — flagged as potential short-reversion candidates once momentum stalls.</div>
+    <div class="ti-movers-list" id="ti-movers-list"></div>
+  </div>
 </div>
 </div>
 <!-- END TRADING IDEAS & CRYPTO CALLS PAGE -->
+
+<!-- Idea Detail Modal -->
+<div class="qs-modal-bg" id="ti-detail-modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="qs-modal" id="ti-detail-modal-body"></div>
+</div>
 
 
 <!-- Quant Score Info Modal -->

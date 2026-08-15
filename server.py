@@ -58,6 +58,31 @@ async def startup_event():
                 print("[STARTUP] ai_market_calls table ready")
             except Exception as e2:
                 print(f"[STARTUP] ai_market_calls table: {e2}")
+            # Ensure saved-ideas and market-calls-history tables exist
+            try:
+                import auth_payments as _ap3
+                db = await _ap3.get_db()
+                await db.execute("""
+                    CREATE TABLE IF NOT EXISTS saved_ideas (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                        item JSONB NOT NULL,
+                        asset_class TEXT,
+                        saved_at TIMESTAMPTZ DEFAULT NOW()
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_saved_ideas_user ON saved_ideas(user_id);
+                    CREATE TABLE IF NOT EXISTS market_calls_history (
+                        id SERIAL PRIMARY KEY,
+                        item_id TEXT, asset TEXT, asset_class TEXT, direction TEXT,
+                        entry_low NUMERIC, entry_high NUMERIC, stop_loss NUMERIC, targets NUMERIC[],
+                        generated_at TIMESTAMPTZ, outcome TEXT DEFAULT 'pending',
+                        outcome_at TIMESTAMPTZ, outcome_price NUMERIC
+                    );
+                    CREATE INDEX IF NOT EXISTS idx_history_outcome ON market_calls_history(outcome);
+                """)
+                print("[STARTUP] saved_ideas / market_calls_history tables ready")
+            except Exception as e3:
+                print(f"[STARTUP] saved_ideas/market_calls_history tables: {e3}")
             # Warm the in-memory market-calls cache from Postgres — never
             # calls Claude at boot, just loads whatever was last generated.
             asyncio.create_task(_warm_market_calls_cache())
@@ -1609,14 +1634,15 @@ MARKET_CALLS_ITEM_SCHEMA = {
     "type": "object",
     "properties": {
         "id":           {"type": "string"},
-        "entryZone":    {"type": "string"},
-        "stopLoss":     {"type": "string"},
-        "targets":      {"type": "array", "items": {"type": "string"}},
+        "entryLow":     {"type": "number"},
+        "entryHigh":    {"type": "number"},
+        "stopLoss":     {"type": "number"},
+        "targets":      {"type": "array", "items": {"type": "number"}},
         "timeframe":    {"type": "string"},
         "rationale":    {"type": "string"},
         "invalidation": {"type": "string"},
     },
-    "required": ["id","entryZone","stopLoss","targets","timeframe","rationale","invalidation"],
+    "required": ["id","entryLow","entryHigh","stopLoss","targets","timeframe","rationale","invalidation"],
     "additionalProperties": False,
 }
 MARKET_CALLS_CRYPTO_ITEM_SCHEMA = {
@@ -1653,7 +1679,74 @@ def _select_call_candidates(prices: dict, n_ideas: int, n_crypto: int):
                     key=lambda x: abs(x[2]["total"] - 50), reverse=True)[:n_ideas]
     return ideas, crypto
 
+async def _archive_and_evaluate_history():
+    """Archive the outgoing market-calls batch into history, then resolve any
+    pending history rows against current prices. Called at the start of each
+    generation cycle — piggybacks on the existing TTL cadence, no separate
+    scheduler needed. Never raises — history tracking is a nice-to-have, not
+    something that should ever block generating fresh ideas."""
+    try:
+        import auth_payments as _ap
+        db = await _ap.get_db()
+        outgoing = market_calls_cache.get("data")
+        if outgoing:
+            gen_ts = outgoing.get("ts")
+            gen_at = datetime.fromtimestamp(gen_ts, tz=timezone.utc) if gen_ts else datetime.now(timezone.utc)
+            rows = []
+            for item in (outgoing.get("ideas") or []) + (outgoing.get("cryptoCalls") or []):
+                if item.get("entryLow") is None:
+                    continue  # skip masked/incomplete snapshots — shouldn't occur for the real cache
+                rows.append((
+                    item.get("id"), item.get("asset"), item.get("assetClass"), item.get("direction"),
+                    item.get("entryLow"), item.get("entryHigh"), item.get("stopLoss"),
+                    item.get("targets") or [], gen_at
+                ))
+            if rows:
+                await db.executemany(
+                    "INSERT INTO market_calls_history "
+                    "(item_id, asset, asset_class, direction, entry_low, entry_high, stop_loss, targets, generated_at) "
+                    "VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+                    rows
+                )
+    except Exception as e:
+        print(f"  Market calls history archive failed (non-fatal): {e}")
+    await _evaluate_pending_history()
+
+async def _evaluate_pending_history():
+    try:
+        import auth_payments as _ap
+        db = await _ap.get_db()
+        pending = await db.fetch("SELECT * FROM market_calls_history WHERE outcome='pending'")
+        prices = price_cache["data"] or {}
+        cutoff = datetime.now(timezone.utc) - timedelta(days=21)
+        for row in pending:
+            d = prices.get(row["item_id"])
+            current_price = d.get("price") if d else None
+            outcome = None
+            if current_price is not None and row["stop_loss"] is not None:
+                targets = row["targets"] or []
+                if row["direction"] == "LONG":
+                    if any(current_price >= float(t) for t in targets):
+                        outcome = "target_hit"
+                    elif current_price <= float(row["stop_loss"]):
+                        outcome = "stop_hit"
+                else:  # SHORT
+                    if any(current_price <= float(t) for t in targets):
+                        outcome = "target_hit"
+                    elif current_price >= float(row["stop_loss"]):
+                        outcome = "stop_hit"
+            if outcome is None and row["generated_at"] and row["generated_at"] < cutoff:
+                outcome = "expired"
+            if outcome:
+                await db.execute(
+                    "UPDATE market_calls_history SET outcome=$1, outcome_at=NOW(), outcome_price=$2 WHERE id=$3",
+                    outcome, current_price, row["id"]
+                )
+    except Exception as e:
+        print(f"  Market calls history evaluation failed (non-fatal): {e}")
+
 async def _generate_market_calls() -> dict:
+    await _archive_and_evaluate_history()
     if not ANTHROPIC_API_KEY:
         raise HTTPException(500, "ANTHROPIC_API_KEY not configured")
     if not price_cache["data"]:
@@ -1694,7 +1787,7 @@ CRYPTO CALLS:
 {chr(10).join(crypto_lines) if crypto_lines else "(none available)"}
 {fg_line}
 
-For each asset, using its id exactly as given, provide: entryZone (a specific price range near the current price), stopLoss (a specific price/level), targets (1-2 specific price levels), timeframe ("Intraday", "Swing (3-10d)", or "Position (2-8wk)"), rationale (2-3 sentences referencing the quant score/signal and price action), and invalidation (1 sentence: what would prove this idea wrong). For crypto calls only, also provide fundingContext (1 sentence using the funding rate/Fear&Greed data if given, else a brief note that funding data was unavailable).
+For each asset, using its id exactly as given, provide: entryLow and entryHigh (numeric price levels bracketing a specific entry zone near the current price — use the same value for both if you mean a single exact price), stopLoss (a numeric price level), targets (an array of 1-2 numeric price levels), timeframe ("Intraday", "Swing (3-10d)", or "Position (2-8wk)"), rationale (2-3 sentences referencing the quant score/signal and price action), and invalidation (1 sentence: what would prove this idea wrong). All price levels must be plain numbers (no currency symbols, commas, or ranges as strings) in the same unit as the price given above. For crypto calls only, also provide fundingContext (1 sentence using the funding rate/Fear&Greed data if given, else a brief note that funding data was unavailable).
 
 Return ONLY valid JSON, no markdown."""
 
@@ -1734,7 +1827,7 @@ Return ONLY valid JSON, no markdown."""
             "direction": "LONG" if s["total"] >= 50 else "SHORT",
             "signal": s["signal"], "confidence": s["total"],
             "price": d.get("price"), "change24h": d.get("change"), "change5d": d.get("change5d"),
-            "entryZone": ai.get("entryZone", ""), "stopLoss": ai.get("stopLoss", ""),
+            "entryLow": ai.get("entryLow"), "entryHigh": ai.get("entryHigh"), "stopLoss": ai.get("stopLoss"),
             "targets": ai.get("targets", []), "timeframe": ai.get("timeframe", ""),
             "rationale": ai.get("rationale", ""), "invalidation": ai.get("invalidation", ""),
         }
@@ -1778,9 +1871,10 @@ def _mask_market_calls_for_preview(payload: dict) -> dict:
     LOCK = "Upgrade to Pro to unlock"
     def _mask_item(item):
         masked = dict(item)
-        masked["entryZone"]    = LOCK
-        masked["stopLoss"]     = LOCK
-        masked["targets"]      = [LOCK]
+        masked["entryLow"]     = None
+        masked["entryHigh"]    = None
+        masked["stopLoss"]     = None
+        masked["targets"]      = []
         masked["timeframe"]    = LOCK
         masked["rationale"]    = LOCK
         masked["invalidation"] = LOCK
@@ -1793,6 +1887,11 @@ def _mask_market_calls_for_preview(payload: dict) -> dict:
         "cryptoCalls": [_mask_item(i) for i in payload.get("cryptoCalls", [])],
         "locked": True,
     }
+
+def _is_pro_active(user: dict) -> bool:
+    expires_at = user.get("expires_at")
+    return bool(user.get("status") == "active" and user.get("plan") == "pro" and
+                (expires_at is None or expires_at > datetime.now(timezone.utc)))
 
 @app.get("/api/trading-ideas")
 async def get_trading_ideas(request: Request):
@@ -1812,11 +1911,8 @@ async def get_trading_ideas(request: Request):
     elif now - market_calls_cache["ts"] >= MARKET_CALLS_TTL:
         asyncio.create_task(_background_generate_market_calls())
 
-    expires_at = user.get("expires_at")
-    is_pro_active = bool(user.get("status") == "active" and user.get("plan") == "pro" and
-                          (expires_at is None or expires_at > datetime.now(timezone.utc)))
     data = market_calls_cache["data"]
-    if not is_pro_active:
+    if not _is_pro_active(user):
         data = _mask_market_calls_for_preview(data)
     return JSONResponse(data)
 
@@ -1825,6 +1921,196 @@ async def regenerate_trading_ideas(request: Request):
     await require_admin(request)
     data = await _generate_market_calls()
     return JSONResponse(data)
+
+# ─── Saved ideas (favorites) ───────────────────────────────────────────────────
+# Snapshot-based: ideas regenerate every IDEAS_TTL_HOURS and the old batch is
+# discarded, so "saving" one means storing a full copy of the item as it was
+# at save time, not a reference to an id that will soon point at something
+# else (or nothing).
+class SaveFavoriteBody(BaseModel):
+    item: dict
+
+@app.post("/api/trading-ideas/favorites")
+async def save_favorite_idea(body: SaveFavoriteBody, request: Request):
+    user = await require_auth(request)
+    if user.get("is_owner"):
+        raise HTTPException(400, "Favorites aren't available for the owner account")
+    if not _is_pro_active(user):
+        raise HTTPException(403, "Favorites are a Pro feature — subscribe to save ideas.")
+    db = await get_db()
+    await db.execute(
+        "INSERT INTO saved_ideas (user_id, item, asset_class) VALUES ($1, $2, $3)",
+        user["id"], json.dumps(body.item), body.item.get("assetClass", "")
+    )
+    return JSONResponse({"ok": True})
+
+@app.get("/api/trading-ideas/favorites")
+async def list_favorite_ideas(request: Request):
+    user = await require_auth(request)
+    if user.get("is_owner"):
+        return JSONResponse({"items": []})
+    db = await get_db()
+    rows = await db.fetch(
+        "SELECT id, item, saved_at FROM saved_ideas WHERE user_id=$1 ORDER BY saved_at DESC",
+        user["id"]
+    )
+    items = []
+    for r in rows:
+        item = json.loads(r["item"])
+        item["_favoriteId"] = r["id"]
+        item["_savedAt"] = r["saved_at"].strftime('%d %b %Y %H:%M UTC') if r["saved_at"] else None
+        items.append(item)
+    return JSONResponse({"items": items})
+
+@app.delete("/api/trading-ideas/favorites/{favorite_id}")
+async def delete_favorite_idea(favorite_id: int, request: Request):
+    user = await require_auth(request)
+    db = await get_db()
+    await db.execute("DELETE FROM saved_ideas WHERE id=$1 AND user_id=$2", favorite_id, user["id"])
+    return JSONResponse({"ok": True})
+
+# ─── Track record ───────────────────────────────────────────────────────────
+def _mask_history_calls(calls: list) -> list:
+    masked = []
+    for c in calls:
+        m = dict(c)
+        m["entryLow"] = m["entryHigh"] = m["stopLoss"] = None
+        m["targets"] = []
+        masked.append(m)
+    return masked
+
+@app.get("/api/trading-ideas/track-record")
+async def get_track_record(request: Request):
+    user = await require_auth(request)
+    db = await get_db()
+    stats_rows = await db.fetch("SELECT outcome, COUNT(*) as n FROM market_calls_history GROUP BY outcome")
+    stats = {r["outcome"]: r["n"] for r in stats_rows}
+    target_hits = stats.get("target_hit", 0)
+    stop_hits = stats.get("stop_hit", 0)
+    total_resolved = target_hits + stop_hits
+    win_rate = round(target_hits / total_resolved * 100, 1) if total_resolved else None
+
+    recent_rows = await db.fetch(
+        "SELECT id, item_id, asset, asset_class, direction, entry_low, entry_high, stop_loss, targets, "
+        "generated_at, outcome, outcome_at, outcome_price FROM market_calls_history "
+        "WHERE outcome != 'pending' ORDER BY outcome_at DESC LIMIT 20"
+    )
+    recent_calls = [{
+        "id": r["id"], "asset": r["asset"], "assetClass": r["asset_class"], "direction": r["direction"],
+        "entryLow": float(r["entry_low"]) if r["entry_low"] is not None else None,
+        "entryHigh": float(r["entry_high"]) if r["entry_high"] is not None else None,
+        "stopLoss": float(r["stop_loss"]) if r["stop_loss"] is not None else None,
+        "targets": [float(t) for t in (r["targets"] or [])],
+        "generatedAt": r["generated_at"].strftime('%d %b %Y') if r["generated_at"] else None,
+        "outcome": r["outcome"],
+        "outcomeAt": r["outcome_at"].strftime('%d %b %Y') if r["outcome_at"] else None,
+        "outcomePrice": float(r["outcome_price"]) if r["outcome_price"] is not None else None,
+    } for r in recent_rows]
+
+    if not _is_pro_active(user):
+        recent_calls = _mask_history_calls(recent_calls)
+
+    return JSONResponse({
+        "winRate": win_rate, "totalResolved": total_resolved, "totalPending": stats.get("pending", 0),
+        "targetHits": target_hits, "stopHits": stop_hits, "recentCalls": recent_calls,
+    })
+
+# ─── Crypto Top Movers ──────────────────────────────────────────────────────
+# Broad market screener (not limited to the ~30 coins tracked elsewhere in the
+# app) that flags coins with an outsized 24h gain — these tend to be prone to
+# mean-reversion, hence framed as short candidates. Deliberately templated
+# rather than AI-generated per coin: the list size isn't bounded (could be
+# dozens during a broad market pump), so a per-item Claude call would have
+# unpredictable cost — the deterministic "big-move" framing above already
+# reuses this exact convention elsewhere in the file.
+MOVERS_MIN_MARKET_CAP = int(os.environ.get("MOVERS_MIN_MARKET_CAP", "30000000"))
+MOVERS_GAIN_THRESHOLD = float(os.environ.get("MOVERS_GAIN_THRESHOLD", "50"))
+MOVERS_TTL = 900  # 15 min — broader/more expensive query than the tracked-asset price feed
+
+movers_cache: dict = {"data": None, "ts": 0.0}
+_movers_fetch_lock = asyncio.Lock()
+
+def _movers_short_note(gain: float) -> str:
+    if gain >= 300:
+        return f"Extreme parabolic move (+{gain:.0f}% in 24h) — historically the most prone to sharp mean-reversion. High-risk short candidate once momentum shows signs of stalling."
+    elif gain >= 100:
+        return f"Massive 24h spike (+{gain:.0f}%) — often unsustainable without continued volume. Watch for exhaustion signals before considering a short."
+    else:
+        return f"Strong short-term pump (+{gain:.0f}% in 24h) — elevated risk of pullback. Worth monitoring for a reversal setup."
+
+async def fetch_crypto_movers() -> list:
+    """Pull the highest-volume coins from CoinGecko (2 pages = up to 500,
+    covering essentially all coins with real liquidity), then filter down to
+    ones with a big 24h gain and a real market cap. Sorting the *fetch* by
+    volume (not gain) is deliberate — CoinGecko's /coins/markets endpoint
+    doesn't support ordering by price_change_percentage, and volume-desc
+    already surfaces virtually every coin with a liquid, tradeable pump."""
+    headers = {"x-cg-demo-api-key": COINGECKO_API_KEY} if COINGECKO_API_KEY else {}
+    all_coins = []
+    try:
+        async with aiohttp.ClientSession() as s:
+            for page in (1, 2):
+                async with s.get(
+                    "https://api.coingecko.com/api/v3/coins/markets",
+                    params={
+                        "vs_currency": "usd",
+                        "order": "volume_desc",
+                        "per_page": "250",
+                        "page": str(page),
+                        "price_change_percentage": "24h",
+                    },
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as r:
+                    if r.status == 200:
+                        all_coins.extend(await r.json())
+                    else:
+                        print(f"  Movers fetch page {page}: HTTP {r.status}")
+    except Exception as e:
+        print(f"  Movers fetch failed: {e}")
+        return movers_cache.get("data") or []
+
+    result = []
+    for c in all_coins:
+        gain = c.get("price_change_percentage_24h")
+        cap = c.get("market_cap")
+        if gain is None or cap is None:
+            continue
+        if cap < MOVERS_MIN_MARKET_CAP or gain < MOVERS_GAIN_THRESHOLD:
+            continue
+        result.append({
+            "id": c.get("id"), "symbol": (c.get("symbol") or "").upper(), "name": c.get("name"),
+            "price": c.get("current_price"), "change24h": round(gain, 2),
+            "marketCap": cap, "volume24h": c.get("total_volume"),
+            "shortNote": _movers_short_note(gain),
+        })
+    result.sort(key=lambda x: x["change24h"], reverse=True)
+    movers_cache.update({"data": result, "ts": time.time()})
+    print(f"  Movers: {len(result)} coins flagged (>= {MOVERS_GAIN_THRESHOLD}% 24h, >= ${MOVERS_MIN_MARKET_CAP:,} cap)")
+    return result
+
+async def _background_fetch_movers():
+    if _movers_fetch_lock.locked():
+        return
+    async with _movers_fetch_lock:
+        try:
+            await fetch_crypto_movers()
+        except Exception as e:
+            print(f"  Background movers fetch failed: {e}")
+
+@app.get("/api/trading-ideas/movers")
+async def get_crypto_movers(request: Request):
+    user = await require_auth(request)
+    now = time.time()
+    if movers_cache["data"] is None:
+        await fetch_crypto_movers()
+    elif now - movers_cache["ts"] >= MOVERS_TTL:
+        asyncio.create_task(_background_fetch_movers())
+
+    items = movers_cache["data"] or []
+    if not _is_pro_active(user):
+        return JSONResponse({"locked": True, "count": len(items), "items": []})
+    return JSONResponse({"locked": False, "count": len(items), "items": items})
 
 # ─── Backtesting Data API ─────────────────────────────────────────────────────
 
