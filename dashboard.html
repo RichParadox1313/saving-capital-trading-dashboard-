@@ -123,39 +123,39 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 @keyframes hpdot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .hp-clk{font-size:10px;font-family:'DM Mono',monospace;color:rgba(167,243,208,.2)}
 
-/* HERO — full-bleed video with overlaid headline + single account card */
-.hp-hero{position:relative;z-index:2;min-height:min(78vh,720px);max-width:1380px;margin:0 auto;overflow:hidden}
+/* HERO — video contained to its own top band, text fully separate below */
+.hp-hero{position:relative;z-index:2;max-width:1380px;margin:0 auto}
+.hp-hero-video-panel{position:relative;height:min(46vh,420px);min-height:280px;overflow:hidden;border-bottom:1px solid rgba(34,197,94,.12)}
 .hp-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
-.hp-hero-scrim{position:absolute;inset:0;z-index:1;background:
-  linear-gradient(0deg, rgba(3,7,4,.94) 0%, rgba(3,7,4,.55) 38%, rgba(3,7,4,.18) 65%, rgba(3,7,4,.35) 100%),
-  linear-gradient(90deg, rgba(3,7,4,.5) 0%, transparent 35%, transparent 65%, rgba(3,7,4,.3) 100%)}
+.hp-hero-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg, rgba(3,7,4,.92) 0%, transparent 30%)}
+.hp-hero-live-badge{position:absolute;left:24px;top:20px;z-index:2;display:flex;align-items:center;gap:6px;background:rgba(4,10,6,0.8);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(74,222,128,.85)}
 
-.hp-hero-headline{position:absolute;left:56px;bottom:56px;z-index:2;max-width:520px}
-.hp-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,6vw,6.2rem);line-height:.95;letter-spacing:-3px;color:rgba(255,255,255,.95);margin-bottom:20px;overflow-wrap:break-word;word-break:break-word}
-.hp-h1-g{display:block;background:linear-gradient(140deg,#fff 0%,#a7f3d0 28%,#22c55e 52%,#86efac 72%,#f0fdf4 100%);background-size:250% 250%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:hpg 6s ease infinite;filter:drop-shadow(0 0 40px rgba(34,197,94,.2))}
+.hp-hero-text{padding:44px 56px 52px;max-width:720px}
+.hp-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,3.6vw,3.6rem);line-height:1.1;letter-spacing:-1px;color:rgba(255,255,255,.95);margin-bottom:18px;overflow-wrap:break-word;word-break:break-word}
+.hp-h1-g{background:linear-gradient(140deg,#fff 0%,#a7f3d0 28%,#22c55e 52%,#86efac 72%,#f0fdf4 100%);background-size:250% 250%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:hpg 6s ease infinite}
 @keyframes hpg{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.hp-body{font-size:15px;color:rgba(255,255,255,.6);max-width:440px;line-height:1.8;font-weight:300;margin-bottom:26px}
+.hp-body{font-size:15px;color:rgba(255,255,255,.6);max-width:480px;line-height:1.8;font-weight:300;margin-bottom:26px}
 .hp-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hp-cta{display:flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:10px;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#020602;background:linear-gradient(135deg,#16a34a,#22c55e,#4ade80);background-size:200% 200%;animation:hpg 4s ease infinite;box-shadow:0 6px 28px rgba(34,197,94,.22),0 0 0 1px rgba(34,197,94,.28);transition:transform .2s,box-shadow .2s}
 .hp-cta:hover{transform:translateY(-2px);box-shadow:0 14px 48px rgba(34,197,94,.38),0 0 0 1px rgba(34,197,94,.44)}
 .hp-cta2{padding:13px 24px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
 .hp-cta2:hover{border-color:rgba(34,197,94,.4);color:var(--g);background:rgba(34,197,94,.08);transform:translateY(-1px)}
 
-/* Single account-style card — replaces the old scattered ticker cards */
-.hp-hero-card{position:absolute;right:56px;bottom:56px;z-index:2;width:264px;background:rgba(8,14,11,0.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
-.hp-hc-top{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.hp-hc-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 6px #4ade80;animation:hpdot 2s infinite}
-.hp-hc-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.65)}
-.hp-hc-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
-.hp-hc-sublabel{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:3px}
-.hp-hc-price{font-family:'DM Mono',monospace;font-size:19px;font-weight:600;color:#fff}
+/* Single account-style card, cycles through Gold/BTC/ETH/NASDAQ — stays inside the video panel */
+.hp-hero-card{position:absolute;right:36px;bottom:24px;z-index:2;width:250px;background:rgba(8,14,11,0.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.hp-hc-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.hp-hc-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 6px #4ade80;animation:hpdot 2s infinite;flex-shrink:0}
+.hp-hc-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,.65);transition:opacity .3s}
+.hp-hc-row{display:flex;align-items:flex-end;justify-content:space-between}
+.hp-hc-sublabel{font-size:9px;color:rgba(255,255,255,.4);margin-bottom:3px}
+.hp-hc-price{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:#fff;transition:opacity .3s}
 .hp-hc-chg-wrap{text-align:right}
-.hp-hc-chg{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+.hp-hc-chg{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;transition:opacity .3s}
 .hp-hc-chg.up{color:#4ade80}.hp-hc-chg.dn{color:#f87171}.hp-hc-chg.flat{color:rgba(255,255,255,.4)}
-.hp-hc-spark{width:100%;height:40px;display:block;margin-bottom:14px;opacity:.85}
-.hp-hc-links{display:flex;gap:8px}
-.hp-hc-link{flex:1;text-align:center;padding:8px 0;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:10px;letter-spacing:.5px;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+.hp-hc-links{display:flex;gap:8px;margin-top:12px}
+.hp-hc-link{flex:1;text-align:center;padding:7px 0;border:1px solid rgba(255,255,255,0.1);border-radius:7px;font-size:9px;letter-spacing:.5px;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
 .hp-hc-link:hover{border-color:rgba(34,197,94,.4);color:var(--g)}
+.hp-hc-fade{opacity:0}
 
 /* Stats + firms strip — relocated from the old two-column hero */
 .hp-substrip{max-width:1380px;margin:0 auto;padding:32px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;border-bottom:1px solid rgba(34,197,94,.08)}
@@ -179,7 +179,7 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:56px;display:flex;align-
 .hp-sdiv{width:1px;background:rgba(34,197,94,.07);margin:0 28px;height:40px;flex-shrink:0}
 
 /* Responsive */
-@media(max-width:980px){.hp-hero{min-height:auto;padding:80px 24px 40px;overflow:visible}.hp-hero-video,.hp-hero-scrim,.hp-hero-card{display:none}.hp-hero-headline{position:static;max-width:100%}.hp-h1{font-size:clamp(2.8rem,8vw,5.5rem)}.hp-substrip{padding:24px}.hp-strip{padding:16px 24px calc(16px + env(safe-area-inset-bottom)) 24px;gap:14px}.hp-sdiv{display:none}}
+@media(max-width:980px){.hp-hero-video-panel{display:none}.hp-hero-text{padding:104px 24px 40px;max-width:100%}.hp-substrip{padding:24px}.hp-strip{padding:16px 24px calc(16px + env(safe-area-inset-bottom)) 24px;gap:14px}.hp-sdiv{display:none}}
 @media(max-width:560px){.hp-nav{padding:0 16px}.hp-np{font-size:8px;padding:5px 9px}.hp-clk,.hp-live{display:none}.hp-nums{flex-wrap:wrap;gap:8px}}
 
 
@@ -455,10 +455,9 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
   .nt-item{font-size:11px;padding:0 14px}
 
   /* Home page */
-  .hp-hero{min-height:auto;padding:70px 16px 30px;overflow:visible}
-  .hp-hero-video,.hp-hero-scrim,.hp-hero-card{display:none}
-  .hp-hero-headline{position:static;max-width:100%}
-  .hp-h1{font-size:clamp(2.8rem,11vw,4.5rem);letter-spacing:-1px}
+  .hp-hero-video-panel{display:none}
+  .hp-hero-text{padding:96px 16px 30px;max-width:100%}
+  .hp-h1{font-size:clamp(2rem,8vw,3rem);letter-spacing:-1px}
   .hp-body{font-size:13px;margin-bottom:20px}
   .hp-actions{flex-direction:column;gap:10px}
   .hp-cta,.hp-cta2{width:100%;justify-content:center;font-size:13px;padding:12px 20px}
@@ -607,8 +606,9 @@ footer{text-align:center;padding:24px;border-top:1px solid var(--br);font-size:1
 
 /* RTL support for Hebrew */
 [dir="rtl"] .hp-hero{direction:rtl}
-[dir="rtl"] .hp-hero-headline{text-align:right;left:auto;right:56px}
-[dir="rtl"] .hp-hero-card{right:auto;left:56px}
+[dir="rtl"] .hp-hero-text{text-align:right}
+[dir="rtl"] .hp-hero-card{right:auto;left:36px}
+[dir="rtl"] .hp-hero-live-badge{left:auto;right:24px}
 [dir="rtl"] .hp-actions{flex-direction:row-reverse}
 [dir="rtl"] .hp-nums{flex-direction:row-reverse}
 [dir="rtl"] .pbar{direction:rtl}
@@ -984,24 +984,17 @@ img, video, canvas, svg { max-width: 100%; }
   /* Hide Sign In text, show only Get Started */
   .hp-nav-r .sc-nav-btn:not(.subscribe) { display: none; }
 
-  /* ── HERO TITLE — this is the main overflow culprit ── */
-  .hp-hero {
-    padding: 62px 16px 28px;
-    min-height: auto;
-    overflow: visible;
-  }
-  .hp-hero-video, .hp-hero-scrim, .hp-hero-card { display: none; }
-  .hp-hero-headline { position: static; width: 100%; max-width: 100%; overflow: hidden; }
-  .hp-h1 span { display: inline; }
+  /* ── HERO TITLE ── */
+  .hp-hero-video-panel { display: none; }
+  .hp-hero-text { padding: 62px 16px 28px; width: 100%; max-width: 100%; overflow: hidden; }
   .hp-h1 {
-    font-size: clamp(2rem, 9.5vw, 3.2rem) !important;
-    line-height: 0.95;
+    font-size: clamp(1.8rem, 9.5vw, 3rem) !important;
+    line-height: 1.05;
     letter-spacing: -0.5px;
     word-break: normal;
     overflow-wrap: normal;
     hyphens: none;
   }
-  .hp-h1-g { display: inline; }
   .hp-body { font-size: 13px; max-width: 100%; margin-bottom: 20px; line-height: 1.6; }
 
   /* ── CTA BUTTONS ── */
@@ -1225,16 +1218,43 @@ img, video, canvas, svg { max-width: 100%; }
   </div>
 </nav>
 
-<!-- HERO — full-bleed video, headline + single account-style card overlaid -->
+<!-- HERO — video contained to its own top band, text fully separate below -->
 <div class="hp-hero">
-  <video class="hp-hero-video" id="hp-hero-img" autoplay loop muted playsinline>
-    <source src="/img/hero_v2.mp4" type="video/mp4">
-  </video>
-  <div class="hp-hero-scrim"></div>
+  <div class="hp-hero-video-panel">
+    <video class="hp-hero-video" id="hp-hero-img" autoplay loop muted playsinline>
+      <source src="/img/hero_v2.mp4" type="video/mp4">
+    </video>
+    <div class="hp-hero-scrim"></div>
 
-  <div class="hp-hero-headline">
+    <div class="hp-hero-live-badge">
+      <span class="hp-hc-dot"></span>LIVE MARKET DATA
+    </div>
+
+    <div class="hp-hero-card">
+      <div class="hp-hc-top">
+        <span class="hp-hc-dot" id="hp-card-dot"></span>
+        <span class="hp-hc-label" id="hp-card-label">GOLD · XAU/USD</span>
+      </div>
+      <div class="hp-hc-row">
+        <div>
+          <div class="hp-hc-sublabel">Price</div>
+          <div class="hp-hc-price" id="hp-card-price">$—</div>
+        </div>
+        <div class="hp-hc-chg-wrap">
+          <div class="hp-hc-sublabel">24h</div>
+          <div class="hp-hc-chg" id="hp-card-chg">—</div>
+        </div>
+      </div>
+      <div class="hp-hc-links">
+        <div class="hp-hc-link" onclick="scUser ? goPage('markets') : scShowAuth()">Market Intel</div>
+        <div class="hp-hc-link" onclick="scUser ? goPage('quant') : scShowAuth()">Quant Tools</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hp-hero-text">
     <h1 class="hp-h1">
-      <span data-i18n="heroLine1">The Future of</span><br>
+      <span data-i18n="heroLine1">The Future of</span>
       <span class="hp-h1-g">Market Intelligence</span>
     </h1>
     <p class="hp-body">120+ assets. Institutional-grade quantitative analysis powered by Bridgewater, RenTech and Citadel frameworks — running in real time.</p>
@@ -1244,31 +1264,6 @@ img, video, canvas, svg { max-width: 100%; }
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <button class="hp-cta2" onclick="scUser ? goPage('ideas-page') : (scAuthTab('signup'),scShowAuth())" data-i18n="ideasBtn">Trading Ideas</button>
-    </div>
-  </div>
-
-  <div class="hp-hero-card">
-    <div class="hp-hc-top">
-      <span class="hp-hc-dot"></span>
-      <span class="hp-hc-label">GOLD · XAU/USD</span>
-    </div>
-    <div class="hp-hc-row">
-      <div>
-        <div class="hp-hc-sublabel">Price</div>
-        <div class="hp-hc-price" id="hp-gold">$—</div>
-      </div>
-      <div class="hp-hc-chg-wrap">
-        <div class="hp-hc-sublabel">24h</div>
-        <div class="hp-hc-chg" id="hp-gold-c">—</div>
-      </div>
-    </div>
-    <svg class="hp-hc-spark" viewBox="0 0 240 46" preserveAspectRatio="none">
-      <polyline id="hp-hc-spark-line" points="0,34 24,30 48,32 72,24 96,27 120,18 144,21 168,12 192,15 216,8 240,10"
-                fill="none" stroke="#4ade80" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div class="hp-hc-links">
-      <div class="hp-hc-link" onclick="scUser ? goPage('markets') : scShowAuth()">Market Intel</div>
-      <div class="hp-hc-link" onclick="scUser ? goPage('quant') : scShowAuth()">Quant Tools</div>
     </div>
   </div>
 </div>
@@ -1514,18 +1509,45 @@ function setLang(lang){
   if(tzSel) tzSel.value = _tz;
   tick();
 
-  // Live price on the hero card (Gold/XAU)
-  function updatePills(){
-    if(typeof prices==='undefined'){ setTimeout(updatePills,2500); return; }
-    const fp = p=>{ if(!p) return'—'; if(p>10000) return'$'+p.toLocaleString('en',{maximumFractionDigits:0}); if(p>100) return'$'+p.toFixed(2); return p.toFixed(4); };
+  // Hero card cycles through a few headline assets every few seconds
+  const HERO_CARD_ASSETS = [
+    {id:'XAUUSD',   label:'GOLD · XAU/USD',    dot:'#f59e0b'},
+    {id:'bitcoin',  label:'BITCOIN · BTC/USD', dot:'#f97316'},
+    {id:'ethereum', label:'ETHEREUM · ETH/USD',dot:'#6366f1'},
+    {id:'NASDAQ',   label:'NASDAQ · US TECH',  dot:'#22c55e'},
+  ];
+  let _heroCardIdx = 0;
+
+  function updateHeroCard(){
+    if(typeof prices==='undefined'){ setTimeout(updateHeroCard,2500); return; }
+    const fp = p=>{ if(p==null) return'—'; if(p>10000) return'$'+p.toLocaleString('en',{maximumFractionDigits:0}); if(p>100) return'$'+p.toFixed(2); return '$'+p.toFixed(4); };
     const fc = c=>{ if(c==null) return'—'; return(c>=0?'+':'')+c.toFixed(2)+'%'; };
     const cc = c=> c==null?'flat':c>0?'up':'dn';
-    const ep=document.getElementById('hp-gold'), ec=document.getElementById('hp-gold-c');
-    if(ep) ep.textContent=fp(prices.XAUUSD?.price);
-    if(ec){ ec.textContent=fc(prices.XAUUSD?.change); ec.className='hp-hc-chg '+cc(prices.XAUUSD?.change); }
-    setTimeout(updatePills, 4000);
+
+    const asset = HERO_CARD_ASSETS[_heroCardIdx];
+    const d = prices[asset.id] || {};
+    const labelEl = document.getElementById('hp-card-label');
+    const dotEl   = document.getElementById('hp-card-dot');
+    const priceEl = document.getElementById('hp-card-price');
+    const chgEl   = document.getElementById('hp-card-chg');
+
+    if(labelEl && dotEl && priceEl && chgEl){
+      [labelEl,priceEl,chgEl].forEach(el=>el.classList.add('hp-hc-fade'));
+      setTimeout(()=>{
+        labelEl.textContent = asset.label;
+        dotEl.style.background = asset.dot;
+        dotEl.style.boxShadow = `0 0 6px ${asset.dot}`;
+        priceEl.textContent = fp(d.price);
+        chgEl.textContent = fc(d.change);
+        chgEl.className = 'hp-hc-chg '+cc(d.change);
+        [labelEl,priceEl,chgEl].forEach(el=>el.classList.remove('hp-hc-fade'));
+      }, 300);
+    }
+
+    _heroCardIdx = (_heroCardIdx+1) % HERO_CARD_ASSETS.length;
+    setTimeout(updateHeroCard, 4000);
   }
-  setTimeout(updatePills, 3000);
+  setTimeout(updateHeroCard, 3000);
 
 })();
 
