@@ -2108,14 +2108,14 @@ async def regenerate_trading_ideas(request: Request):
     data = await _generate_market_calls()
     return JSONResponse(data)
 
-# ─── Strategy parameters (admin-only) ──────────────────────────────────────
+# ─── Strategy parameters (owner or admin) ──────────────────────────────────
 @app.get("/api/trading-ideas/settings")
 async def get_ideas_settings_route(request: Request):
-    await require_admin(request)
+    await require_owner_or_admin(request)
     settings = await _get_ideas_settings()
 
-    # Admin tokens don't pass require_auth (no user row behind them), so this
-    # is the only way the admin panel can see what's currently live without
+    # Admin/owner tokens don't pass require_auth (no user row behind them),
+    # so this is the only way to see what's currently live without
     # triggering a fresh (Claude-billed) generation just to check status.
     if market_calls_cache["data"] is None:
         try:
@@ -2161,7 +2161,7 @@ class IdeasSettingsBody(BaseModel):
 
 @app.post("/api/trading-ideas/settings")
 async def save_ideas_settings_route(body: IdeasSettingsBody, request: Request):
-    await require_admin(request)
+    await require_owner_or_admin(request)
     current = await _get_ideas_settings()
     validated = _validate_ideas_settings(body.model_dump(exclude_unset=True), base=current)
     ideas_settings_cache["data"] = validated

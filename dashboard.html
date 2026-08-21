@@ -382,6 +382,20 @@ h1 i{color:var(--g);font-style:normal;display:block}
 .ti-tab.active{background:var(--g);color:#030704;font-weight:600}
 .ti-meta{font-size:10px;color:var(--t4);font-family:'DM Mono',monospace;white-space:nowrap}
 .ti-panel{max-width:1400px;margin:0 auto;padding:78px 32px 80px}
+.sf-card{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:22px}
+.sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px}
+@media(max-width:900px){.sf-grid{grid-template-columns:1fr}}
+.sf-group{margin-bottom:16px}
+.sf-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:8px;display:block}
+.sf-chips{display:flex;flex-wrap:wrap;gap:6px}
+.sf-chip{font-size:11px;font-family:'DM Mono',monospace;padding:6px 12px;border-radius:20px;border:1px solid var(--br);background:transparent;color:var(--t4);cursor:pointer;transition:all .15s}
+.sf-chip.active{border-color:var(--br3);color:var(--g);background:var(--gdim)}
+.sf-num{width:80px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 10px;outline:none}
+.sf-select{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;outline:none;cursor:pointer}
+.sf-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--t3);font-family:'DM Mono',monospace}
+.sf-toggle input{width:15px;height:15px;accent-color:var(--g);cursor:pointer}
+.sf-notes{width:100%;min-height:90px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;padding:12px 14px;outline:none;resize:vertical}
+.sf-hint{font-size:10px;color:var(--t4);margin-top:6px;line-height:1.5}
 .ti-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 .ti-card{background:rgba(7,13,7,0.85);border:1px solid var(--br);border-radius:14px;padding:20px 22px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .ti-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:10px}
@@ -1720,6 +1734,105 @@ async function tiOwnerRegenerate(){
   }finally{
     btn.disabled = false;
     btn.textContent = '↻ Regenerate Now';
+  }
+}
+
+// ── Owner-only strategy options panel ────────────────────────────────────────
+let sfChoices = null;
+let sfSelectedClasses = new Set();
+let sfSelectedSignals = new Set();
+let tiStrategyLoaded = false;
+
+function sfAssetClassLabel(v){
+  return {crypto:'Crypto', forex:'Forex', stocks:'Stocks / Indices', oil:'Commodities'}[v] || v;
+}
+
+function sfRenderChips(containerId, allValues, selectedSet, labelFn){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = allValues.map(v => {
+    const label = labelFn ? labelFn(v) : v;
+    return `<button type="button" class="sf-chip ${selectedSet.has(v)?'active':''}" onclick="sfToggleChip('${containerId}','${v.replace(/'/g,"\\'")}')">${label}</button>`;
+  }).join('');
+}
+
+function sfToggleChip(containerId, val){
+  const set = containerId === 'sf-asset-classes' ? sfSelectedClasses : sfSelectedSignals;
+  if(set.has(val)) set.delete(val); else set.add(val);
+  const allValues = containerId === 'sf-asset-classes' ? sfChoices.assetClasses : sfChoices.signals;
+  const labelFn = containerId === 'sf-asset-classes' ? sfAssetClassLabel : null;
+  sfRenderChips(containerId, allValues, set, labelFn);
+}
+
+function tiToggleStrategyPanel(){
+  const panel = document.getElementById('ti-strategy-panel');
+  if(!panel) return;
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if(show && !tiStrategyLoaded) tiLoadStrategySettings();
+}
+
+async function tiLoadStrategySettings(){
+  const status = document.getElementById('sf-save-status');
+  try{
+    const r = await fetch('/api/trading-ideas/settings', {headers: scAuthHeaders()});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    sfChoices = d.choices;
+    const s = d.settings;
+    tiStrategyLoaded = true;
+
+    sfSelectedClasses = new Set(s.assetClasses);
+    sfSelectedSignals = new Set(s.signals);
+    sfRenderChips('sf-asset-classes', sfChoices.assetClasses, sfSelectedClasses, sfAssetClassLabel);
+    sfRenderChips('sf-signals', sfChoices.signals, sfSelectedSignals);
+
+    const tfSel = document.getElementById('sf-timeframe');
+    if(tfSel) tfSel.innerHTML = sfChoices.timeframes.map(t => `<option value="${t}" ${t===s.timeframePref?'selected':''}>${t}</option>`).join('');
+
+    document.getElementById('sf-min-conviction').value = s.minConviction;
+    document.getElementById('sf-min-rr').value = s.minRiskReward;
+    document.getElementById('sf-max-ideas').value = s.maxIdeas;
+    document.getElementById('sf-max-crypto').value = s.maxCrypto;
+    document.getElementById('sf-trend-align').checked = !!s.requireTrendAlign;
+    document.getElementById('sf-notes').value = s.notes || '';
+    document.getElementById('sf-refresh-hours').value = s.refreshHours || 4;
+  }catch(e){
+    console.warn('[SC] tiLoadStrategySettings failed:', e.message);
+    if(status) status.textContent = 'Failed to load: ' + e.message;
+  }
+}
+
+async function tiSaveStrategySettings(){
+  const btn = document.getElementById('sf-save-btn');
+  const status = document.getElementById('sf-save-status');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    const body = {
+      assetClasses: Array.from(sfSelectedClasses),
+      signals: Array.from(sfSelectedSignals),
+      minConviction: parseFloat(document.getElementById('sf-min-conviction').value) || 0,
+      requireTrendAlign: document.getElementById('sf-trend-align').checked,
+      minRiskReward: parseFloat(document.getElementById('sf-min-rr').value) || 0,
+      maxIdeas: parseInt(document.getElementById('sf-max-ideas').value) || 12,
+      maxCrypto: parseInt(document.getElementById('sf-max-crypto').value) || 12,
+      timeframePref: document.getElementById('sf-timeframe').value,
+      notes: document.getElementById('sf-notes').value,
+      refreshHours: parseInt(document.getElementById('sf-refresh-hours').value) || 4,
+    };
+    const r = await fetch('/api/trading-ideas/settings', {
+      method:'POST', headers: scAuthHeaders({'Content-Type':'application/json'}), body: JSON.stringify(body)
+    });
+    if(!r.ok){
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.detail || ('HTTP '+r.status));
+    }
+    if(status){ status.textContent = 'Saved ✓'; setTimeout(()=>{status.textContent='';}, 3000); }
+  }catch(e){
+    console.warn('[SC] tiSaveStrategySettings failed:', e.message);
+    if(status) status.textContent = 'Save failed: ' + e.message;
+  }finally{
+    btn.disabled = false; btn.textContent = 'Save Parameters';
   }
 }
 
@@ -4929,7 +5042,59 @@ setLang(localStorage.getItem('sc_lang')||'en');
   </div>
   <div id="ti-owner-controls" style="display:none;align-items:center;justify-content:flex-end;gap:10px;max-width:1400px;margin:0 auto;padding:78px 32px 0">
     <button class="rgbtn" id="ti-regen-btn" onclick="tiOwnerRegenerate()">↻ Regenerate Now</button>
-    <a class="rgbtn" href="/admin.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">⚙ Strategy Settings</a>
+    <button class="rgbtn" id="ti-strategy-toggle-btn" onclick="tiToggleStrategyPanel()">⚙ Strategy Options</button>
+  </div>
+  <div id="ti-strategy-panel" style="display:none;max-width:1400px;margin:16px auto 0;padding:0 32px">
+    <div class="sf-card">
+      <div class="sf-grid">
+        <div>
+          <div class="sf-group">
+            <label class="sf-label">Asset Classes</label>
+            <div class="sf-chips" id="sf-asset-classes"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Signals To Include</label>
+            <div class="sf-chips" id="sf-signals"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Timeframe Preference</label>
+            <select class="sf-select" id="sf-timeframe"></select>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Auto-Refresh Every (hours)</label>
+            <input class="sf-num" type="number" id="sf-refresh-hours" min="1" max="24" step="1">
+          </div>
+        </div>
+        <div>
+          <div class="sf-group">
+            <label class="sf-label">Min Conviction (0–50)</label>
+            <input class="sf-num" type="number" id="sf-min-conviction" min="0" max="50" step="1">
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Min Reward:Risk Ratio</label>
+            <input class="sf-num" type="number" id="sf-min-rr" min="0" max="10" step="0.5">
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Max Picks</label>
+            <div style="display:flex;gap:12px">
+              <div><div class="sf-hint" style="margin:0 0 4px">Ideas</div><input class="sf-num" type="number" id="sf-max-ideas" min="1" max="25" step="1"></div>
+              <div><div class="sf-hint" style="margin:0 0 4px">Crypto</div><input class="sf-num" type="number" id="sf-max-crypto" min="1" max="25" step="1"></div>
+            </div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-toggle"><input type="checkbox" id="sf-trend-align"> Require 24h/5d trend confirmation</label>
+          </div>
+        </div>
+      </div>
+      <div class="sf-group">
+        <label class="sf-label">Strategy Brief (free text — steers what Claude looks for)</label>
+        <textarea class="sf-notes" id="sf-notes" placeholder="e.g. Only breakouts above a 20-day high with rising volume. Favor 2:1 minimum reward:risk on every setup."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="rgbtn" id="sf-save-btn" onclick="tiSaveStrategySettings()" style="background:var(--g);color:#030704;border-color:var(--g)">Save Parameters</button>
+        <span id="sf-save-status" style="font-size:10px;color:var(--t4);font-family:'DM Mono',monospace"></span>
+      </div>
+    </div>
   </div>
   <div class="ti-panel" id="ti-panel-ideas">
     <div class="ti-grid" id="ti-ideas-grid"></div>
