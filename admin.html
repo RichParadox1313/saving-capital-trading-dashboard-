@@ -115,6 +115,37 @@ tbody td{padding:12px 16px;font-size:12px;color:var(--t2);font-family:'DM Mono',
 /* EMPTY */
 .empty{text-align:center;padding:48px;color:var(--t4);font-size:12px;font-family:'DM Mono',monospace}
 .loading-row td{text-align:center;padding:32px;color:var(--t4);font-family:'DM Mono',monospace;font-size:11px}
+
+/* STRATEGY PANEL */
+.strategy-card{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:24px;margin-bottom:28px}
+.strategy-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.strategy-status{font-size:11px;color:var(--t4);font-family:'DM Mono',monospace;line-height:1.6}
+.strategy-status .stale{color:var(--gold)}
+.strategy-status .live{color:var(--g)}
+.strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px}
+@media(max-width:900px){.strategy-grid{grid-template-columns:1fr}}
+.sf-group{margin-bottom:18px}
+.sf-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);font-family:'DM Mono',monospace;margin-bottom:8px;display:block}
+.sf-chips{display:flex;flex-wrap:wrap;gap:6px}
+.sf-chip{font-size:11px;font-family:'DM Mono',monospace;padding:6px 12px;border-radius:20px;border:1px solid var(--br);background:transparent;color:var(--t4);cursor:pointer;transition:all .15s;user-select:none}
+.sf-chip.active{border-color:var(--br3);color:var(--g);background:var(--gdim)}
+.sf-row{display:flex;align-items:center;gap:12px}
+.sf-num{width:80px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 10px;outline:none}
+.sf-num:focus{border-color:var(--br3)}
+.sf-select{background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;outline:none;cursor:pointer}
+.sf-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--t3);font-family:'DM Mono',monospace}
+.sf-toggle input{width:15px;height:15px;accent-color:var(--g);cursor:pointer}
+.sf-notes{width:100%;min-height:110px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;padding:12px 14px;outline:none;resize:vertical}
+.sf-notes:focus{border-color:var(--br3)}
+.sf-hint{font-size:10px;color:var(--t4);margin-top:6px;line-height:1.5}
+.strategy-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sf-btn{padding:10px 20px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;border:none}
+.sf-btn.primary{background:var(--g);color:#030704}
+.sf-btn.primary:hover{background:#16a34a}
+.sf-btn.primary:disabled{opacity:.5;cursor:default}
+.sf-btn.secondary{background:transparent;border:1px solid var(--br2);color:var(--t3)}
+.sf-btn.secondary:hover{border-color:var(--br3);color:var(--t1)}
+.sf-btn.secondary:disabled{opacity:.5;cursor:default}
 </style>
 </head>
 <body>
@@ -162,6 +193,67 @@ tbody td{padding:12px 16px;font-size:12px;color:var(--t2);font-family:'DM Mono',
       <div class="stat-card" style="display:flex;align-items:center;justify-content:space-between">
         <div><div class="stat-lbl" style="margin-bottom:4px">Pro ($49/mo)</div><div class="stat-val" id="st-pro" style="font-size:1.5rem;color:#a78bfa">—</div></div>
         <div style="font-size:2rem;opacity:.2">★</div>
+      </div>
+    </div>
+
+    <!-- Trading Ideas Strategy -->
+    <div class="strategy-card">
+      <div class="strategy-head">
+        <div class="section-title" style="margin:0">AI Trading Ideas — Strategy Parameters</div>
+        <div class="strategy-status" id="sf-status">Loading…</div>
+      </div>
+
+      <div class="strategy-grid">
+        <div>
+          <div class="sf-group">
+            <label class="sf-label">Asset Classes</label>
+            <div class="sf-chips" id="sf-asset-classes"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Signals To Include</label>
+            <div class="sf-chips" id="sf-signals"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Timeframe Preference</label>
+            <select class="sf-select" id="sf-timeframe"></select>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Auto-Refresh Every (hours)</label>
+            <div class="sf-row"><input class="sf-num" type="number" id="sf-refresh-hours" min="1" max="24" step="1"></div>
+            <div class="sf-hint">Runs on its own in the background once a batch is this old — no manual click needed. Each refresh calls Claude for real, so shorter intervals cost more.</div>
+          </div>
+        </div>
+        <div>
+          <div class="sf-group">
+            <label class="sf-label">Min Conviction (|score − 50|, 0–50)</label>
+            <div class="sf-row"><input class="sf-num" type="number" id="sf-min-conviction" min="0" max="50" step="1"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Min Reward:Risk Ratio</label>
+            <div class="sf-row"><input class="sf-num" type="number" id="sf-min-rr" min="0" max="10" step="0.5"></div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-label">Max Picks</label>
+            <div class="sf-row">
+              <div><div class="sf-hint" style="margin:0 0 4px">Ideas</div><input class="sf-num" type="number" id="sf-max-ideas" min="1" max="25" step="1"></div>
+              <div><div class="sf-hint" style="margin:0 0 4px">Crypto</div><input class="sf-num" type="number" id="sf-max-crypto" min="1" max="25" step="1"></div>
+            </div>
+          </div>
+          <div class="sf-group">
+            <label class="sf-toggle"><input type="checkbox" id="sf-trend-align"> Require 24h/5d trend confirmation</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sf-group">
+        <label class="sf-label">Strategy Brief (free text — steers what Claude looks for)</label>
+        <textarea class="sf-notes" id="sf-notes" placeholder="e.g. Only breakouts above a 20-day high with rising volume. Prefer pullback entries in an established trend over chasing extended moves. Avoid new positions ahead of major central bank events. Favor 2:1 minimum reward:risk on every setup."></textarea>
+        <div class="sf-hint">This gets fed directly to the AI as instructions when it drafts entries, stops, targets, and rationale.</div>
+      </div>
+
+      <div class="strategy-actions">
+        <button class="sf-btn primary" id="sf-save-btn" onclick="saveIdeasSettings()">Save Parameters</button>
+        <button class="sf-btn secondary" id="sf-regen-btn" onclick="regenerateIdeas()">↻ Regenerate Now</button>
       </div>
     </div>
 
@@ -269,6 +361,7 @@ async function doLogin() {
     document.getElementById('app').style.display = 'block';
     loadStats();
     loadUsers();
+    loadIdeasSettings();
   } catch(e) {
     err.textContent = e.message;
     err.style.display = 'block';
@@ -286,6 +379,7 @@ if (adminToken) {
   document.getElementById('app').style.display = 'block';
   loadStats();
   loadUsers();
+  loadIdeasSettings();
 }
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -420,6 +514,115 @@ async function confirmPlan() {
     toast(`${plan.toUpperCase()} granted for ${months} month(s)`, 'success');
     loadUsers(); loadStats();
   } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Trading Ideas Strategy ──────────────────────────────────────────────────
+let sfChoices = null;
+let sfSelectedClasses = new Set();
+let sfSelectedSignals = new Set();
+
+function sfRenderChips(containerId, allValues, selectedSet, labelFn) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = allValues.map(v => {
+    const label = labelFn ? labelFn(v) : v;
+    return `<button type="button" class="sf-chip ${selectedSet.has(v)?'active':''}" data-val="${v}" onclick="sfToggleChip('${containerId}','${v.replace(/'/g,"\\'")}')">${label}</button>`;
+  }).join('');
+}
+
+function sfToggleChip(containerId, val) {
+  const set = containerId === 'sf-asset-classes' ? sfSelectedClasses : sfSelectedSignals;
+  if (set.has(val)) set.delete(val); else set.add(val);
+  const allValues = containerId === 'sf-asset-classes' ? sfChoices.assetClasses : sfChoices.signals;
+  const labelFn = containerId === 'sf-asset-classes' ? sfAssetClassLabel : null;
+  sfRenderChips(containerId, allValues, set, labelFn);
+}
+
+function sfAssetClassLabel(v) {
+  return {crypto:'Crypto', forex:'Forex', stocks:'Stocks / Indices', oil:'Commodities'}[v] || v;
+}
+
+async function loadIdeasSettings() {
+  const statusEl = document.getElementById('sf-status');
+  try {
+    const d = await apiGet('/api/trading-ideas/settings');
+    sfChoices = d.choices;
+    const s = d.settings;
+
+    sfSelectedClasses = new Set(s.assetClasses);
+    sfSelectedSignals = new Set(s.signals);
+    sfRenderChips('sf-asset-classes', sfChoices.assetClasses, sfSelectedClasses, sfAssetClassLabel);
+    sfRenderChips('sf-signals', sfChoices.signals, sfSelectedSignals);
+
+    const tfSel = document.getElementById('sf-timeframe');
+    tfSel.innerHTML = sfChoices.timeframes.map(t => `<option value="${t}" ${t===s.timeframePref?'selected':''}>${t}</option>`).join('');
+
+    document.getElementById('sf-min-conviction').value = s.minConviction;
+    document.getElementById('sf-min-rr').value = s.minRiskReward;
+    document.getElementById('sf-max-ideas').value = s.maxIdeas;
+    document.getElementById('sf-max-crypto').value = s.maxCrypto;
+    document.getElementById('sf-trend-align').checked = !!s.requireTrendAlign;
+    document.getElementById('sf-notes').value = s.notes || '';
+    document.getElementById('sf-refresh-hours').value = s.refreshHours || 4;
+
+    sfRenderStatus(d.current);
+  } catch(e) {
+    statusEl.textContent = 'Failed to load: ' + e.message;
+  }
+}
+
+function sfRenderStatus(current) {
+  const statusEl = document.getElementById('sf-status');
+  if (!current) { statusEl.textContent = 'Nothing generated yet — a batch will auto-generate on the next Pro user visit, or click Regenerate Now.'; return; }
+  const staleTag = current.stale ? '<span class="stale">DUE FOR REFRESH</span>' : '<span class="live">LIVE</span>';
+  const noteTag = current.note ? ` — ${current.note}` : '';
+  statusEl.innerHTML = `${staleTag} · ${current.ideasCount} ideas, ${current.cryptoCount} crypto calls · Updated ${current.generatedAt || '—'}${noteTag}`;
+}
+
+async function saveIdeasSettings() {
+  const btn = document.getElementById('sf-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const body = {
+      assetClasses: Array.from(sfSelectedClasses),
+      signals: Array.from(sfSelectedSignals),
+      minConviction: parseFloat(document.getElementById('sf-min-conviction').value) || 0,
+      requireTrendAlign: document.getElementById('sf-trend-align').checked,
+      minRiskReward: parseFloat(document.getElementById('sf-min-rr').value) || 0,
+      maxIdeas: parseInt(document.getElementById('sf-max-ideas').value) || 12,
+      maxCrypto: parseInt(document.getElementById('sf-max-crypto').value) || 12,
+      timeframePref: document.getElementById('sf-timeframe').value,
+      notes: document.getElementById('sf-notes').value,
+      refreshHours: parseInt(document.getElementById('sf-refresh-hours').value) || 4,
+    };
+    await apiPost('/api/trading-ideas/settings', body);
+    toast('Strategy parameters saved', 'success');
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save Parameters';
+  }
+}
+
+async function regenerateIdeas() {
+  const btn = document.getElementById('sf-regen-btn');
+  btn.disabled = true; btn.textContent = '↻ Generating…';
+  document.getElementById('sf-status').textContent = 'Generating with Claude — this can take up to a minute…';
+  try {
+    const r = await fetch('/api/trading-ideas/regenerate', {method:'POST', headers: authHeaders()});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Regeneration failed');
+    sfRenderStatus({
+      stale: false, generatedAt: d.generatedAt,
+      ideasCount: (d.ideas||[]).length, cryptoCount: (d.cryptoCalls||[]).length,
+      note: d.note,
+    });
+    toast('Trading ideas regenerated', 'success');
+  } catch(e) {
+    toast(e.message, 'error');
+    loadIdeasSettings();
+  } finally {
+    btn.disabled = false; btn.textContent = '↻ Regenerate Now';
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -7,6 +7,10 @@ Reliable price sources — no extra API keys required beyond Anthropic
 import asyncio, json, os, re, time, xml.etree.ElementTree as ET, random
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Optional, List
+
+from dotenv import load_dotenv
+load_dotenv()  # loads .env for local dev — no-op in production (no .env file there, real env vars already set)
 
 import aiohttp, anthropic
 from fastapi import FastAPI, HTTPException, Request
@@ -32,15 +36,21 @@ except ImportError:
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# Registered here at import time — NOT inside startup_event. Starlette matches
+# routes in registration order, and the catch-all `/{full_path:path}` GET route
+# defined later in this file would otherwise silently swallow every GET route
+# registered afterward (this previously broke /admin/users, /admin/stats,
+# /auth/me, /auth/health, /payments/status/{id} — each one just returned the
+# dashboard HTML instead of JSON). Registration itself does no I/O, so there's
+# no need to defer it to startup.
+if _auth_enabled:
+    register_auth_routes(app)
+    print("[STARTUP] Auth routes registered")
+
 @app.on_event("startup")
 async def startup_event():
     print(f"[STARTUP] Dashboard path: {DASHBOARD_PATH}, exists: {DASHBOARD_PATH.exists()}")
-    # Register auth routes unconditionally — DB connects lazily per-request
-    # inside auth_payments.get_db(), so a boot-time DB hiccup must not
-    # permanently disable /auth/* for the life of the process.
     if _auth_enabled:
-        register_auth_routes(app)
-        print("[STARTUP] Auth routes registered")
         try:
             await get_db()
             print("[STARTUP] Database connected")
@@ -83,6 +93,20 @@ async def startup_event():
                 print("[STARTUP] saved_ideas / market_calls_history tables ready")
             except Exception as e3:
                 print(f"[STARTUP] saved_ideas/market_calls_history tables: {e3}")
+            # Ensure ideas-strategy settings table exists
+            try:
+                import auth_payments as _ap4
+                db = await _ap4.get_db()
+                await db.execute("""
+                    CREATE TABLE IF NOT EXISTS ai_ideas_settings (
+                        id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+                        settings JSONB NOT NULL,
+                        updated_at TIMESTAMPTZ DEFAULT NOW()
+                    )
+                """)
+                print("[STARTUP] ai_ideas_settings table ready")
+            except Exception as e4:
+                print(f"[STARTUP] ai_ideas_settings table: {e4}")
             # Warm the in-memory market-calls cache from Postgres — never
             # calls Claude at boot, just loads whatever was last generated.
             asyncio.create_task(_warm_market_calls_cache())
@@ -1595,13 +1619,99 @@ Return ONLY valid JSON no markdown:
 # per-user journal. Regenerated lazily when stale so we don't call Claude on
 # every page load.
 
-IDEAS_TTL_HOURS = int(os.environ.get("IDEAS_TTL_HOURS", "4"))
-MARKET_CALLS_TTL = IDEAS_TTL_HOURS * 3600
-N_IDEAS = 6
-N_CRYPTO_CALLS = 8
+IDEAS_TTL_HOURS = int(os.environ.get("IDEAS_TTL_HOURS", "4"))  # fallback default; overridden by settings.refreshHours once saved
+N_IDEAS = 12
+N_CRYPTO_CALLS = 12
 
 market_calls_cache: dict = {"data": None, "ts": 0.0}
-_market_calls_gen_lock = asyncio.Lock()
+
+# ─── Strategy parameters ────────────────────────────────────────────────────
+# The owner's own screening rules — a single global config (not per-user)
+# that decides which assets are even eligible to become an idea/call, plus
+# a free-text brief that steers how Claude drafts the setup. Generation is
+# fully autonomous: a background refresh fires on its own once the batch is
+# older than refreshHours, and the structured filters below are what give it
+# "a reason" to surface a call at all — an admin can still force one early
+# via Regenerate Now.
+ASSET_CLASS_CHOICES = ["crypto", "forex", "stocks", "oil"]
+SIGNAL_CHOICES = ["STRONG BUY", "BUY", "NEUTRAL", "SELL", "STRONG SELL"]
+TIMEFRAME_CHOICES = ["Any", "Intraday", "Swing (3-10d)", "Position (2-8wk)"]
+DEFAULT_IDEAS_SETTINGS = {
+    "assetClasses": list(ASSET_CLASS_CHOICES),
+    "signals": list(SIGNAL_CHOICES),
+    "minConviction": 0,
+    "requireTrendAlign": False,
+    "minRiskReward": 0,
+    "maxIdeas": N_IDEAS,
+    "maxCrypto": N_CRYPTO_CALLS,
+    "timeframePref": "Any",
+    "notes": "",
+    "refreshHours": IDEAS_TTL_HOURS,
+}
+
+ideas_settings_cache: dict = {"data": None}
+
+async def _db_load_ideas_settings():
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    row = await db.fetchrow("SELECT settings FROM ai_ideas_settings WHERE id=1")
+    return json.loads(row["settings"]) if row else None
+
+async def _db_save_ideas_settings(settings: dict):
+    import auth_payments as _ap
+    db = await _ap.get_db()
+    await db.execute(
+        """INSERT INTO ai_ideas_settings (id, settings, updated_at) VALUES (1, $1, NOW())
+           ON CONFLICT (id) DO UPDATE SET settings=$1, updated_at=NOW()""",
+        json.dumps(settings)
+    )
+
+async def _get_ideas_settings() -> dict:
+    if ideas_settings_cache["data"] is None:
+        saved = None
+        try:
+            saved = await _db_load_ideas_settings()
+        except Exception as e:
+            print(f"  Ideas settings DB load failed (non-fatal): {e}")
+        ideas_settings_cache["data"] = {**DEFAULT_IDEAS_SETTINGS, **(saved or {})}
+    return ideas_settings_cache["data"]
+
+def _validate_ideas_settings(body: dict, base: Optional[dict] = None) -> dict:
+    out = dict(base) if base else dict(DEFAULT_IDEAS_SETTINGS)
+    ac = body.get("assetClasses")
+    if isinstance(ac, list):
+        cleaned = [a for a in ac if a in ASSET_CLASS_CHOICES]
+        if cleaned:
+            out["assetClasses"] = cleaned
+    sg = body.get("signals")
+    if isinstance(sg, list):
+        cleaned = [s for s in sg if s in SIGNAL_CHOICES]
+        if cleaned:
+            out["signals"] = cleaned
+    mc = body.get("minConviction")
+    if isinstance(mc, (int, float)):
+        out["minConviction"] = max(0, min(50, int(mc)))
+    if "requireTrendAlign" in body:
+        out["requireTrendAlign"] = bool(body.get("requireTrendAlign"))
+    mrr = body.get("minRiskReward")
+    if isinstance(mrr, (int, float)):
+        out["minRiskReward"] = max(0, min(10, float(mrr)))
+    mi = body.get("maxIdeas")
+    if isinstance(mi, (int, float)):
+        out["maxIdeas"] = max(1, min(25, int(mi)))
+    mcr = body.get("maxCrypto")
+    if isinstance(mcr, (int, float)):
+        out["maxCrypto"] = max(1, min(25, int(mcr)))
+    tf = body.get("timeframePref")
+    if tf in TIMEFRAME_CHOICES:
+        out["timeframePref"] = tf
+    notes = body.get("notes")
+    if isinstance(notes, str):
+        out["notes"] = notes.strip()[:2000]
+    rh = body.get("refreshHours")
+    if isinstance(rh, (int, float)):
+        out["refreshHours"] = max(1, min(24, int(rh)))
+    return out
 
 async def _db_load_market_calls():
     """Load the last-generated market calls payload from PostgreSQL."""
@@ -1660,17 +1770,34 @@ MARKET_CALLS_JSON_SCHEMA = {
     "additionalProperties": False,
 }
 
-def _select_call_candidates(prices: dict, n_ideas: int, n_crypto: int):
-    """Score every priced asset and rank each pool by conviction (|score-50|).
-    The deterministic score/signal is the source of truth — Claude never sees
-    or invents it, it only drafts the setup around a fixed selection."""
+def _select_call_candidates(prices: dict, settings: dict):
+    """Score every priced asset, apply the strategy's structured filters
+    (asset class, signal, conviction threshold, trend alignment), then rank
+    each surviving pool by conviction (|score-50|). The deterministic
+    score/signal is the source of truth — Claude never sees or invents it,
+    it only drafts the setup around a fixed, pre-filtered selection."""
+    n_ideas = settings.get("maxIdeas", N_IDEAS)
+    n_crypto = settings.get("maxCrypto", N_CRYPTO_CALLS)
+    allowed_classes = set(settings.get("assetClasses") or ASSET_CLASS_CHOICES)
+    allowed_signals = set(settings.get("signals") or SIGNAL_CHOICES)
+    min_conviction = settings.get("minConviction", 0)
+    require_trend_align = settings.get("requireTrendAlign", False)
+
     scored = []
     for name, d in prices.items():
         if not d.get("price"):
             continue
+        if d.get("tab") not in allowed_classes:
+            continue
         try:
             score = _q_score_asset(d.get("name", name), d, prices)
         except Exception:
+            continue
+        if score["signal"] not in allowed_signals:
+            continue
+        if abs(score["total"] - 50) < min_conviction:
+            continue
+        if require_trend_align and score["trend"] < 16:
             continue
         scored.append((name, d, score))
     crypto = sorted((x for x in scored if x[1].get("tab") == "crypto"),
@@ -1753,8 +1880,25 @@ async def _generate_market_calls() -> dict:
         data = await load_all_prices()
         price_cache.update({"data": data, "ts": time.time()})
     prices = price_cache["data"]
+    settings = await _get_ideas_settings()
 
-    ideas, crypto = _select_call_candidates(prices, N_IDEAS, N_CRYPTO_CALLS)
+    ideas, crypto = _select_call_candidates(prices, settings)
+
+    if not ideas and not crypto:
+        # Structured filters excluded every asset — a real, honest outcome
+        # (not an error), so report it instead of forcing a weak pick.
+        payload = {
+            "ideas": [], "cryptoCalls": [],
+            "generatedAt": datetime.utcnow().strftime('%d %b %Y %H:%M UTC'),
+            "ts": time.time(), "model": "claude-sonnet-5",
+            "note": "No assets currently match your strategy parameters. Try loosening a filter.",
+        }
+        market_calls_cache.update({"data": payload, "ts": payload["ts"]})
+        try:
+            await _db_save_market_calls(payload)
+        except Exception as e:
+            print(f"  Market calls DB save failed (non-fatal, in-memory cache still updated): {e}")
+        return payload
 
     funding, fg = {}, {}
     if crypto:
@@ -1778,6 +1922,23 @@ async def _generate_market_calls() -> dict:
         crypto_lines.append(line)
     fg_line = f"Fear & Greed Index: {fg['value']} ({fg['label']}) — {fg['signal']}" if fg else ""
 
+    strategy_lines = []
+    if settings.get("notes"):
+        strategy_lines.append(
+            "TRADER'S STRATEGY BRIEF — follow these rules precisely when drafting entries, "
+            f"stops, targets, and rationale:\n{settings['notes']}"
+        )
+    if settings.get("timeframePref") and settings["timeframePref"] != "Any":
+        strategy_lines.append(
+            f'Use "{settings["timeframePref"]}" as the timeframe for every idea below — ignore the other timeframe options.'
+        )
+    if settings.get("minRiskReward"):
+        strategy_lines.append(
+            f'Every setup must offer a reward-to-risk ratio of at least {settings["minRiskReward"]}:1, '
+            'measured as the distance from entry to the first target divided by the distance from entry to stopLoss.'
+        )
+    strategy_block = ("\n\n" + "\n\n".join(strategy_lines) + "\n") if strategy_lines else ""
+
     prompt = f"""You are a senior quantitative analyst producing a batch of trading ideas and crypto calls for a trading dashboard. For EACH asset listed below, you are given its id, price, and a deterministic multi-factor quant score/signal that is already final — do not restate or change the score, only build a concrete setup around it.
 
 GENERAL MARKET IDEAS (forex/stocks/indices/commodities):
@@ -1786,10 +1947,15 @@ GENERAL MARKET IDEAS (forex/stocks/indices/commodities):
 CRYPTO CALLS:
 {chr(10).join(crypto_lines) if crypto_lines else "(none available)"}
 {fg_line}
-
+{strategy_block}
 For each asset, using its id exactly as given, provide: entryLow and entryHigh (numeric price levels bracketing a specific entry zone near the current price — use the same value for both if you mean a single exact price), stopLoss (a numeric price level), targets (an array of 1-2 numeric price levels), timeframe ("Intraday", "Swing (3-10d)", or "Position (2-8wk)"), rationale (2-3 sentences referencing the quant score/signal and price action), and invalidation (1 sentence: what would prove this idea wrong). All price levels must be plain numbers (no currency symbols, commas, or ranges as strings) in the same unit as the price given above. For crypto calls only, also provide fundingContext (1 sentence using the funding rate/Fear&Greed data if given, else a brief note that funding data was unavailable).
 
 Return ONLY valid JSON, no markdown."""
+
+    # Scale the output budget with the actual batch size — a fixed 4000 was
+    # tuned for the old 6+8 default and truncates (invalid JSON) once the
+    # admin raises maxIdeas/maxCrypto toward the higher end.
+    output_tokens = min(16000, 800 + 350 * (len(ideas) + len(crypto)))
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     last_error = None
@@ -1800,7 +1966,7 @@ Return ONLY valid JSON, no markdown."""
                 wait = [0, 10, 20, 40][attempt]
                 print(f"  Market calls Anthropic retry {attempt}/3 after {wait}s...")
                 await asyncio.sleep(wait)
-            msg = client.messages.create(model="claude-sonnet-5", max_tokens=4000,
+            msg = client.messages.create(model="claude-sonnet-5", max_tokens=output_tokens,
                                           output_config={"format": {"type": "json_schema", "schema": MARKET_CALLS_JSON_SCHEMA}},
                                           messages=[{"role": "user", "content": prompt}])
             parsed = json.loads(msg.content[0].text.strip())
@@ -1853,6 +2019,8 @@ Return ONLY valid JSON, no markdown."""
         print(f"  Market calls DB save failed (non-fatal, in-memory cache still updated): {e}")
     return payload
 
+_market_calls_gen_lock = asyncio.Lock()
+
 async def _background_generate_market_calls():
     if _market_calls_gen_lock.locked():
         return
@@ -1895,8 +2063,16 @@ def _is_pro_active(user: dict) -> bool:
 
 @app.get("/api/trading-ideas")
 async def get_trading_ideas(request: Request):
+    # Fully autonomous: whichever Pro user hits this endpoint after the batch
+    # has gone stale (per the admin's configured refreshHours) kicks off a
+    # background regeneration for everyone — no manual click required. The
+    # strategy's structured filters (see _select_call_candidates) are what
+    # give it "a reason" to surface a call at all; a stale-but-still-valid
+    # batch is served immediately while the refresh happens behind it.
     user = await require_auth(request)
     now = time.time()
+    settings = await _get_ideas_settings()
+    ttl_seconds = settings.get("refreshHours", IDEAS_TTL_HOURS) * 3600
     if market_calls_cache["data"] is None:
         try:
             payload = await _db_load_market_calls()
@@ -1908,10 +2084,10 @@ async def get_trading_ideas(request: Request):
     if market_calls_cache["data"] is None:
         # Nothing generated yet anywhere — must generate synchronously once
         await _generate_market_calls()
-    elif now - market_calls_cache["ts"] >= MARKET_CALLS_TTL:
+    elif now - market_calls_cache["ts"] >= ttl_seconds:
         asyncio.create_task(_background_generate_market_calls())
 
-    data = market_calls_cache["data"]
+    data = {**market_calls_cache["data"], "stale": (now - market_calls_cache["ts"]) >= ttl_seconds}
     if not _is_pro_active(user):
         data = _mask_market_calls_for_preview(data)
     return JSONResponse(data)
@@ -1921,6 +2097,69 @@ async def regenerate_trading_ideas(request: Request):
     await require_admin(request)
     data = await _generate_market_calls()
     return JSONResponse(data)
+
+# ─── Strategy parameters (admin-only) ──────────────────────────────────────
+@app.get("/api/trading-ideas/settings")
+async def get_ideas_settings_route(request: Request):
+    await require_admin(request)
+    settings = await _get_ideas_settings()
+
+    # Admin tokens don't pass require_auth (no user row behind them), so this
+    # is the only way the admin panel can see what's currently live without
+    # triggering a fresh (Claude-billed) generation just to check status.
+    if market_calls_cache["data"] is None:
+        try:
+            payload = await _db_load_market_calls()
+        except Exception as e:
+            payload = None
+            print(f"  Market calls DB load failed (non-fatal): {e}")
+        if payload:
+            market_calls_cache.update({"data": payload, "ts": payload.get("ts", 0)})
+    cache_data = market_calls_cache["data"]
+    current = None
+    if cache_data:
+        ttl_seconds = settings.get("refreshHours", IDEAS_TTL_HOURS) * 3600
+        current = {
+            "generatedAt": cache_data.get("generatedAt"),
+            "ideasCount": len(cache_data.get("ideas") or []),
+            "cryptoCount": len(cache_data.get("cryptoCalls") or []),
+            "note": cache_data.get("note"),
+            "stale": (time.time() - market_calls_cache["ts"]) >= ttl_seconds,
+        }
+
+    return JSONResponse({
+        "settings": settings,
+        "choices": {
+            "assetClasses": ASSET_CLASS_CHOICES,
+            "signals": SIGNAL_CHOICES,
+            "timeframes": TIMEFRAME_CHOICES,
+        },
+        "current": current,
+    })
+
+class IdeasSettingsBody(BaseModel):
+    assetClasses: Optional[List[str]] = None
+    signals: Optional[List[str]] = None
+    minConviction: Optional[float] = None
+    requireTrendAlign: Optional[bool] = None
+    minRiskReward: Optional[float] = None
+    maxIdeas: Optional[int] = None
+    maxCrypto: Optional[int] = None
+    timeframePref: Optional[str] = None
+    notes: Optional[str] = None
+    refreshHours: Optional[float] = None
+
+@app.post("/api/trading-ideas/settings")
+async def save_ideas_settings_route(body: IdeasSettingsBody, request: Request):
+    await require_admin(request)
+    current = await _get_ideas_settings()
+    validated = _validate_ideas_settings(body.model_dump(exclude_unset=True), base=current)
+    ideas_settings_cache["data"] = validated
+    try:
+        await _db_save_ideas_settings(validated)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to save strategy settings: {e}")
+    return JSONResponse({"settings": validated})
 
 # ─── Saved ideas (favorites) ───────────────────────────────────────────────────
 # Snapshot-based: ideas regenerate every IDEAS_TTL_HOURS and the old batch is
@@ -2581,6 +2820,14 @@ async def api_economic_calendar():
         print(f"  [ECO] Error: {e}")
         return JSONResponse(_eco_cache["data"] or [])
 
+
+ADMIN_HTML_PATH = Path(__file__).parent / "admin.html"
+
+@app.get("/admin.html")
+async def serve_admin():
+    if ADMIN_HTML_PATH.exists():
+        return FileResponse(ADMIN_HTML_PATH, headers={"Cache-Control": "no-store"})
+    raise HTTPException(404, "admin.html not found")
 
 @app.get("/{full_path:path}")
 async def serve(full_path: str):

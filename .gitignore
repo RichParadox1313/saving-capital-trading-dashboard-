@@ -1,0 +1,14 @@
+# Local secrets — never commit real credentials
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
