@@ -4926,10 +4926,10 @@ setLang(localStorage.getItem('sc_lang')||'en');
       <button class="ti-tab" onclick="tiSetTab('movers')" id="ti-tab-movers">Top Movers</button>
     </div>
     <div class="ti-meta" id="ti-generated-at">Updated —</div>
-    <div id="ti-owner-controls" style="display:none;align-items:center;gap:10px">
-      <button class="rgbtn" id="ti-regen-btn" onclick="tiOwnerRegenerate()">↻ Regenerate Now</button>
-      <a class="rgbtn" href="/admin.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">⚙ Strategy Settings</a>
-    </div>
+  </div>
+  <div id="ti-owner-controls" style="display:none;align-items:center;justify-content:flex-end;gap:10px;max-width:1400px;margin:0 auto;padding:78px 32px 0">
+    <button class="rgbtn" id="ti-regen-btn" onclick="tiOwnerRegenerate()">↻ Regenerate Now</button>
+    <a class="rgbtn" href="/admin.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">⚙ Strategy Settings</a>
   </div>
   <div class="ti-panel" id="ti-panel-ideas">
     <div class="ti-grid" id="ti-ideas-grid"></div>
