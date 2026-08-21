@@ -1693,7 +1693,34 @@ function tiRenderGrids(){
   if(ideasGrid)  ideasGrid.innerHTML  = (tiData.ideas||[]).map(buildIdeaCard).join('') || '<div class="ti-empty">No ideas available right now.</div>';
   if(cryptoGrid) cryptoGrid.innerHTML = (tiData.cryptoCalls||[]).map(buildIdeaCard).join('') || '<div class="ti-empty">No crypto calls available right now.</div>';
   const meta = document.getElementById('ti-generated-at');
-  if(meta) meta.textContent = tiData.generatedAt ? ('Updated ' + tiData.generatedAt) : '';
+  if(meta) meta.textContent = (tiData.generatedAt ? ('Updated ' + tiData.generatedAt) : '') + (tiData.stale ? ' · due for refresh' : '');
+
+  const ownerControls = document.getElementById('ti-owner-controls');
+  if(ownerControls) ownerControls.style.display = (typeof scUser!=='undefined' && scUser && scUser.is_owner) ? 'flex' : 'none';
+}
+
+async function tiOwnerRegenerate(){
+  const btn = document.getElementById('ti-regen-btn');
+  if(!btn) return;
+  btn.disabled = true;
+  btn.textContent = '↻ Generating…';
+  const meta = document.getElementById('ti-generated-at');
+  if(meta) meta.textContent = 'Calling Claude — this can take up to a minute…';
+  try{
+    const r = await fetch('/api/trading-ideas/regenerate', {method:'POST', headers: scAuthHeaders()});
+    if(!r.ok){
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.detail || ('HTTP '+r.status));
+    }
+    tiData = await r.json();
+    tiRenderGrids();
+  }catch(e){
+    console.warn('[SC] tiOwnerRegenerate failed:', e.message);
+    if(meta) meta.textContent = 'Regenerate failed: ' + e.message;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '↻ Regenerate Now';
+  }
 }
 
 function tiSetTab(tab){
@@ -4899,6 +4926,10 @@ setLang(localStorage.getItem('sc_lang')||'en');
       <button class="ti-tab" onclick="tiSetTab('movers')" id="ti-tab-movers">Top Movers</button>
     </div>
     <div class="ti-meta" id="ti-generated-at">Updated —</div>
+    <div id="ti-owner-controls" style="display:none;align-items:center;gap:10px">
+      <button class="rgbtn" id="ti-regen-btn" onclick="tiOwnerRegenerate()">↻ Regenerate Now</button>
+      <a class="rgbtn" href="/admin.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">⚙ Strategy Settings</a>
+    </div>
   </div>
   <div class="ti-panel" id="ti-panel-ideas">
     <div class="ti-grid" id="ti-ideas-grid"></div>

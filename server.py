@@ -28,7 +28,7 @@ app = FastAPI()
 
 # Auth & payments system
 try:
-    from auth_payments import register_auth_routes, get_db, close_db, require_auth, require_admin, get_current_user
+    from auth_payments import register_auth_routes, get_db, close_db, require_auth, require_admin, get_current_user, verify_jwt
     _auth_enabled = True
 except ImportError:
     print("[STARTUP] auth_payments.py not found — auth routes disabled")
@@ -2092,9 +2092,19 @@ async def get_trading_ideas(request: Request):
         data = _mask_market_calls_for_preview(data)
     return JSONResponse(data)
 
+async def require_owner_or_admin(request: Request):
+    """Lets the site owner's own dashboard session (is_owner) trigger a
+    regenerate directly from the Trading Ideas page, not just the separate
+    admin.html console (is_admin) — same person, same credentials, just two
+    different login flows that produce differently-scoped tokens."""
+    token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+    payload = verify_jwt(token)
+    if not payload or not (payload.get("is_admin") or payload.get("is_owner")):
+        raise HTTPException(403, "Owner or admin access required")
+
 @app.post("/api/trading-ideas/regenerate")
 async def regenerate_trading_ideas(request: Request):
-    await require_admin(request)
+    await require_owner_or_admin(request)
     data = await _generate_market_calls()
     return JSONResponse(data)
 
