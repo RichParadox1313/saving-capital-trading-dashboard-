@@ -1712,7 +1712,13 @@ function tiFixTopbarPosition(){
   const ticker = document.querySelector('.news-ticker');
   const topbar = document.querySelector('.ti-topbar');
   if(!topbar) return;
-  const tickerBottom = ticker ? ticker.getBoundingClientRect().height + ticker.getBoundingClientRect().top : 56;
+  const tickerRect = ticker ? ticker.getBoundingClientRect() : null;
+  // Ticker can exist in the DOM but not be laid out yet (0 height) during
+  // its initial loading state — fall back to its expected 56+40 position
+  // (its own fixed top/height) rather than anchoring the topbar to a
+  // collapsed element's position. tiFixTopbarPosition() re-runs once real
+  // news content loads (see loadNewsTicker) to correct this precisely.
+  const tickerBottom = (tickerRect && tickerRect.height > 0) ? tickerRect.bottom : 96;
   topbar.style.top = tickerBottom + 'px';
   const topbarHeight = topbar.getBoundingClientRect().height || 58;
   const panelPad = Math.round(tickerBottom + topbarHeight + 20) + 'px';
@@ -2690,6 +2696,12 @@ async function loadNewsTicker(){
     }
     // Start loop if not running
     if(!_ntRaf) _ntRaf=requestAnimationFrame(_ntLoop);
+    // Ticker's real height is only known once it's actually rendered —
+    // re-run so the Trading Ideas topbar clears it precisely (see
+    // tiFixTopbarPosition), not just the pre-load fallback estimate.
+    if(typeof tiFixTopbarPosition==='function' && document.getElementById('page-ideas-page')?.style.display!=='none'){
+      requestAnimationFrame(tiFixTopbarPosition);
+    }
   }catch(e){ console.warn('News ticker:',e); }
 }
 
