@@ -1710,8 +1710,30 @@ function tiRenderGrids(){
   if(meta) meta.textContent = (tiData.generatedAt ? ('Updated ' + tiData.generatedAt) : '') + (tiData.stale ? ' · due for refresh' : '');
 
   const ownerControls = document.getElementById('ti-owner-controls');
-  if(ownerControls) ownerControls.style.display = (typeof scUser!=='undefined' && scUser && scUser.is_owner) ? 'flex' : 'none';
+  const isOwnerNow = typeof scUser!=='undefined' && scUser && scUser.is_owner;
+  if(ownerControls) ownerControls.style.display = isOwnerNow ? 'flex' : 'none';
+  if(isOwnerNow) tiPositionOwnerBar();
 }
+
+// The news ticker and the fixed topbar are both position:fixed and their
+// combined height isn't a constant (ticker height varies by viewport/zoom),
+// so a hardcoded padding-top guess drifts out of sync and hides these
+// buttons under the fixed bars. Measure the real bottom edge every time
+// instead of guessing a pixel value.
+function tiPositionOwnerBar(){
+  const topbar = document.querySelector('.ti-topbar');
+  const ticker = document.querySelector('.news-ticker');
+  const ownerControls = document.getElementById('ti-owner-controls');
+  if(!topbar || !ownerControls) return;
+  const topbarBottom = topbar.getBoundingClientRect().bottom;
+  const tickerBottom  = ticker ? ticker.getBoundingClientRect().bottom : 0;
+  const clearance = Math.max(topbarBottom, tickerBottom) + 16;
+  ownerControls.style.padding = clearance + 'px 32px 0';
+  const panel = document.getElementById('ti-strategy-panel');
+  if(panel && panel.style.display !== 'none') panel.style.marginTop = '16px';
+}
+
+window.addEventListener('resize', () => { if(document.getElementById('ti-owner-controls')?.style.display !== 'none') tiPositionOwnerBar(); });
 
 async function tiOwnerRegenerate(){
   const btn = document.getElementById('ti-regen-btn');
@@ -1769,7 +1791,10 @@ function tiToggleStrategyPanel(){
   if(!panel) return;
   const show = panel.style.display === 'none';
   panel.style.display = show ? 'block' : 'none';
-  if(show && !tiStrategyLoaded) tiLoadStrategySettings();
+  if(show){
+    tiPositionOwnerBar();
+    if(!tiStrategyLoaded) tiLoadStrategySettings();
+  }
 }
 
 async function tiLoadStrategySettings(){
