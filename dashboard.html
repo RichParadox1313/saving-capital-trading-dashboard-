@@ -1700,6 +1700,25 @@ function buildIdeaCard(item, extraFooterHtml){
   </div>`;
 }
 
+// The news ticker (position:fixed, top:56px, z-index:8000, opaque) and the
+// Trading Ideas topbar (position:fixed, ALSO top:56px, z-index:100) both
+// anchor to the same fixed position — that's not a spacing quirk, they
+// directly overlap. The ticker sits on top and hides the upper portion of
+// the topbar's tab buttons, cutting off their text labels (only the
+// tab bar's rounded bottom edge peeks out below the ticker). Anchoring the
+// topbar below the ticker's actual measured bottom fixes it regardless of
+// ticker height, which itself varies (mobile breakpoint changes it).
+function tiFixTopbarPosition(){
+  const ticker = document.querySelector('.news-ticker');
+  const topbar = document.querySelector('.ti-topbar');
+  if(!topbar) return;
+  const tickerBottom = ticker ? ticker.getBoundingClientRect().height + ticker.getBoundingClientRect().top : 56;
+  topbar.style.top = tickerBottom + 'px';
+  const topbarHeight = topbar.getBoundingClientRect().height || 58;
+  const panelPad = Math.round(tickerBottom + topbarHeight + 20) + 'px';
+  document.querySelectorAll('.ti-panel').forEach(p => { p.style.paddingTop = panelPad; });
+}
+
 function tiRenderGrids(){
   if(!tiData) return;
   const ideasGrid  = document.getElementById('ti-ideas-grid');
@@ -1708,6 +1727,8 @@ function tiRenderGrids(){
   if(cryptoGrid) cryptoGrid.innerHTML = (tiData.cryptoCalls||[]).map(buildIdeaCard).join('') || '<div class="ti-empty">No crypto calls available right now.</div>';
   const meta = document.getElementById('ti-generated-at');
   if(meta) meta.textContent = (tiData.generatedAt ? ('Updated ' + tiData.generatedAt) : '') + (tiData.stale ? ' · due for refresh' : '');
+
+  tiFixTopbarPosition();
 
   const ownerControls = document.getElementById('ti-owner-controls');
   const isOwnerNow = typeof scUser!=='undefined' && scUser && scUser.is_owner;
@@ -1733,7 +1754,11 @@ function tiPositionOwnerBar(){
   if(panel && panel.style.display !== 'none') panel.style.marginTop = '16px';
 }
 
-window.addEventListener('resize', () => { if(document.getElementById('ti-owner-controls')?.style.display !== 'none') tiPositionOwnerBar(); });
+window.addEventListener('resize', () => {
+  if(document.getElementById('page-ideas-page')?.style.display === 'none') return;
+  tiFixTopbarPosition();
+  if(document.getElementById('ti-owner-controls')?.style.display !== 'none') tiPositionOwnerBar();
+});
 
 async function tiOwnerRegenerate(){
   const btn = document.getElementById('ti-regen-btn');
